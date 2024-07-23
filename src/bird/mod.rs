@@ -21,14 +21,20 @@ impl BirdBundle {
     }
 }
 
-fn do_launch(mut launch: EventReader<Launch>, mut bird_q: Query<&mut DynoTran, With<Bird>>) {
+fn do_launch(
+    mut launch: EventReader<Launch>,
+    mut bird_q: Query<(Entity, &mut DynoTran, &mut Transform), With<Bird>>,
+    mut commands: Commands,
+) {
     let Some(launch) = launch.read().last() else {
         return;
     };
-    let Ok(mut dyno_tran) = bird_q.get_single_mut() else {
+    let Ok((eid, mut dyno_tran, mut tran)) = bird_q.get_single_mut() else {
         return;
     };
+    commands.entity(eid).remove::<Stuck>();
     dyno_tran.vel = launch.0 * 10.0;
+    tran.set_angle(0.0);
 }
 
 pub(super) struct BirdPlugin;

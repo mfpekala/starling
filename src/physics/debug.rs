@@ -65,10 +65,18 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
         ),
     ));
     commands.spawn((
-        Name::new("physics_debug_sticky4"),
+        Name::new("physics_debug_sticky5"),
         StickyPlainPhysicsBundle::new(
+            Vec2::new(-300.0 * 4.0, -WINDOW_HEIGHT_f32) / 4.0,
+            Bounds::from_shape(Shape::Circle { radius: 100.0 }),
+        ),
+    ));
+    commands.spawn((
+        Name::new("physics_debug_sticky6"),
+        StickyRotPhysicsBundle::new(
             Vec2::new(0.0, -WINDOW_HEIGHT_f32) / 4.0,
             Bounds::from_shape(Shape::Circle { radius: 100.0 }),
+            DynoRot { rot: 0.05 },
         ),
     ));
 

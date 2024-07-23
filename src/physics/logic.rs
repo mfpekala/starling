@@ -1,3 +1,5 @@
+use bevy::math::VectorSpace;
+
 use crate::prelude::*;
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
@@ -101,12 +103,14 @@ fn move_static_kind_dynos(
 }
 
 fn resolve_static_collisions(
+    eid: Entity,
     bounds: &Bounds,
     rx: &StaticReceiver,
     dyno_tran: &mut DynoTran,
     tran: &mut Transform,
     gtran_offset: Vec2,
     providers: &Query<(Entity, &Bounds, &StaticKind, &GlobalTransform)>,
+    commands: &mut Commands,
 ) {
     for (provider_eid, provider_bounds, provider_kind, provider_gtran) in providers {
         let my_tran_n_angle = tran.tran_n_angle();
@@ -142,21 +146,32 @@ fn resolve_static_collisions(
             (_, StaticReceiver::Stop) => {
                 dyno_tran.vel = Vec2::ZERO;
             }
-            (_, StaticReceiver::Normal) => {
+            (StaticKind::Normal, StaticReceiver::Normal) => {
                 dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 0.2, 0.03);
+            }
+            (StaticKind::Sticky, StaticReceiver::Normal) => {
+                dyno_tran.vel = Vec2::ZERO;
+                let stuck_marker = Stuck {
+                    parent: provider_eid,
+                    my_initial_angle: my_tran_n_angle.1,
+                    parent_initial_angle: rhs_tran_n_angle.1,
+                    initial_offset: tran.translation.truncate() + gtran_offset - rhs_tran_n_angle.0,
+                };
+                commands.entity(eid).insert(stuck_marker);
             }
         }
     }
 }
 
-/// Moves all dynos (both rot and tran) that receive static collisions. Some may have triggers!
-fn move_static_receiver_dynos(
+/// Moves all dynos (both rot and tran) that receive static collisions and ARE NOT stuck. Some may have triggers!
+fn move_unstuck_static_receiver_dynos(
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
     rot_only_dynos: Query<(&StaticReceiver, &DynoRot), (Without<DynoTran>,)>,
     both_dynos: Query<(&StaticReceiver, &DynoRot, &DynoTran)>,
     mut tran_only_dynos: Query<
         (
+            Entity,
             &Bounds,
             &StaticReceiver,
             Option<&TriggerKind>,
@@ -164,9 +179,10 @@ fn move_static_receiver_dynos(
             &mut Transform,
             &GlobalTransform,
         ),
-        (Without<DynoRot>, Without<StaticKind>),
+        (Without<DynoRot>, Without<StaticKind>, Without<Stuck>),
     >,
     providers: Query<(Entity, &Bounds, &StaticKind, &GlobalTransform)>,
+    mut commands: Commands,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     if !rot_only_dynos.is_empty() {
@@ -175,8 +191,7 @@ fn move_static_receiver_dynos(
     if !both_dynos.is_empty() {
         unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
     }
-    for (bounds, rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
-        // TODO: Not sure if this offset is buggy, need to test it on something nested
+    for (eid, bounds, rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
         let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
@@ -188,17 +203,57 @@ fn move_static_receiver_dynos(
             let moving = dir * mag;
             tran.translation += moving.extend(0.0);
             resolve_static_collisions(
+                eid,
                 bounds,
                 rx,
                 &mut dyno_tran,
                 &mut tran,
                 gtran_offset,
                 &providers,
+                &mut commands,
             );
             // Update the loop stuff
             amount_moved += MAX_TRAN_STEP_LENGTH;
             total_to_move = total_to_move.min(dyno_tran.vel.length() * time_factor);
         }
+    }
+}
+
+/// Moves all dynos (both rot and tran) that receive static collisions and ARE stuck. Some may have triggers!
+fn move_stuck_static_receiver_dynos(
+    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
+    mut tran_only_dynos: Query<
+        (
+            Entity,
+            &Stuck,
+            Option<&TriggerKind>,
+            &mut DynoTran,
+            &mut Transform,
+            &GlobalTransform,
+        ),
+        (
+            With<Bounds>,
+            With<StaticReceiver>,
+            With<DynoTran>,
+            Without<DynoRot>,
+            Without<StaticKind>,
+        ),
+    >,
+    providers: Query<&GlobalTransform, (With<Bounds>, With<StaticKind>)>,
+    mut commands: Commands,
+) {
+    let time_factor = time.delta_seconds() * bullet_time.factor();
+    for (eid, stuck, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
+        let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
+        let provider_gtran = providers.get(stuck.parent).unwrap();
+        dyno_tran.vel = Vec2::ZERO;
+        let (provider_tran, provider_angle) = provider_gtran.tran_n_angle();
+        let angle_diff = provider_angle - stuck.parent_initial_angle;
+        tran.set_angle(stuck.my_initial_angle + angle_diff);
+        let rotated_pos = stuck.initial_offset.my_rotate(angle_diff);
+        tran.translation.x = provider_tran.x + rotated_pos.x;
+        tran.translation.y = provider_tran.y + rotated_pos.y;
     }
 }
 
@@ -223,7 +278,8 @@ pub(super) fn register_logic(app: &mut App) {
         (
             move_uninteresting_dynos,
             move_static_kind_dynos,
-            move_static_receiver_dynos,
+            move_unstuck_static_receiver_dynos,
+            move_stuck_static_receiver_dynos,
             move_trigger_only_dynos,
             apply_gravity,
         )

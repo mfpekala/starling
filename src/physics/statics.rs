@@ -26,5 +26,8 @@ pub enum StaticReceiver {
 /// Marks an object that is stuck to a sticky static.
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct Stuck {
-    pub time: f32,
+    pub parent: Entity,
+    pub my_initial_angle: f32,
+    pub parent_initial_angle: f32,
+    pub initial_offset: Vec2,
 }
