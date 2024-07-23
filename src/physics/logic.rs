@@ -124,7 +124,24 @@ fn resolve_static_collisions(
             continue;
         };
         tran.translation += mvmt.extend(0.0);
-        dyno_tran.vel = Vec2::ZERO;
+        let bounce_with_friction = |vel: Vec2, springiness: f32, friction: f32| -> Vec2 {
+            let old_perp = vel.dot(mvmt.normalize_or_zero()) * mvmt.normalize_or_zero();
+            let old_par = vel - old_perp;
+            let mut new_perp = old_perp * springiness;
+            if new_perp.dot(mvmt) < 0.0 {
+                new_perp *= -1.0;
+            }
+            let new_par = old_par * (1.0 - friction);
+            new_perp + new_par
+        };
+        match (provider_kind, rx) {
+            (_, StaticReceiver::Stop) => {
+                dyno_tran.vel = Vec2::ZERO;
+            }
+            (_, StaticReceiver::Normal) => {
+                dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 1.0, 0.0);
+            }
+        }
     }
 }
 
@@ -175,7 +192,7 @@ fn move_static_receiver_dynos(
                 &providers,
             );
             // Update the loop stuff
-            amount_moved += mag;
+            amount_moved += MAX_TRAN_STEP_LENGTH;
             total_to_move = total_to_move.min(dyno_tran.vel.length() * time_factor);
         }
     }
