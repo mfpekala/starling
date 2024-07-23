@@ -60,7 +60,10 @@ fn update_mouse_state(
         // Mouse is not in the window, don't do anything
         return;
     };
-    let world_pos = Vec2::new(mouse_pos.x, -mouse_pos.y);
+    let world_pos = Vec2::new(
+        mouse_pos.x - WINDOW_WIDTH_f32 / 2.0,
+        -mouse_pos.y + WINDOW_HEIGHT_f32 / 2.0,
+    );
     let left_drag_start = if buttons.just_pressed(MouseButton::Left) {
         Some(world_pos)
     } else {

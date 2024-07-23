@@ -6,7 +6,7 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 7.0;
 
-    commands.spawn(BirdBundle::new(default(), default(), 3));
+    commands.spawn(BirdBundle::new(default(), default(), 3, 3));
     let outer_width = 20.0;
     commands.spawn((
         Name::new("physics_debug_sticky1"),
@@ -147,6 +147,7 @@ fn draw_bounds(
         Option<&StaticProvider>,
         Option<&TriggerKind>,
     )>,
+    mouse_state: Res<MouseState>,
     mut gz: Gizmos,
 ) {
     if !settings.show_physics_bounds {
@@ -164,6 +165,16 @@ fn draw_bounds(
             (None, None) => tailwind::ZINC_950,
         };
         bound.draw(tran, angle, &mut gz, color.into());
+    }
+    if let Some(start_left) = mouse_state.get_left_drag_start() {
+        gz.line_2d(start_left, mouse_state.get_world_pos(), tailwind::AMBER_700);
+    }
+    if let Some(start_right) = mouse_state.get_right_drag_start() {
+        gz.line_2d(
+            start_right,
+            mouse_state.get_world_pos(),
+            tailwind::ORANGE_700,
+        );
     }
 }
 

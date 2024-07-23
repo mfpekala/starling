@@ -21,7 +21,7 @@ impl BirdPhysicsBundle {
         Self {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
-            bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+            bounds: Bounds::from_shape(Shape::Circle { radius: 25.0 }),
             statics: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             triggers: TriggerKind::Bird,
             spatial: SpatialBundle::from_transform(Transform::from_translation(
@@ -88,6 +88,35 @@ impl StickyRotPhysicsBundle {
                 pos.extend(ZIX_STICKY),
             )),
             dyno_rot,
+        }
+    }
+}
+
+/// Bullet physics
+#[derive(Bundle)]
+pub struct BulletPhysicsBundle {
+    dyno_tran: DynoTran,
+    gravity: Gravity,
+    bounds: Bounds,
+    statics: StaticReceiver,
+    triggers: TriggerKind,
+    spatial: SpatialBundle,
+}
+impl BulletPhysicsBundle {
+    pub fn new(pos: Vec2, vel: Vec2, good: bool) -> Self {
+        Self {
+            dyno_tran: DynoTran { vel },
+            gravity: Gravity::Normal,
+            bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+            statics: StaticReceiver::from_kind(StaticReceiverKind::Stop),
+            triggers: if good {
+                TriggerKind::BulletGood
+            } else {
+                TriggerKind::BulletBad
+            },
+            spatial: SpatialBundle::from_transform(Transform::from_translation(
+                pos.extend(ZIX_BULLET),
+            )),
         }
     }
 }

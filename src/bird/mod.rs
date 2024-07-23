@@ -5,10 +5,15 @@ use crate::prelude::*;
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct Bird {
     launches_left: u32,
+    bullets_left: u32,
 }
 impl Bird {
     pub fn get_launches_left(&self) -> u32 {
         self.launches_left
+    }
+
+    pub fn get_bullets_left(&self) -> u32 {
+        self.bullets_left
     }
 }
 
@@ -19,10 +24,13 @@ pub struct BirdBundle {
     physics: BirdPhysicsBundle,
 }
 impl BirdBundle {
-    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32) -> Self {
+    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32, bullets_left: u32) -> Self {
         Self {
             name: Name::new("bird"),
-            bird: Bird { launches_left },
+            bird: Bird {
+                launches_left,
+                bullets_left,
+            },
             physics: BirdPhysicsBundle::new(pos, vel),
         }
     }
@@ -38,17 +46,13 @@ fn update_bullet_time(
         *bullet_time = BulletTime::Inactive;
         return;
     };
-    if bird.launches_left <= 0 {
-        // No launches = no bullet time
-        *bullet_time = BulletTime::Inactive;
-        return;
-    }
-    if mouse_state.get_left_drag_start().is_none() {
-        // No drag = no bullet time
-        *bullet_time = BulletTime::Inactive;
-        return;
-    }
-    *bullet_time = BulletTime::Active;
+    let is_launching = bird.launches_left > 0 && mouse_state.get_left_drag_start().is_some();
+    let is_firing = bird.bullets_left > 0 && mouse_state.get_right_drag_start().is_some();
+    *bullet_time = if is_launching || is_firing {
+        BulletTime::Active
+    } else {
+        BulletTime::Inactive
+    };
 }
 
 fn do_launch(
@@ -67,11 +71,32 @@ fn do_launch(
     }
     bird.launches_left -= 1;
     commands.entity(eid).remove::<Stuck>();
-    dyno_tran.vel = launch.0 * 10.0;
+    dyno_tran.vel = launch.0 * 6.0;
     tran.set_angle(0.0);
 }
 
-fn refresh_launches(mut bird_q: Query<(&mut Bird, &StaticReceiver)>) {
+fn do_fire(
+    mut fire: EventReader<Fire>,
+    mut bird_q: Query<(&mut Bird, &GlobalTransform)>,
+    mut commands: Commands,
+) {
+    let Some(fire) = fire.read().last() else {
+        return;
+    };
+    let Ok((mut bird, gtran)) = bird_q.get_single_mut() else {
+        return;
+    };
+    if bird.bullets_left == 0 {
+        return;
+    }
+    bird.bullets_left -= 1;
+    commands.spawn((
+        Name::new("bullet"),
+        BulletPhysicsBundle::new(gtran.translation().truncate(), fire.0 * 10.0, true),
+    ));
+}
+
+fn refresh_launches_n_bullets(mut bird_q: Query<(&mut Bird, &StaticReceiver)>) {
     for (mut bird, receiver) in bird_q.iter_mut() {
         if receiver
             .collisions
@@ -80,6 +105,7 @@ fn refresh_launches(mut bird_q: Query<(&mut Bird, &StaticReceiver)>) {
             .any(|collision| collision.provider_kind == StaticProviderKind::Sticky)
         {
             bird.launches_left = 3;
+            bird.bullets_left = 3;
         }
     }
 }
@@ -89,7 +115,13 @@ impl Plugin for BirdPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (update_bullet_time, do_launch, refresh_launches).after(PhysicsSet),
+            (
+                update_bullet_time,
+                do_launch,
+                do_fire,
+                refresh_launches_n_bullets,
+            )
+                .after(PhysicsSet),
         );
     }
 }

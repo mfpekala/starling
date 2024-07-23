@@ -86,24 +86,3 @@ impl Bounds {
 
 #[derive(Debug, Clone, Reflect)]
 pub struct Inactive;
-
-/// Order of operations
-///
-/// Sorry brief data care thing:
-/// - StaticKind
-/// - StaticReceiver
-/// - Trigger
-///
-/// 0. Move all the dynos containing NOTHING (no statickind, staticreceiver, or trigger). No need to inch.
-/// 1. Move all the dynos attached to a StaticKind
-///     NOTE: Statics don't interact with other statics (i.e. must have no staticreceiver), but they might have triggers!
-///           If so, you need to update the triggers accordingly as you move them. STILL NEED TO INCH.
-/// 2. Move all the dynos attached to a StaticReceiver
-///     NOTE: Need to inch! Also may have triggers!
-/// 3. All that is left is things that have a trigger but no static receiver
-///
-/// Okay so now think, what is common here?
-/// - Take in a global transform (need rot!) and a bounds, figure out what statics intersect (and closest point?)
-/// - Take in a global transform (need rot!) and a bounds, figure out what triggers intersect (and closest point?)
-/// - Both of these^ rely on common shape logic
-struct _Yoo;
