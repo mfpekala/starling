@@ -1,0 +1,37 @@
+#import bevy_sprite::mesh2d_vertex_output::VertexOutput
+
+@group(2) @binding(1)
+var texture: texture_2d<f32>;
+@group(2) @binding(2)
+var splr: sampler;
+@group(2) @binding(3)
+var<uniform> index: f32;
+@group(2) @binding(4)
+var<uniform> length: f32;
+@group(2) @binding(5)
+var<uniform> x_offset: f32;
+@group(2) @binding(6)
+var<uniform> y_offset: f32;
+@group(2) @binding(7)
+var<uniform> x_repetitions: f32;
+@group(2) @binding(8)
+var<uniform> y_repetitions: f32;
+@group(2) @binding(9)
+var<uniform> r: f32;
+@group(2) @binding(10)
+var<uniform> g: f32;
+@group(2) @binding(11)
+var<uniform> b: f32;
+
+@fragment
+fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+    // Adding 2.0 here because it works, no idea why
+    let input_x = (-x_offset + 2.0 + in.uv.x * x_repetitions) % 1.0;
+    let input_y = (y_offset + 2.0 + in.uv.y * y_repetitions) % 1.0;
+    let index_lower = (1.0 / length) * (index + 0);
+    let index_upper = (1.0 / length) * (index + 1);
+    let out_uv = vec2<f32>(index_lower + (index_upper - index_lower) * input_x, input_y);
+    let out_rgba = textureSample(texture, splr, out_uv);
+
+    return vec4<f32>(out_rgba[0] * r, out_rgba[1] * g, out_rgba[2] * b, out_rgba[3]);
+}

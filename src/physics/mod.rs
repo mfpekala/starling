@@ -26,7 +26,7 @@ impl BulletTime {
     pub fn factor(&self) -> f32 {
         match self {
             Self::Inactive => 1.0,
-            Self::Active => 0.2,
+            Self::Active => 0.1,
         }
     }
 }

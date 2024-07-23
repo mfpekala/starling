@@ -1,10 +1,9 @@
-use bevy::color::palettes::tailwind;
-
 use crate::prelude::*;
 
 fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 7.0;
+    config.render_layers = SpriteCamera::render_layers();
 
     commands.spawn(BirdBundle::new(default(), default(), 3, 3));
     let outer_width = 20.0;

@@ -2,6 +2,7 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use consts::WINDOW_HEIGHT_f32;
 
+pub mod animation;
 pub mod bird;
 pub mod camera;
 pub mod consts;
@@ -13,6 +14,7 @@ pub mod settings;
 pub mod state;
 
 pub mod prelude {
+    pub use super::animation::*;
     pub use super::bird::*;
     #[allow(unused_imports)]
     pub use super::camera::*;
@@ -24,9 +26,11 @@ pub mod prelude {
     pub use super::physics::*;
     pub use super::settings::*;
     pub use super::state::*;
+    pub use bevy::color::palettes::tailwind;
     pub use bevy::prelude::*;
     pub use bevy::utils::HashMap;
     pub use bevy::utils::HashSet;
+    pub use serde::{Deserialize, Serialize};
 }
 
 fn main() {
@@ -45,10 +49,11 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     )
-    .insert_resource(ClearColor(Color::WHITE))
+    .insert_resource(ClearColor(Color::BLACK))
     .add_plugins(WorldInspectorPlugin::new());
     // My plugins
-    app.add_plugins(bird::BirdPlugin)
+    app.add_plugins(animation::AnimationPlugin)
+        .add_plugins(bird::BirdPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
