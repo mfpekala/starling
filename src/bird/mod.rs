@@ -21,7 +21,19 @@ impl BirdBundle {
     }
 }
 
+fn do_launch(mut launch: EventReader<Launch>, mut bird_q: Query<&mut DynoTran, With<Bird>>) {
+    let Some(launch) = launch.read().last() else {
+        return;
+    };
+    let Ok(mut dyno_tran) = bird_q.get_single_mut() else {
+        return;
+    };
+    dyno_tran.vel = launch.0 * 10.0;
+}
+
 pub(super) struct BirdPlugin;
 impl Plugin for BirdPlugin {
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (do_launch).after(PhysicsSet));
+    }
 }

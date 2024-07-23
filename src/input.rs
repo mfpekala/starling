@@ -58,7 +58,7 @@ fn update_mouse_state(
     } else {
         if let Some(drag_start) = state.left_drag_start {
             if !buttons.pressed(MouseButton::Left) {
-                launch_writer.send(Launch(world_pos - drag_start));
+                launch_writer.send(Launch(drag_start - world_pos));
                 None
             } else {
                 Some(drag_start)
@@ -72,7 +72,7 @@ fn update_mouse_state(
     } else {
         if let Some(drag_start) = state.right_drag_start {
             if !buttons.pressed(MouseButton::Right) {
-                fire_writer.send(Fire(world_pos - drag_start));
+                fire_writer.send(Fire(drag_start - world_pos));
                 None
             } else {
                 Some(drag_start)

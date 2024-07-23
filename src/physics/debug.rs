@@ -8,20 +8,20 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
 
     commands.spawn(BirdBundle::new(default(), default()));
     let outer_width = 20.0;
-    // commands.spawn((
-    //     Name::new("physics_debug_sticky1"),
-    //     StickyPlainPhysicsBundle::new(
-    //         Vec2::new(0.0, WINDOW_HEIGHT_f32 - outer_width) / 2.0,
-    //         Bounds::from_shape(Shape::Polygon {
-    //             points: vec![
-    //                 Vec2::new(-WINDOW_WIDTH_f32, -outer_width) / 2.0,
-    //                 Vec2::new(WINDOW_WIDTH_f32, -outer_width) / 2.0,
-    //                 Vec2::new(WINDOW_WIDTH_f32, outer_width) / 2.0,
-    //                 Vec2::new(-WINDOW_WIDTH_f32, outer_width) / 2.0,
-    //             ],
-    //         }),
-    //     ),
-    // ));
+    commands.spawn((
+        Name::new("physics_debug_sticky1"),
+        StickyPlainPhysicsBundle::new(
+            Vec2::new(0.0, WINDOW_HEIGHT_f32 - outer_width) / 2.0,
+            Bounds::from_shape(Shape::Polygon {
+                points: vec![
+                    Vec2::new(-WINDOW_WIDTH_f32, -outer_width) / 2.0,
+                    Vec2::new(-WINDOW_WIDTH_f32, outer_width) / 2.0,
+                    Vec2::new(WINDOW_WIDTH_f32, outer_width) / 2.0,
+                    Vec2::new(WINDOW_WIDTH_f32, -outer_width) / 2.0,
+                ],
+            }),
+        ),
+    ));
     commands.spawn((
         Name::new("physics_debug_sticky2"),
         StickyPlainPhysicsBundle::new(
@@ -36,54 +36,54 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
             }),
         ),
     ));
-    // commands.spawn((
-    //     Name::new("physics_debug_sticky3"),
-    //     StickyPlainPhysicsBundle::new(
-    //         Vec2::new(-WINDOW_WIDTH_f32 + outer_width, 0.0) / 2.0,
-    //         Bounds::from_shape(Shape::Polygon {
-    //             points: vec![
-    //                 Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-    //             ],
-    //         }),
-    //     ),
-    // ));
-    // commands.spawn((
-    //     Name::new("physics_debug_sticky4"),
-    //     StickyPlainPhysicsBundle::new(
-    //         Vec2::new(WINDOW_WIDTH_f32 - outer_width, 0.0) / 2.0,
-    //         Bounds::from_shape(Shape::Polygon {
-    //             points: vec![
-    //                 Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
-    //                 Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-    //             ],
-    //         }),
-    //     ),
-    // ));
+    commands.spawn((
+        Name::new("physics_debug_sticky3"),
+        StickyPlainPhysicsBundle::new(
+            Vec2::new(-WINDOW_WIDTH_f32 + outer_width, 0.0) / 2.0,
+            Bounds::from_shape(Shape::Polygon {
+                points: vec![
+                    Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                ],
+            }),
+        ),
+    ));
+    commands.spawn((
+        Name::new("physics_debug_sticky4"),
+        StickyPlainPhysicsBundle::new(
+            Vec2::new(WINDOW_WIDTH_f32 - outer_width, 0.0) / 2.0,
+            Bounds::from_shape(Shape::Polygon {
+                points: vec![
+                    Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
+                    Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                ],
+            }),
+        ),
+    ));
 
-    // commands.spawn((
-    //     Name::new("physics_debug_uninteresting_tran_only"),
-    //     DynoTran { vel: Vec2::ONE },
-    //     SpatialBundle::default(),
-    //     Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-    // ));
-    // commands.spawn((
-    //     Name::new("physics_debug_uninteresting_rot_only"),
-    //     DynoRot { rot: 0.1 },
-    //     SpatialBundle::default(),
-    //     Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-    // ));
-    // commands.spawn((
-    //     Name::new("physics_debug_uninteresting_both"),
-    //     DynoTran { vel: -Vec2::ONE },
-    //     DynoRot { rot: 0.1 },
-    //     SpatialBundle::default(),
-    //     Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-    // ));
+    commands.spawn((
+        Name::new("physics_debug_uninteresting_tran_only"),
+        DynoTran { vel: Vec2::ONE },
+        SpatialBundle::default(),
+        Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+    ));
+    commands.spawn((
+        Name::new("physics_debug_uninteresting_rot_only"),
+        DynoRot { rot: 0.1 },
+        SpatialBundle::default(),
+        Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+    ));
+    commands.spawn((
+        Name::new("physics_debug_uninteresting_both"),
+        DynoTran { vel: -Vec2::ONE },
+        DynoRot { rot: 0.1 },
+        SpatialBundle::default(),
+        Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+    ));
 
     // commands.spawn((
     //     Name::new("physics_debug_sticky_tran"),

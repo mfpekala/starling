@@ -55,7 +55,7 @@ impl Shape {
                     return None;
                 }
                 let dir = (my_pos - cp).normalize_or_zero();
-                Some(dir * (*my_radius - signed_dist))
+                Some(dir * (*my_radius - signed_dist + 0.01))
             }
             Self::Polygon { points: _my_points } => {
                 unimplemented!("Determining the push point for polygons is not yet supported");

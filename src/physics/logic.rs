@@ -105,13 +105,15 @@ fn resolve_static_collisions(
     rx: &StaticReceiver,
     dyno_tran: &mut DynoTran,
     tran: &mut Transform,
-    gtran: &GlobalTransform,
+    gtran_offset: Vec2,
     providers: &Query<(Entity, &Bounds, &StaticKind, &GlobalTransform)>,
 ) {
     for (provider_eid, provider_bounds, provider_kind, provider_gtran) in providers {
+        let my_tran_n_angle = tran.tran_n_angle();
+        let my_tran_n_angle = (my_tran_n_angle.0 + gtran_offset, my_tran_n_angle.1);
         let rhs_tran_n_angle = provider_gtran.tran_n_angle();
         let Some(mvmt) = bounds.get_shape().bounce_off(
-            gtran.tran_n_angle(),
+            my_tran_n_angle,
             (
                 provider_bounds.get_shape(),
                 rhs_tran_n_angle.0,
@@ -121,8 +123,8 @@ fn resolve_static_collisions(
             // These things don't overlap, nothing to do
             continue;
         };
-        dyno_tran.vel = Vec2::ZERO;
         tran.translation += mvmt.extend(0.0);
+        dyno_tran.vel = Vec2::ZERO;
     }
 }
 
@@ -153,6 +155,8 @@ fn move_static_receiver_dynos(
         unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
     }
     for (bounds, rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
+        // TODO: Not sure if this offset is buggy, need to test it on something nested
+        let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
         while amount_moved < total_to_move {
@@ -162,12 +166,18 @@ fn move_static_receiver_dynos(
                 (dyno_tran.vel.length() * time_factor - amount_moved).min(MAX_TRAN_STEP_LENGTH);
             let moving = dir * mag;
             tran.translation += moving.extend(0.0);
-            resolve_static_collisions(bounds, rx, &mut dyno_tran, &mut tran, gtran, &providers);
+            resolve_static_collisions(
+                bounds,
+                rx,
+                &mut dyno_tran,
+                &mut tran,
+                gtran_offset,
+                &providers,
+            );
             // Update the loop stuff
             amount_moved += mag;
             total_to_move = total_to_move.min(dyno_tran.vel.length() * time_factor);
         }
-        println!("amount_moved: {amount_moved}, tf: {time_factor}");
     }
 }
 
@@ -198,6 +208,8 @@ pub(super) fn register_logic(app: &mut App) {
         )
             .chain()
             .in_set(PhysicsSet)
+            // TODO: Once back on wifi google the proper way to do this
+            .after(InputSet)
             .run_if(in_state(PhysicsState::Active)),
     );
 }
