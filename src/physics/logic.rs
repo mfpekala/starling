@@ -124,14 +124,18 @@ fn resolve_static_collisions(
             continue;
         };
         tran.translation += mvmt.extend(0.0);
+        // TODO: It should only apply friction once per frame
         let bounce_with_friction = |vel: Vec2, springiness: f32, friction: f32| -> Vec2 {
+            // TODO: All these normalize_or_zero's are probably a bit slow, fix later
             let old_perp = vel.dot(mvmt.normalize_or_zero()) * mvmt.normalize_or_zero();
             let old_par = vel - old_perp;
             let mut new_perp = old_perp * springiness;
             if new_perp.dot(mvmt) < 0.0 {
                 new_perp *= -1.0;
             }
-            let new_par = old_par * (1.0 - friction);
+            let friction_mult =
+                1.0 + vel.normalize_or_zero().dot(mvmt.normalize_or_zero()).abs() * 10.0;
+            let new_par = old_par * (1.0 - (friction * friction_mult).min(1.0));
             new_perp + new_par
         };
         match (provider_kind, rx) {
@@ -139,7 +143,7 @@ fn resolve_static_collisions(
                 dyno_tran.vel = Vec2::ZERO;
             }
             (_, StaticReceiver::Normal) => {
-                dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 1.0, 0.0);
+                dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 0.2, 0.03);
             }
         }
     }

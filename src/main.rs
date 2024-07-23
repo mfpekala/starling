@@ -25,6 +25,8 @@ pub mod prelude {
     pub use super::settings::*;
     pub use super::state::*;
     pub use bevy::prelude::*;
+    pub use bevy::utils::HashMap;
+    pub use bevy::utils::HashSet;
 }
 
 fn main() {
