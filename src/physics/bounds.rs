@@ -21,7 +21,7 @@ impl Shape {
                 let diff = rhs - my_pos;
                 let signed_dist = diff.length() - *my_radius;
                 let norm = diff.normalize_or_zero();
-                (signed_dist, norm * *my_radius)
+                (signed_dist, my_pos + norm * *my_radius)
             }
             Self::Polygon { points: my_points } => {
                 let mut signed_dist = f32::MAX;

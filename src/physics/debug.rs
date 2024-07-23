@@ -64,6 +64,13 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
             }),
         ),
     ));
+    commands.spawn((
+        Name::new("physics_debug_sticky4"),
+        StickyPlainPhysicsBundle::new(
+            Vec2::new(0.0, -WINDOW_HEIGHT_f32) / 4.0,
+            Bounds::from_shape(Shape::Circle { radius: 100.0 }),
+        ),
+    ));
 
     commands.spawn((
         Name::new("physics_debug_uninteresting_tran_only"),
@@ -85,16 +92,16 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
         Bounds::from_shape(Shape::Circle { radius: 10.0 }),
     ));
 
-    // commands.spawn((
-    //     Name::new("physics_debug_sticky_tran"),
-    //     StickyTranPhysicsBundle::new(
-    //         Vec2::new(-100.0, 0.0),
-    //         Bounds::from_shape(Shape::Circle { radius: 15.0 }),
-    //         DynoTran {
-    //             vel: Vec2::ONE * 2.0,
-    //         },
-    //     ),
-    // ));
+    commands.spawn((
+        Name::new("physics_debug_sticky_tran"),
+        StickyTranPhysicsBundle::new(
+            Vec2::new(-100.0, 0.0),
+            Bounds::from_shape(Shape::Circle { radius: 15.0 }),
+            DynoTran {
+                vel: Vec2::ONE * 2.0,
+            },
+        ),
+    ));
     // commands.spawn((
     //     Name::new("physics_debug_sticky_rot"),
     //     StickyRotPhysicsBundle::new(
