@@ -43,9 +43,14 @@ impl Shape {
     }
 
     /// Given my placement and another shape/placement combo, figure out how to push this shape
-    /// out of the other. Returns None if they do not overlap. Otherwise returns a diff which
-    /// represents how much to move my placement to get it out of the shape
-    pub fn bounce_off(&self, placement: (Vec2, f32), rhs: (&Self, Vec2, f32)) -> Option<Vec2> {
+    /// out of the other. Returns None if they do not overlap. Otherwise, returns two things:
+    /// 1. A diff which represents how much to move my placement by to get out of the shape
+    /// 2. The exact collision point
+    pub fn bounce_off(
+        &self,
+        placement: (Vec2, f32),
+        rhs: (&Self, Vec2, f32),
+    ) -> Option<(Vec2, Vec2)> {
         let (my_pos, _my_rot) = placement;
         let (rhs_bounds, rhs_pos, rhs_rot) = rhs;
         match self {
@@ -55,7 +60,7 @@ impl Shape {
                     return None;
                 }
                 let dir = (my_pos - cp).normalize_or_zero();
-                Some(dir * (*my_radius - signed_dist))
+                Some((dir * (*my_radius - signed_dist), cp))
             }
             Self::Polygon { points: _my_points } => {
                 unimplemented!("Determining the push point for polygons is not yet supported");

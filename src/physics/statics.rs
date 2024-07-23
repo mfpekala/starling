@@ -1,7 +1,9 @@
+use std::collections::VecDeque;
+
 use crate::prelude::*;
 
 /// Different ways of providing a static collision hitbox. Admits the design space (StaticKind x StaticReceiver)
-#[derive(Debug, Clone, Copy, Reflect)]
+#[derive(Debug, Clone, Copy, Reflect, PartialEq, Eq)]
 pub enum StaticProviderKind {
     /// Objects will stick to the outside.
     Sticky,
@@ -10,21 +12,32 @@ pub enum StaticProviderKind {
     Normal,
 }
 
+#[derive(Debug, Clone, Reflect)]
+pub struct StaticCollisionRecordProvider {
+    pub pos: Vec2,
+    pub receiver_eid: Entity,
+    pub receiver_kind: StaticReceiverKind,
+}
+
 /// Marks an object as being a "static" physics object. Should be attached to entities with `Bounds`.
 /// This means that it DOES NOT respond to collisions with other statics or triggers.
 /// BUT it provides collisions for any entity with a `StaticReceiver` component.
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct StaticProvider {
     pub kind: StaticProviderKind,
+    pub collisions: VecDeque<StaticCollisionRecordProvider>,
 }
 impl StaticProvider {
     pub fn from_kind(kind: StaticProviderKind) -> Self {
-        Self { kind }
+        Self {
+            kind,
+            collisions: VecDeque::new(),
+        }
     }
 }
 
 /// Different ways of interacting with statics on collision. Admits the design space (StaticKind x StaticReceiver)
-#[derive(Debug, Clone, Copy, Reflect)]
+#[derive(Debug, Clone, Copy, Reflect, PartialEq, Eq)]
 pub enum StaticReceiverKind {
     /// Collides "normally". Will stick to sticky things and bounce off normal things.
     Normal,
@@ -34,22 +47,25 @@ pub enum StaticReceiverKind {
     Stop,
 }
 
-/// A record of a collision happening on this frame. Inserted into both the provider and receiver.
 #[derive(Debug, Clone, Reflect)]
-pub struct StaticCollisionRecord {
-    provider_eid: Entity,
-    provider_kind: StaticProviderKind,
-    receiver_eid: Entity,
+pub struct StaticCollisionRecordReceiver {
+    pub pos: Vec2,
+    pub provider_eid: Entity,
+    pub provider_kind: StaticProviderKind,
 }
 
 /// Marks a component as something that should interact with statics. Should be attached to entities with `Bounds`.
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct StaticReceiver {
     pub kind: StaticReceiverKind,
+    pub collisions: VecDeque<StaticCollisionRecordReceiver>,
 }
 impl StaticReceiver {
     pub fn from_kind(kind: StaticReceiverKind) -> Self {
-        Self { kind }
+        Self {
+            kind,
+            collisions: VecDeque::new(),
+        }
     }
 }
 

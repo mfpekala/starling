@@ -76,7 +76,7 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
         StickyRotPhysicsBundle::new(
             Vec2::new(0.0, -WINDOW_HEIGHT_f32) / 4.0,
             Bounds::from_shape(Shape::Circle { radius: 100.0 }),
-            DynoRot { rot: 0.05 },
+            DynoRot { rot: 6.0 },
         ),
     ));
 

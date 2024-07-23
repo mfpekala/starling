@@ -20,6 +20,14 @@ impl MouseState {
     pub fn get_world_pos(&self) -> Vec2 {
         self.world_pos
     }
+
+    pub fn get_left_drag_start(&self) -> Option<Vec2> {
+        self.left_drag_start
+    }
+
+    pub fn get_right_drag_start(&self) -> Option<Vec2> {
+        self.right_drag_start
+    }
 }
 
 /// Event that corresponds to input that _should_ send a bird flying.

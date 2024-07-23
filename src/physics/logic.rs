@@ -1,8 +1,23 @@
+use std::collections::VecDeque;
+
 use crate::prelude::*;
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
 /// occur in steps of this length to resolve collisions for fast-moving objects.
 const MAX_TRAN_STEP_LENGTH: f32 = 1.0;
+
+/// Resets all records (collisions + triggers (TODO: add trigger support here))
+fn reset_collision_records(
+    mut statics_provider_q: Query<&mut StaticProvider>,
+    mut statics_receiver_q: Query<&mut StaticReceiver>,
+) {
+    for mut provider in statics_provider_q.iter_mut() {
+        provider.collisions = VecDeque::new();
+    }
+    for mut receiver in statics_receiver_q.iter_mut() {
+        receiver.collisions = VecDeque::new();
+    }
+}
 
 /// Moves all dynos (both rot and tran) that are not statics, do not collide with statics, and have no triggers
 fn move_uninteresting_dynos(
@@ -37,7 +52,7 @@ fn move_uninteresting_dynos(
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     let apply_rotation = |dyno_rot: &DynoRot, tran: &mut Mut<Transform>| {
-        tran.rotate_z(dyno_rot.rot);
+        tran.rotate_z(dyno_rot.rot * time_factor);
     };
     let apply_translation = |dyno_tran: &DynoTran, tran: &mut Mut<Transform>| {
         tran.translation += (dyno_tran.vel * time_factor).extend(0.0);
@@ -81,7 +96,7 @@ fn move_static_kind_dynos(
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     let apply_rotation = |dyno_rot: &DynoRot, tran: &mut Mut<Transform>| {
-        tran.rotate_z(dyno_rot.rot);
+        tran.rotate_z(dyno_rot.rot * time_factor);
     };
     let apply_translation = |dyno_tran: &DynoTran, tran: &mut Mut<Transform>| {
         tran.translation += (dyno_tran.vel * time_factor).extend(0.0);
@@ -111,18 +126,19 @@ fn move_static_kind_dynos(
 fn resolve_static_collisions(
     eid: Entity,
     bounds: &Bounds,
-    rx: &StaticReceiver,
+    rx: &mut StaticReceiver,
     dyno_tran: &mut DynoTran,
     tran: &mut Transform,
     gtran_offset: Vec2,
-    providers: &Query<(Entity, &Bounds, &StaticProvider, &GlobalTransform)>,
+    providers: &mut Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     commands: &mut Commands,
 ) {
-    for (provider_eid, provider_bounds, provider_data, provider_gtran) in providers {
+    for (provider_eid, provider_bounds, mut provider_data, provider_gtran) in providers {
+        // Correct the global/local translation and see if there is a collision
         let my_tran_n_angle = tran.tran_n_angle();
         let my_tran_n_angle = (my_tran_n_angle.0 + gtran_offset, my_tran_n_angle.1);
         let rhs_tran_n_angle = provider_gtran.tran_n_angle();
-        let Some(mvmt) = bounds.get_shape().bounce_off(
+        let Some((mvmt, cp)) = bounds.get_shape().bounce_off(
             my_tran_n_angle,
             (
                 provider_bounds.get_shape(),
@@ -133,8 +149,23 @@ fn resolve_static_collisions(
             // These things don't overlap, nothing to do
             continue;
         };
+
+        // Add the collision records
+        let receiver_record = StaticCollisionRecordReceiver {
+            pos: cp,
+            provider_eid,
+            provider_kind: provider_data.kind,
+        };
+        rx.collisions.push_back(receiver_record);
+        let provider_record = StaticCollisionRecordProvider {
+            pos: cp,
+            receiver_eid: eid,
+            receiver_kind: rx.kind,
+        };
+        provider_data.collisions.push_back(provider_record);
+
+        // Then actually move the objects out of each other and handle physics updates
         tran.translation += mvmt.extend(0.0);
-        // TODO: It should only apply friction once per frame
         let bounce_with_friction = |vel: Vec2, springiness: f32, friction: f32| -> Vec2 {
             // TODO: All these normalize_or_zero's are probably a bit slow, fix later
             let old_perp = vel.dot(mvmt.normalize_or_zero()) * mvmt.normalize_or_zero();
@@ -179,7 +210,7 @@ fn move_unstuck_static_receiver_dynos(
         (
             Entity,
             &Bounds,
-            &StaticReceiver,
+            &mut StaticReceiver,
             Option<&TriggerKind>,
             &mut DynoTran,
             &mut Transform,
@@ -187,7 +218,7 @@ fn move_unstuck_static_receiver_dynos(
         ),
         (Without<DynoRot>, Without<StaticProvider>, Without<Stuck>),
     >,
-    providers: Query<(Entity, &Bounds, &StaticProvider, &GlobalTransform)>,
+    mut providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     mut commands: Commands,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
@@ -197,7 +228,7 @@ fn move_unstuck_static_receiver_dynos(
     if !both_dynos.is_empty() {
         unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
     }
-    for (eid, bounds, rx, _trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
+    for (eid, bounds, mut rx, _trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
         let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
@@ -211,11 +242,11 @@ fn move_unstuck_static_receiver_dynos(
             resolve_static_collisions(
                 eid,
                 bounds,
-                rx,
+                &mut rx,
                 &mut dyno_tran,
                 &mut tran,
                 gtran_offset,
-                &providers,
+                &mut providers,
                 &mut commands,
             );
             // Update the loop stuff
@@ -270,6 +301,7 @@ pub(super) fn register_logic(app: &mut App) {
     app.add_systems(
         Update,
         (
+            reset_collision_records,
             move_uninteresting_dynos,
             move_static_kind_dynos,
             move_unstuck_static_receiver_dynos,
