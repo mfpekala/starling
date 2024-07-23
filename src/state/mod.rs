@@ -1,5 +1,8 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+
+pub mod transition;
+pub use transition::*;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum MenuState {
@@ -37,6 +40,16 @@ pub enum MetaState {
     Cutscene(CutsceneState),
     Tutorial(TutorialState),
     Room(RoomState),
+}
+
+/// The state that actually holds data about transitions
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
+pub enum MetaTransitionState {
+    Stable,
+    Volatile {
+        transition: transition::Transition,
+        next_state: MetaState,
+    },
 }
 
 /// Kills some verbosity with reading meta states
@@ -120,14 +133,25 @@ impl ComputedStates for PhysicsState {
     }
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect, States)]
+pub enum AppMode {
+    Dev,
+    Prod,
+}
+
 pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        // Ground trutch states
-        app.insert_state(MetaState::Menu(MenuState::Studio));
+        // Ground truth states
+        // app.insert_state(MetaState::Menu(MenuState::Studio));
+        app.insert_state(MetaState::Tutorial(TutorialState::LearnFlight));
+        app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);
+        app.insert_state(AppMode::Dev);
         // Computed states
         app.add_computed_state::<PhysicsState>();
+        // Transitions
+        transition::register_transition(app);
         // Debug
         app.add_plugins(ResourceInspectorPlugin::<State<MetaState>>::new());
         app.add_plugins(ResourceInspectorPlugin::<State<PauseState>>::new());
