@@ -37,7 +37,7 @@ impl Plugin for PhysicsPlugin {
         // Register the types so we get better debug info in the inspector
         app.register_type::<Bounds>();
         app.register_type::<Inactive>();
-        app.register_type::<StaticKind>();
+        app.register_type::<StaticProvider>();
         app.register_type::<StaticReceiver>();
         app.register_type::<TriggerKind>();
         app.register_type::<DynoTran>();

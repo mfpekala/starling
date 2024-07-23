@@ -3,7 +3,14 @@ use crate::prelude::*;
 /// The component that marks the bird entity (protagonist)
 /// There should only ever be one of these
 #[derive(Component, Debug, Clone, Reflect)]
-pub struct Bird;
+pub struct Bird {
+    launches_left: u32,
+}
+impl Bird {
+    pub fn get_launches_left(&self) -> u32 {
+        self.launches_left
+    }
+}
 
 #[derive(Bundle)]
 pub struct BirdBundle {
@@ -12,10 +19,10 @@ pub struct BirdBundle {
     physics: BirdPhysicsBundle,
 }
 impl BirdBundle {
-    pub fn new(pos: Vec2, vel: Vec2) -> Self {
+    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32) -> Self {
         Self {
             name: Name::new("bird"),
-            bird: Bird,
+            bird: Bird { launches_left },
             physics: BirdPhysicsBundle::new(pos, vel),
         }
     }

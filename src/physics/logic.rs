@@ -1,5 +1,3 @@
-use bevy::math::VectorSpace;
-
 use crate::prelude::*;
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
@@ -14,7 +12,7 @@ fn move_uninteresting_dynos(
         (&DynoRot, &mut Transform),
         (
             Without<DynoTran>,
-            Without<StaticKind>,
+            Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerKind>,
         ),
@@ -22,7 +20,7 @@ fn move_uninteresting_dynos(
     mut both_dynos: Query<
         (&DynoRot, &DynoTran, &mut Transform),
         (
-            Without<StaticKind>,
+            Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerKind>,
         ),
@@ -31,7 +29,7 @@ fn move_uninteresting_dynos(
         (&DynoTran, &mut Transform),
         (
             Without<DynoRot>,
-            Without<StaticKind>,
+            Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerKind>,
         ),
@@ -62,15 +60,23 @@ fn move_static_kind_dynos(
     bullet_time: Res<BulletTime>,
     mut rot_only_dynos: Query<
         (Option<&TriggerKind>, &DynoRot, &mut Transform),
-        (Without<DynoTran>, With<StaticKind>, Without<StaticReceiver>),
+        (
+            Without<DynoTran>,
+            With<StaticProvider>,
+            Without<StaticReceiver>,
+        ),
     >,
     mut both_dynos: Query<
         (Option<&TriggerKind>, &DynoRot, &DynoTran, &mut Transform),
-        (With<StaticKind>, Without<StaticReceiver>),
+        (With<StaticProvider>, Without<StaticReceiver>),
     >,
     mut tran_only_dynos: Query<
         (Option<&TriggerKind>, &DynoTran, &mut Transform),
-        (Without<DynoRot>, With<StaticKind>, Without<StaticReceiver>),
+        (
+            Without<DynoRot>,
+            With<StaticProvider>,
+            Without<StaticReceiver>,
+        ),
     >,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
@@ -109,10 +115,10 @@ fn resolve_static_collisions(
     dyno_tran: &mut DynoTran,
     tran: &mut Transform,
     gtran_offset: Vec2,
-    providers: &Query<(Entity, &Bounds, &StaticKind, &GlobalTransform)>,
+    providers: &Query<(Entity, &Bounds, &StaticProvider, &GlobalTransform)>,
     commands: &mut Commands,
 ) {
-    for (provider_eid, provider_bounds, provider_kind, provider_gtran) in providers {
+    for (provider_eid, provider_bounds, provider_data, provider_gtran) in providers {
         let my_tran_n_angle = tran.tran_n_angle();
         let my_tran_n_angle = (my_tran_n_angle.0 + gtran_offset, my_tran_n_angle.1);
         let rhs_tran_n_angle = provider_gtran.tran_n_angle();
@@ -142,14 +148,14 @@ fn resolve_static_collisions(
             let new_par = old_par * (1.0 - (friction * friction_mult).min(1.0));
             new_perp + new_par
         };
-        match (provider_kind, rx) {
-            (_, StaticReceiver::Stop) => {
+        match (provider_data.kind, rx.kind) {
+            (_, StaticReceiverKind::Stop) => {
                 dyno_tran.vel = Vec2::ZERO;
             }
-            (StaticKind::Normal, StaticReceiver::Normal) => {
+            (StaticProviderKind::Normal, StaticReceiverKind::Normal) => {
                 dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 0.2, 0.03);
             }
-            (StaticKind::Sticky, StaticReceiver::Normal) => {
+            (StaticProviderKind::Sticky, StaticReceiverKind::Normal) => {
                 dyno_tran.vel = Vec2::ZERO;
                 let stuck_marker = Stuck {
                     parent: provider_eid,
@@ -179,9 +185,9 @@ fn move_unstuck_static_receiver_dynos(
             &mut Transform,
             &GlobalTransform,
         ),
-        (Without<DynoRot>, Without<StaticKind>, Without<Stuck>),
+        (Without<DynoRot>, Without<StaticProvider>, Without<Stuck>),
     >,
-    providers: Query<(Entity, &Bounds, &StaticKind, &GlobalTransform)>,
+    providers: Query<(Entity, &Bounds, &StaticProvider, &GlobalTransform)>,
     mut commands: Commands,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
@@ -191,7 +197,7 @@ fn move_unstuck_static_receiver_dynos(
     if !both_dynos.is_empty() {
         unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
     }
-    for (eid, bounds, rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
+    for (eid, bounds, rx, _trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
         let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
@@ -221,31 +227,19 @@ fn move_unstuck_static_receiver_dynos(
 
 /// Moves all dynos (both rot and tran) that receive static collisions and ARE stuck. Some may have triggers!
 fn move_stuck_static_receiver_dynos(
-    time: Res<Time>,
-    bullet_time: Res<BulletTime>,
     mut tran_only_dynos: Query<
-        (
-            Entity,
-            &Stuck,
-            Option<&TriggerKind>,
-            &mut DynoTran,
-            &mut Transform,
-            &GlobalTransform,
-        ),
+        (&Stuck, Option<&TriggerKind>, &mut DynoTran, &mut Transform),
         (
             With<Bounds>,
             With<StaticReceiver>,
             With<DynoTran>,
             Without<DynoRot>,
-            Without<StaticKind>,
+            Without<StaticProvider>,
         ),
     >,
-    providers: Query<&GlobalTransform, (With<Bounds>, With<StaticKind>)>,
-    mut commands: Commands,
+    providers: Query<&GlobalTransform, (With<Bounds>, With<StaticProvider>)>,
 ) {
-    let time_factor = time.delta_seconds() * bullet_time.factor();
-    for (eid, stuck, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
-        let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
+    for (stuck, _trigger, mut dyno_tran, mut tran) in &mut tran_only_dynos {
         let provider_gtran = providers.get(stuck.parent).unwrap();
         dyno_tran.vel = Vec2::ZERO;
         let (provider_tran, provider_angle) = provider_gtran.tran_n_angle();

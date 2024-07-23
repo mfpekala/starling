@@ -6,7 +6,7 @@ fn startup_debug(mut commands: Commands, mut config_store: ResMut<GizmoConfigSto
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 7.0;
 
-    commands.spawn(BirdBundle::new(default(), default()));
+    commands.spawn(BirdBundle::new(default(), default(), 3));
     let outer_width = 20.0;
     commands.spawn((
         Name::new("physics_debug_sticky1"),
@@ -144,7 +144,7 @@ fn draw_bounds(
     bounds_q: Query<(
         &Bounds,
         &GlobalTransform,
-        Option<&StaticKind>,
+        Option<&StaticProvider>,
         Option<&TriggerKind>,
     )>,
     mut gz: Gizmos,
@@ -154,9 +154,9 @@ fn draw_bounds(
     }
     for (bound, gtran, stat, trig) in &bounds_q {
         let (tran, angle) = gtran.tran_n_angle();
-        let color = match (stat, trig) {
-            (Some(StaticKind::Normal), _) => tailwind::STONE_700,
-            (Some(StaticKind::Sticky), _) => tailwind::PINK_600,
+        let color = match (stat.map(|provider| provider.kind), trig) {
+            (Some(StaticProviderKind::Normal), _) => tailwind::STONE_700,
+            (Some(StaticProviderKind::Sticky), _) => tailwind::PINK_600,
             (None, Some(TriggerKind::Bird)) => tailwind::GREEN_600,
             (None, Some(TriggerKind::BulletGood)) => tailwind::GREEN_400,
             (None, Some(TriggerKind::Enemy)) => tailwind::RED_600,

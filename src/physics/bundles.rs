@@ -22,7 +22,7 @@ impl BirdPhysicsBundle {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
             bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-            statics: StaticReceiver::Normal,
+            statics: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             triggers: TriggerKind::Bird,
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_BIRD),
@@ -35,14 +35,14 @@ impl BirdPhysicsBundle {
 #[derive(Bundle)]
 pub struct StickyPlainPhysicsBundle {
     bounds: Bounds,
-    statics: StaticKind,
+    statics: StaticProvider,
     spatial: SpatialBundle,
 }
 impl StickyPlainPhysicsBundle {
     pub fn new(pos: Vec2, bounds: Bounds) -> Self {
         Self {
             bounds,
-            statics: StaticKind::Sticky,
+            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_STICKY),
             )),
@@ -54,7 +54,7 @@ impl StickyPlainPhysicsBundle {
 #[derive(Bundle)]
 pub struct StickyTranPhysicsBundle {
     bounds: Bounds,
-    statics: StaticKind,
+    statics: StaticProvider,
     spatial: SpatialBundle,
     dyno_tran: DynoTran,
 }
@@ -62,7 +62,7 @@ impl StickyTranPhysicsBundle {
     pub fn new(pos: Vec2, bounds: Bounds, dyno_tran: DynoTran) -> Self {
         Self {
             bounds,
-            statics: StaticKind::Sticky,
+            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_STICKY),
             )),
@@ -75,7 +75,7 @@ impl StickyTranPhysicsBundle {
 #[derive(Bundle)]
 pub struct StickyRotPhysicsBundle {
     bounds: Bounds,
-    statics: StaticKind,
+    statics: StaticProvider,
     spatial: SpatialBundle,
     dyno_rot: DynoRot,
 }
@@ -83,7 +83,7 @@ impl StickyRotPhysicsBundle {
     pub fn new(pos: Vec2, bounds: Bounds, dyno_rot: DynoRot) -> Self {
         Self {
             bounds,
-            statics: StaticKind::Sticky,
+            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_STICKY),
             )),
