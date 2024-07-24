@@ -6,10 +6,12 @@ pub mod animation;
 pub mod bird;
 pub mod camera;
 pub mod consts;
+pub mod convo;
 pub mod input;
 pub mod math;
 pub mod menu;
 pub mod physics;
+pub mod roots;
 pub mod settings;
 pub mod state;
 
@@ -19,11 +21,13 @@ pub mod prelude {
     #[allow(unused_imports)]
     pub use super::camera::*;
     pub use super::consts::*;
+    pub use super::convo::*;
     pub use super::input::*;
     pub use super::math::*;
     #[allow(unused_imports)]
     pub use super::menu::*;
     pub use super::physics::*;
+    pub use super::roots::*;
     pub use super::settings::*;
     pub use super::state::*;
     pub use bevy::color::palettes::tailwind;
@@ -32,6 +36,7 @@ pub mod prelude {
     pub use bevy::utils::HashMap;
     pub use bevy::utils::HashSet;
     pub use serde::{Deserialize, Serialize};
+    pub use std::collections::VecDeque;
 }
 
 fn main() {
@@ -56,9 +61,11 @@ fn main() {
     app.add_plugins(animation::AnimationPlugin)
         .add_plugins(bird::BirdPlugin)
         .add_plugins(camera::CameraPlugin)
+        .add_plugins(convo::ConvoPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
         .add_plugins(physics::PhysicsPlugin)
+        .add_plugins(roots::RootPlugin)
         .add_plugins(settings::SettingsPlugin)
         .add_plugins(state::StatePlugin);
     app.run();

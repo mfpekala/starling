@@ -87,6 +87,9 @@ fn do_fire(
     mut fire: EventReader<Fire>,
     mut bird_q: Query<(&mut Bird, &GlobalTransform)>,
     mut commands: Commands,
+    meta_state: Res<State<MetaState>>,
+    room_root: Res<RoomRoot>,
+    tutorial_root: Res<TutorialRoot>,
 ) {
     let Some(fire) = fire.read().last() else {
         return;
@@ -98,10 +101,17 @@ fn do_fire(
         return;
     }
     bird.bullets_left -= 1;
-    commands.spawn((
-        Name::new("bullet"),
-        BulletPhysicsBundle::new(gtran.translation().truncate(), fire.0 * 10.0, true),
-    ));
+    let parent_eid = if meta_state.get_tutorial_state().is_some() {
+        tutorial_root.eid()
+    } else {
+        room_root.eid()
+    };
+    commands
+        .spawn((
+            Name::new("bullet"),
+            BulletPhysicsBundle::new(gtran.translation().truncate(), fire.0 * 10.0, true),
+        ))
+        .set_parent(parent_eid);
 }
 
 fn refresh_launches_n_bullets(mut bird_q: Query<(&mut Bird, &StaticReceiver)>) {

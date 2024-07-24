@@ -169,6 +169,7 @@ fn setup_post_processing(
     mut meshes: ResMut<Assets<Mesh>>,
     mut blend_materials: ResMut<Assets<BlendTexturesMaterial>>,
     mut anim_materials: ResMut<Assets<AnimationMaterial>>,
+    layering_root: Res<LayeringRoot>,
 ) {
     let quad = Mesh::from(Rectangle::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32));
     meshes.insert(BG_PP_QUAD.id(), quad.clone());
@@ -183,57 +184,64 @@ fn setup_post_processing(
 
     macro_rules! spawn_layer_mat_mesh {
         ($name:expr, $quad:expr, $mat:expr, $z:expr) => {{
-            commands.spawn((
-                Name::new($name),
-                MaterialMesh2dBundle {
-                    mesh: $quad.clone().into(),
-                    material: $mat,
-                    transform: Transform::from_translation(Vec3::Z * $z),
-                    ..default()
-                },
-                combined_layer.clone(),
-            ));
+            commands
+                .spawn((
+                    Name::new($name),
+                    MaterialMesh2dBundle {
+                        mesh: $quad.clone().into(),
+                        material: $mat,
+                        transform: Transform::from_translation(Vec3::Z * $z),
+                        ..default()
+                    },
+                    combined_layer.clone(),
+                ))
+                .set_parent(layering_root.eid());
         }};
     }
     spawn_layer_mat_mesh!("bg_pp_layer", BG_PP_QUAD, BG_PP_MATERIAL, 1.0);
     spawn_layer_mat_mesh!("pp_layer", PP_QUAD, PP_MATERIAL, 2.0);
     spawn_layer_mat_mesh!("menu_layer", MENU_QUAD, MENU_MATERIAL, 3.0);
 
-    commands.spawn((
-        Name::new("post_processing_camera"),
-        Camera2dBundle {
-            camera: Camera {
-                order: 6,
+    commands
+        .spawn((
+            Name::new("post_processing_camera"),
+            Camera2dBundle {
+                camera: Camera {
+                    order: 6,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },
-        InheritedVisibility::VISIBLE,
-        combined_layer,
-    ));
+            InheritedVisibility::VISIBLE,
+            combined_layer,
+        ))
+        .set_parent(layering_root.eid());
 }
 
 fn setup_layers(
     mut commands: Commands,
     camera_targets: Res<CameraTargets>,
     layering_settings: Res<LayeringSettings>,
+    layering_root: Res<LayeringRoot>,
 ) {
     macro_rules! spawn_layer_camera {
         ($comp:ty, $name:expr, $order:expr, $image:expr, $clear_color:expr) => {{
-            commands.spawn((
-                Name::new($name),
-                Camera2dBundle {
-                    camera: Camera {
-                        order: $order,
-                        target: RenderTarget::Image($image),
-                        clear_color: $clear_color,
-                        ..default()
+            commands
+                .spawn((
+                    Name::new($name),
+                    Camera2dBundle {
+                        camera: Camera {
+                            order: $order,
+                            target: RenderTarget::Image($image),
+                            clear_color: $clear_color,
+                            ..default()
+                        },
+                        ..Default::default()
                     },
-                    ..Default::default()
-                },
-                <$comp>::default(),
-                <$comp>::render_layers(),
-            ));
+                    <$comp>::default(),
+                    <$comp>::render_layers(),
+                ))
+                .set_parent(layering_root.eid());
         }};
     }
     spawn_layer_camera!(
@@ -279,6 +287,11 @@ impl Plugin for LayeringPlugin {
         app.insert_resource(LayeringSettings::default());
         app.insert_resource(CameraTargets::default());
 
-        app.add_systems(Startup, (setup_post_processing, setup_layers).chain());
+        app.add_systems(
+            Startup,
+            (setup_post_processing, setup_layers)
+                .chain()
+                .after(RootInit),
+        );
     }
 }

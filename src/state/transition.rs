@@ -44,51 +44,58 @@ impl ComputedStates for InMetaTransition {
 }
 
 #[derive(Component)]
-struct TransitionRoot {
+struct TransitionData {
     kind: TransitionKind,
     switch_timer: Option<Timer>,
     full_timer: Timer,
     next_state: MetaState,
 }
 #[derive(Bundle)]
-struct TransitionRootBundle {
+struct TransitionDataBundle {
     name: Name,
-    root: TransitionRoot,
-    spatial: SpatialBundle,
+    root: TransitionData,
 }
-impl TransitionRootBundle {
+impl TransitionDataBundle {
     fn new(kind: TransitionKind, next_state: MetaState, duration: Duration) -> Self {
         Self {
             name: Name::new("transition_root"),
-            root: TransitionRoot {
+            root: TransitionData {
                 kind,
                 switch_timer: Some(Timer::new(duration.div_f32(2.0), TimerMode::Once)),
                 full_timer: Timer::new(duration, TimerMode::Once),
                 next_state,
             },
-            spatial: SpatialBundle::default(),
         }
     }
 }
 
 #[derive(Component)]
 struct FadeToBlackSprite;
-impl TransitionKind {
-    fn spawn(&self, parent: &mut ChildBuilder) {
-        match self {
-            Self::FadeToBlack => {
-                parent.spawn((
-                    Name::new("black_box"),
-                    FadeToBlackSprite,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: Color::srgba(0.0, 0.0, 0.0, 0.0),
-                            custom_size: Some(WINDOW_VEC_f32),
+
+impl Transition {
+    fn do_spawn(&self, next_state: MetaState, commands: &mut Commands, parent: Entity) {
+        // First spawn the data, common no matter the transition kind
+        let data = TransitionDataBundle::new(self.kind, next_state, self.duration);
+        commands.spawn(data).set_parent(parent);
+
+        // Then match the kind to spawn the specific objects we need for this transition
+        match self.kind {
+            TransitionKind::FadeToBlack => {
+                commands
+                    .spawn((
+                        Name::new("black_box"),
+                        FadeToBlackSprite,
+                        SpriteBundle {
+                            sprite: Sprite {
+                                color: Color::srgba(0.0, 0.0, 0.0, 0.0),
+                                custom_size: Some(WINDOW_VEC_f32),
+                                ..default()
+                            },
                             ..default()
                         },
-                        ..default()
-                    },
-                ));
+                        MenuCamera::render_layers(),
+                    ))
+                    .set_parent(parent);
             }
         }
     }
@@ -97,6 +104,7 @@ impl TransitionKind {
 fn setup_transition(
     meta_transition_state: Res<State<MetaTransitionState>>,
     mut commands: Commands,
+    transition_root: Res<TransitionRoot>,
 ) {
     let MetaTransitionState::Volatile {
         transition,
@@ -105,14 +113,11 @@ fn setup_transition(
     else {
         return;
     };
-    let root = TransitionRootBundle::new(transition.kind, next_state.clone(), transition.duration);
-    commands.spawn(root).with_children(|parent| {
-        transition.kind.spawn(parent);
-    });
+    transition.do_spawn(next_state.clone(), &mut commands, transition_root.eid());
 }
 
 fn update_transition(
-    mut root_q: Query<&mut TransitionRoot>,
+    mut root_q: Query<&mut TransitionData>,
     time: Res<Time>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
@@ -145,7 +150,7 @@ fn update_transition(
     }
 }
 
-fn destroy_transition(roots: Query<Entity, With<TransitionRoot>>, mut commands: Commands) {
+fn destroy_transition(roots: Query<Entity, With<TransitionData>>, mut commands: Commands) {
     for root in &roots {
         commands.entity(root).despawn_recursive();
     }

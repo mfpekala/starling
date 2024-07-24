@@ -120,15 +120,14 @@ pub enum PhysicsState {
 }
 
 impl ComputedStates for PhysicsState {
-    type SourceStates = (MetaState, PauseState);
+    type SourceStates = (MetaState, PauseState, ConvoState);
 
-    fn compute(sources: (MetaState, PauseState)) -> Option<Self> {
+    fn compute(sources: (MetaState, PauseState, ConvoState)) -> Option<Self> {
         // Here we convert from our [`AppState`] to all potential [`IsPaused`] versions.
         match sources {
-            (MetaState::Menu(_), _) | (MetaState::Cutscene(_), _) => Some(Self::Inactive),
-            (_, PauseState::Paused) => Some(Self::Inactive),
-            (MetaState::Tutorial(_), PauseState::Unpaused) => Some(Self::Active),
-            (MetaState::Room(_), PauseState::Unpaused) => Some(Self::Active),
+            (MetaState::Tutorial(_), PauseState::Unpaused, ConvoState::None) => Some(Self::Active),
+            (MetaState::Room(_), PauseState::Unpaused, ConvoState::None) => Some(Self::Active),
+            _ => Some(Self::Inactive),
         }
     }
 }
