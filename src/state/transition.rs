@@ -88,7 +88,7 @@ impl Transition {
                         SpriteBundle {
                             sprite: Sprite {
                                 color: Color::srgba(0.0, 0.0, 0.0, 0.0),
-                                custom_size: Some(WINDOW_VEC_f32),
+                                custom_size: Some(IDEAL_VEC_f32),
                                 ..default()
                             },
                             ..default()
