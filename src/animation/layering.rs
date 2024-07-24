@@ -77,14 +77,14 @@ pub(super) struct CameraTargets {
 }
 impl CameraTargets {
     pub fn create(images: &mut Assets<Image>) -> Self {
-        let target_extent = Extent3d {
-            width: WINDOW_WIDTH,
-            height: WINDOW_HEIGHT,
-            ..default()
-        };
-
         macro_rules! make_layer_image {
-            ($label:expr, $unique_u128:expr) => {{
+            ($label:expr, $unique_u128:expr, $size:expr) => {{
+                let target_extent = Extent3d {
+                    width: $size.x,
+                    height: $size.y,
+                    ..default()
+                };
+
                 // Makes the image
                 let mut image = Image {
                     texture_descriptor: TextureDescriptor {
@@ -109,11 +109,13 @@ impl CameraTargets {
             }};
         }
 
-        let bg_light_handle = make_layer_image!("target_bg_light", 84562364042238462870);
-        let bg_sprite_handle = make_layer_image!("target_bg_sprite", 81297563682952991276);
-        let light_handle = make_layer_image!("target_light", 84562364042238462871);
-        let sprite_handle = make_layer_image!("target_sprite", 81297563682952991277);
-        let menu_handle = make_layer_image!("target_menu", 51267563632952991278);
+        let bg_light_handle =
+            make_layer_image!("target_bg_light", 84562364042238462870, WINDOW_VEC);
+        let bg_sprite_handle =
+            make_layer_image!("target_bg_sprite", 81297563682952991276, WINDOW_VEC);
+        let light_handle = make_layer_image!("target_light", 84562364042238462871, WINDOW_VEC);
+        let sprite_handle = make_layer_image!("target_sprite", 81297563682952991277, WINDOW_VEC);
+        let menu_handle = make_layer_image!("target_menu", 51267563632952991278, WINDOW_VEC);
 
         Self {
             bg_light_target: bg_light_handle,
@@ -171,10 +173,10 @@ fn setup_post_processing(
     mut anim_materials: ResMut<Assets<AnimationMaterial>>,
     layering_root: Res<LayeringRoot>,
 ) {
-    let quad = Mesh::from(Rectangle::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32));
-    meshes.insert(BG_PP_QUAD.id(), quad.clone());
-    meshes.insert(PP_QUAD.id(), quad.clone());
-    meshes.insert(MENU_QUAD.id(), quad.clone());
+    let ideal_quad = Mesh::from(Rectangle::new(IDEAL_WIDTH_f32, IDEAL_HEIGHT_f32));
+    meshes.insert(BG_PP_QUAD.id(), ideal_quad.clone());
+    meshes.insert(PP_QUAD.id(), ideal_quad.clone());
+    meshes.insert(MENU_QUAD.id(), ideal_quad.clone());
 
     *camera_targets = CameraTargets::create(&mut images);
 
@@ -190,7 +192,11 @@ fn setup_post_processing(
                     MaterialMesh2dBundle {
                         mesh: $quad.clone().into(),
                         material: $mat,
-                        transform: Transform::from_translation(Vec3::Z * $z),
+                        transform: Transform {
+                            translation: Vec3::Z * $z,
+                            scale: Vec3::new(IDEAL_GROWTH_f32, IDEAL_GROWTH_f32, 1.0),
+                            ..default()
+                        },
                         ..default()
                     },
                     combined_layer.clone(),
@@ -234,6 +240,12 @@ fn setup_layers(
                             order: $order,
                             target: RenderTarget::Image($image),
                             clear_color: $clear_color,
+                            ..default()
+                        },
+                        projection: OrthographicProjection {
+                            scale: 1.0 / IDEAL_GROWTH_f32,
+                            near: ZIX_MIN,
+                            far: ZIX_MAX,
                             ..default()
                         },
                         ..Default::default()

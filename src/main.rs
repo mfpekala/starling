@@ -1,6 +1,5 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use consts::WINDOW_HEIGHT_f32;
 
 pub mod animation;
 pub mod bird;
@@ -15,6 +14,8 @@ pub mod physics;
 pub mod roots;
 pub mod settings;
 pub mod state;
+
+use consts::*;
 
 pub mod prelude {
     pub use super::animation::*;
@@ -49,7 +50,7 @@ fn main() {
                 primary_window: Some(Window {
                     resizable: false,
                     title: "Starling".to_string(),
-                    resolution: WindowResolution::new(consts::WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32),
+                    resolution: WindowResolution::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32),
                     ..default()
                 }),
                 ..default()

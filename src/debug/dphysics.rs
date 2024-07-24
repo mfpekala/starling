@@ -20,28 +20,20 @@ impl ComputedStates for ShowPhysicsBounds {
     }
 }
 
-fn startup_debug(
-    mut commands: Commands,
-    mut config_store: ResMut<GizmoConfigStore>,
-    room_root: Res<RoomRoot>,
-) {
-    let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
-    config.line_width = 7.0;
-    config.render_layers = SpriteCamera::render_layers();
-
+fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands.spawn(BirdBundle::new(default(), default(), 3, 3));
-    let outer_width = 20.0;
+    let outer_width = 4.0;
     commands
         .spawn((
             Name::new("physics_debug_sticky1"),
             StickyPlainPhysicsBundle::new(
-                Vec2::new(0.0, WINDOW_HEIGHT_f32 - outer_width) / 2.0,
+                Vec2::new(0.0, IDEAL_HEIGHT_f32 - outer_width) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
-                        Vec2::new(-WINDOW_WIDTH_f32, -outer_width) / 2.0,
-                        Vec2::new(-WINDOW_WIDTH_f32, outer_width) / 2.0,
-                        Vec2::new(WINDOW_WIDTH_f32, outer_width) / 2.0,
-                        Vec2::new(WINDOW_WIDTH_f32, -outer_width) / 2.0,
+                        Vec2::new(-IDEAL_WIDTH_f32, -outer_width) / 2.0,
+                        Vec2::new(-IDEAL_WIDTH_f32, outer_width) / 2.0,
+                        Vec2::new(IDEAL_WIDTH_f32, outer_width) / 2.0,
+                        Vec2::new(IDEAL_WIDTH_f32, -outer_width) / 2.0,
                     ],
                 }),
             ),
@@ -51,13 +43,13 @@ fn startup_debug(
         .spawn((
             Name::new("physics_debug_sticky2"),
             StickyPlainPhysicsBundle::new(
-                Vec2::new(0.0, -WINDOW_HEIGHT_f32 + outer_width) / 2.0,
+                Vec2::new(0.0, -IDEAL_HEIGHT_f32 + outer_width) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
-                        Vec2::new(-WINDOW_WIDTH_f32, -outer_width) / 2.0,
-                        Vec2::new(-WINDOW_WIDTH_f32, outer_width) / 2.0,
-                        Vec2::new(WINDOW_WIDTH_f32, outer_width) / 2.0,
-                        Vec2::new(WINDOW_WIDTH_f32, -outer_width) / 2.0,
+                        Vec2::new(-IDEAL_WIDTH_f32, -outer_width) / 2.0,
+                        Vec2::new(-IDEAL_WIDTH_f32, outer_width) / 2.0,
+                        Vec2::new(IDEAL_WIDTH_f32, outer_width) / 2.0,
+                        Vec2::new(IDEAL_WIDTH_f32, -outer_width) / 2.0,
                     ],
                 }),
             ),
@@ -67,13 +59,13 @@ fn startup_debug(
         .spawn((
             Name::new("physics_debug_sticky3"),
             StickyPlainPhysicsBundle::new(
-                Vec2::new(-WINDOW_WIDTH_f32 + outer_width, 0.0) / 2.0,
+                Vec2::new(-IDEAL_WIDTH_f32 + outer_width, 0.0) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
-                        Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                        Vec2::new(-outer_width, -IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(-outer_width, IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(outer_width, IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(outer_width, -IDEAL_HEIGHT_f32) / 2.0,
                     ],
                 }),
             ),
@@ -83,13 +75,13 @@ fn startup_debug(
         .spawn((
             Name::new("physics_debug_sticky4"),
             StickyPlainPhysicsBundle::new(
-                Vec2::new(WINDOW_WIDTH_f32 - outer_width, 0.0) / 2.0,
+                Vec2::new(IDEAL_WIDTH_f32 - outer_width, 0.0) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
-                        Vec2::new(-outer_width, -WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(-outer_width, WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(outer_width, WINDOW_HEIGHT_f32) / 2.0,
-                        Vec2::new(outer_width, -WINDOW_HEIGHT_f32) / 2.0,
+                        Vec2::new(-outer_width, -IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(-outer_width, IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(outer_width, IDEAL_HEIGHT_f32) / 2.0,
+                        Vec2::new(outer_width, -IDEAL_HEIGHT_f32) / 2.0,
                     ],
                 }),
             ),
@@ -99,8 +91,8 @@ fn startup_debug(
         .spawn((
             Name::new("physics_debug_sticky5"),
             StickyPlainPhysicsBundle::new(
-                Vec2::new(-300.0 * 4.0, -WINDOW_HEIGHT_f32) / 4.0,
-                Bounds::from_shape(Shape::Circle { radius: 100.0 }),
+                Vec2::new(-300.0 * 4.0, -IDEAL_HEIGHT_f32) / 4.0,
+                Bounds::from_shape(Shape::Circle { radius: 10.0 }),
             ),
         ))
         .set_parent(room_root.eid());
@@ -108,8 +100,8 @@ fn startup_debug(
         .spawn((
             Name::new("physics_debug_sticky6"),
             StickyRotPhysicsBundle::new(
-                Vec2::new(0.0, -WINDOW_HEIGHT_f32) / 4.0,
-                Bounds::from_shape(Shape::Circle { radius: 100.0 }),
+                Vec2::new(0.0, -IDEAL_HEIGHT_f32) / 4.0,
+                Bounds::from_shape(Shape::Circle { radius: 10.0 }),
                 DynoRot { rot: 6.0 },
             ),
         ))
@@ -143,13 +135,14 @@ fn startup_debug(
 
     commands
         .spawn((
-            Name::new("physics_debug_sticky_tran"),
-            StickyTranPhysicsBundle::new(
+            Name::new("physics_debug_sticky_both"),
+            StickyBothPhysicsBundle::new(
                 Vec2::new(-100.0, 0.0),
                 Bounds::from_shape(Shape::Circle { radius: 15.0 }),
                 DynoTran {
-                    vel: Vec2::ONE * 2.0,
+                    vel: Vec2::ONE * 4.0,
                 },
+                DynoRot { rot: 2.0 },
             ),
         ))
         .set_parent(room_root.eid());
@@ -179,7 +172,7 @@ impl Bounds {
             }
         }
         // Then draw a line to show rotation (useful for circles)
-        let diff = Vec2::X.my_rotate(rot) * 10.0;
+        let diff = Vec2::X.my_rotate(rot) * 4.0;
         gz.line_2d(pos, pos + diff, color);
     }
 }

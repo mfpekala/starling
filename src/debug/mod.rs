@@ -5,7 +5,7 @@ use crate::prelude::*;
 
 mod commands;
 mod fps;
-mod physics;
+mod dphysics;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
 struct DebugState {
@@ -35,14 +35,22 @@ fn update_debug_state(
     }
 }
 
+fn set_gizmo_config(mut config_store: ResMut<GizmoConfigStore>) {
+    let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.line_width = 2.0;
+    config.render_layers = SpriteCamera::render_layers();
+}
+
 pub(super) struct DebugPlugin;
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(FrameTimeDiagnosticsPlugin);
         app.insert_state(DebugState::default());
+        app.add_systems(Startup, set_gizmo_config);
+
         commands::register_commands_debug(app);
         fps::register_fps_debug(app);
-        physics::register_physics_debug(app);
+        dphysics::register_physics_debug(app);
 
         // Debug
         app.insert_resource(DebugInteractive(DebugState::default()));

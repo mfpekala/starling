@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub const IDEAL_WIDTH: u32 = 320;
-pub const IDEAL_HEIGHT: u32 = 320;
+pub const IDEAL_HEIGHT: u32 = 180;
 pub const IDEAL_VEC: UVec2 = UVec2::new(IDEAL_WIDTH, IDEAL_HEIGHT);
 
 #[allow(nonstandard_style)]
@@ -17,8 +17,8 @@ pub const IDEAL_GROWTH: u32 = 4;
 #[allow(nonstandard_style)]
 pub const IDEAL_GROWTH_f32: f32 = 4.0;
 
-pub const WINDOW_WIDTH: u32 = 320 * IDEAL_GROWTH;
-pub const WINDOW_HEIGHT: u32 = 180 * IDEAL_GROWTH;
+pub const WINDOW_WIDTH: u32 = IDEAL_WIDTH * IDEAL_GROWTH;
+pub const WINDOW_HEIGHT: u32 = IDEAL_HEIGHT * IDEAL_GROWTH;
 pub const WINDOW_VEC: UVec2 = UVec2::new(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 #[allow(nonstandard_style)]
@@ -35,5 +35,7 @@ pub const ZIX_MENU: f32 = 300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
 pub const ZIX_STICKY: f32 = 3.0;
 pub const ZIX_TRANSITION: f32 = 500.0;
+pub const ZIX_MIN: f32 = -600.0; // Anything further back than this gets culled by the camera
+pub const ZIX_MAX: f32 = 600.0; // Anything further forward than this gets culled by the camera
 
 pub const DEFAULT_ANIMATION_FPS: f32 = 24.0;

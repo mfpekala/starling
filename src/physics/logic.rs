@@ -113,7 +113,6 @@ fn move_static_kind_dynos(
         }
         apply_rotation(dyno_rot, &mut tran);
         apply_translation(dyno_tran, &mut tran);
-        unimplemented!("Having both a rotation and a translation on a static is not yet supported");
     }
     for (triggers, dyno_tran, mut tran) in &mut tran_only_dynos {
         if triggers.is_some() {

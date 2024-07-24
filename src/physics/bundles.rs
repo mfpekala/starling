@@ -21,7 +21,7 @@ impl BirdPhysicsBundle {
         Self {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
-            bounds: Bounds::from_shape(Shape::Circle { radius: 25.0 }),
+            bounds: Bounds::from_shape(Shape::Circle { radius: 5.0 }),
             statics: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             triggers: TriggerKind::Bird,
             spatial: SpatialBundle::from_transform(Transform::from_translation(
@@ -92,6 +92,29 @@ impl StickyRotPhysicsBundle {
     }
 }
 
+/// Sticky physics objects that are both translating and rotating
+#[derive(Bundle)]
+pub struct StickyBothPhysicsBundle {
+    bounds: Bounds,
+    statics: StaticProvider,
+    spatial: SpatialBundle,
+    dyno_tran: DynoTran,
+    dyno_rot: DynoRot,
+}
+impl StickyBothPhysicsBundle {
+    pub fn new(pos: Vec2, bounds: Bounds, dyno_tran: DynoTran, dyno_rot: DynoRot) -> Self {
+        Self {
+            bounds,
+            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
+            spatial: SpatialBundle::from_transform(Transform::from_translation(
+                pos.extend(ZIX_STICKY),
+            )),
+            dyno_tran,
+            dyno_rot,
+        }
+    }
+}
+
 /// Bullet physics
 #[derive(Bundle)]
 pub struct BulletPhysicsBundle {
@@ -107,7 +130,7 @@ impl BulletPhysicsBundle {
         Self {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
-            bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+            bounds: Bounds::from_shape(Shape::Circle { radius: 2.0 }),
             statics: StaticReceiver::from_kind(StaticReceiverKind::Stop),
             triggers: if good {
                 TriggerKind::BulletGood

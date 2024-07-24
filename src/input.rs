@@ -63,7 +63,7 @@ fn update_mouse_state(
     let world_pos = Vec2::new(
         mouse_pos.x - WINDOW_WIDTH_f32 / 2.0,
         -mouse_pos.y + WINDOW_HEIGHT_f32 / 2.0,
-    );
+    ) / IDEAL_GROWTH_f32;
     let left_drag_start = if buttons.just_pressed(MouseButton::Left) {
         Some(world_pos)
     } else {

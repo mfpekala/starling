@@ -9,7 +9,7 @@ pub enum Gravity {
 impl Gravity {
     pub fn strength(&self) -> f32 {
         match self {
-            Self::Normal => 800.0,
+            Self::Normal => 400.0,
         }
     }
 }
