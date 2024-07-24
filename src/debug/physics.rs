@@ -1,5 +1,25 @@
 use crate::prelude::*;
 
+use super::DebugState;
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
+struct ShowPhysicsBounds;
+impl ComputedStates for ShowPhysicsBounds {
+    type SourceStates = (AppMode, DebugState);
+
+    fn compute(sources: Self::SourceStates) -> Option<Self> {
+        let (app_mode, debug_state) = sources;
+        if matches!(app_mode, AppMode::Prod) {
+            return None;
+        }
+        if debug_state.show_physics_bounds {
+            Some(Self)
+        } else {
+            None
+        }
+    }
+}
+
 fn startup_debug(
     mut commands: Commands,
     mut config_store: ResMut<GizmoConfigStore>,
@@ -165,7 +185,6 @@ impl Bounds {
 }
 
 fn draw_bounds(
-    settings: Res<Settings>,
     bounds_q: Query<(
         &Bounds,
         &GlobalTransform,
@@ -175,9 +194,6 @@ fn draw_bounds(
     mouse_state: Res<MouseState>,
     mut gz: Gizmos,
 ) {
-    if !settings.show_physics_bounds {
-        return;
-    }
     for (bound, gtran, stat, trig) in &bounds_q {
         let (tran, angle) = gtran.tran_n_angle();
         let color = match (stat.map(|provider| provider.kind), trig) {
@@ -203,10 +219,8 @@ fn draw_bounds(
     }
 }
 
-pub(super) fn register_debug(app: &mut App) {
-    app.add_systems(
-        Startup,
-        startup_debug.run_if(in_state(AppMode::Dev)).after(RootInit),
-    );
-    app.add_systems(Update, draw_bounds.run_if(in_state(AppMode::Dev)));
+pub(super) fn register_physics_debug(app: &mut App) {
+    app.add_computed_state::<ShowPhysicsBounds>();
+    app.add_systems(OnEnter(ShowPhysicsBounds), startup_debug);
+    app.add_systems(Update, draw_bounds.run_if(in_state(ShowPhysicsBounds)));
 }

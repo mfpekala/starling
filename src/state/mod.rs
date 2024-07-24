@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
 pub mod transition;
 pub use transition::*;
@@ -151,8 +150,5 @@ impl Plugin for StatePlugin {
         app.add_computed_state::<PhysicsState>();
         // Transitions
         transition::register_transition(app);
-        // Debug
-        app.add_plugins(ResourceInspectorPlugin::<State<MetaState>>::new());
-        app.add_plugins(ResourceInspectorPlugin::<State<PauseState>>::new());
     }
 }

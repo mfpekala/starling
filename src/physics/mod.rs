@@ -2,7 +2,6 @@ use crate::prelude::*;
 
 pub mod bounds;
 pub mod bundles;
-mod debug;
 pub mod dyno;
 mod logic;
 pub mod statics;
@@ -49,8 +48,5 @@ impl Plugin for PhysicsPlugin {
 
         // Logic
         logic::register_logic(app);
-
-        // Debug
-        debug::register_debug(app);
     }
 }

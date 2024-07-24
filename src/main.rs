@@ -7,6 +7,7 @@ pub mod bird;
 pub mod camera;
 pub mod consts;
 pub mod convo;
+pub mod debug;
 pub mod input;
 pub mod math;
 pub mod menu;
@@ -62,6 +63,7 @@ fn main() {
         .add_plugins(bird::BirdPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(convo::ConvoPlugin)
+        .add_plugins(debug::DebugPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
         .add_plugins(physics::PhysicsPlugin)
