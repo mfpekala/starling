@@ -33,7 +33,7 @@ pub struct AnimationMaterial {
     #[uniform(11)]
     pub b: f32,
     #[uniform(12)]
-    pub rot: f32,
+    pub a: f32,
 }
 impl AnimationMaterial {
     pub fn from_handle(
@@ -53,7 +53,7 @@ impl AnimationMaterial {
             r: color.to_srgba().red,
             g: color.to_srgba().blue,
             b: color.to_srgba().green,
-            rot: 0.0,
+            a: color.to_srgba().alpha,
         }
     }
 }

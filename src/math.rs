@@ -126,3 +126,8 @@ pub fn uvec2_bound(points: &[Vec2]) -> UVec2 {
         y: (maxs.y - mins.y).ceil() as u32,
     }
 }
+
+/// God i write this so much
+pub fn spat_tran(x: f32, y: f32, z: f32) -> SpatialBundle {
+    SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, y, z)))
+}

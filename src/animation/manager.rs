@@ -112,17 +112,22 @@ macro_rules! impl_animation_manager_field {
                 self.$field.clone()
             }
 
-            pub fn [<set_ $field>](&mut self, val: $type, commands: &mut Commands) {
+            pub fn [<set_ $field>](&mut self, val: impl Into<$type>, commands: &mut Commands) {
+                let val = val.into();
                 if val == self.$field {
                     // Do nothing. Use reset to force `is_changed`.
                 }
                 self.$field = val;
-                commands.entity(self.body_eid).insert(AnimationChanged);
+                if let Some(mut commands) = commands.get_entity(self.body_eid) {
+                    commands.remove::<AnimationStable>();
+                }
             }
 
-            pub fn [<reset_ $field>](&mut self, val: $type, commands: &mut Commands) {
-                self.$field = val;
-                commands.entity(self.body_eid).insert(AnimationChanged);
+            pub fn [<reset_ $field>](&mut self, val: impl Into<$type>, commands: &mut Commands) {
+                self.$field = val.into();
+                if let Some(mut commands) = commands.get_entity(self.body_eid) {
+                    commands.remove::<AnimationStable>();
+                }
             }
 
             pub fn [<with_ $field>](mut self, val: $type) -> Self {
@@ -302,7 +307,7 @@ impl MultiAnimationManager {
         self.map.values().next().unwrap()
     }
 
-    pub fn single_mut(&mut self) -> &AnimationManager {
+    pub fn single_mut(&mut self) -> &mut AnimationManager {
         // NOTE: This doesn't actually check if there are multiple, slightly different from bevy convention
         self.map.values_mut().next().unwrap()
     }
@@ -344,9 +349,9 @@ struct AnimationData {
 #[derive(Component)]
 struct AnimationStatic;
 
-/// Marks an animation as having some change that requires updating the mesh/mat/whatever
+/// Marks an animation as being stable and not having a change that requires updating the mesh/mat/whatever
 #[derive(Component, Default)]
-struct AnimationChanged;
+struct AnimationStable;
 
 #[derive(Bundle, Default)]
 struct AnimationBundle {
@@ -359,16 +364,25 @@ struct AnimationBundle {
     mesh: Mesh2dHandle,
     material: Handle<AnimationMaterial>,
     spatial: SpatialBundle,
-    changed: AnimationChanged,
 }
 
 /// Looks for AnimationManagers that don't have AnimationBody and spawns them
 fn stabilize_multi_animations(
     mut commands: Commands,
-    mut multis: Query<(Entity, &mut MultiAnimationManager), Without<MultiAnimationStable>>,
+    mut multis: Query<
+        (Entity, &mut MultiAnimationManager, Option<&Children>),
+        Without<MultiAnimationStable>,
+    >,
+    bodies: Query<Entity, With<AnimationBodyMarker>>,
 ) {
-    for (eid, mut multi) in multis.iter_mut() {
-        commands.entity(eid).despawn_descendants();
+    for (eid, mut multi, children) in multis.iter_mut() {
+        if let Some(children) = children {
+            for child in children.iter() {
+                if bodies.contains(*child) {
+                    commands.entity(*child).despawn_recursive();
+                }
+            }
+        }
         let mut fresh_eid_map = HashMap::new();
         for key in multi.map.keys() {
             let mut fresh_eid = Entity::PLACEHOLDER;
@@ -409,7 +423,7 @@ fn update_animation_bodies(
             &Mesh2dHandle,
             &Handle<AnimationMaterial>,
         ),
-        With<AnimationChanged>,
+        Without<AnimationStable>,
     >,
     asset_server: Res<AssetServer>,
     mut mats: ResMut<Assets<AnimationMaterial>>,
@@ -494,8 +508,8 @@ fn update_animation_bodies(
         mats.remove(old_mat_handle.id());
         meshes.remove(old_mesh_handle.id());
 
-        // Finally remove our changed marker
-        commands.entity(eid).remove::<AnimationChanged>();
+        // Finally mark this animation as stable
+        commands.entity(eid).remove::<AnimationStable>();
     }
 }
 

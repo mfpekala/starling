@@ -22,6 +22,8 @@ var<uniform> r: f32;
 var<uniform> g: f32;
 @group(2) @binding(11)
 var<uniform> b: f32;
+@group(2) @binding(12)
+var<uniform> a: f32;
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
@@ -33,5 +35,5 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let out_uv = vec2<f32>(index_lower + (index_upper - index_lower) * input_x, input_y);
     let out_rgba = textureSample(texture, splr, out_uv);
 
-    return vec4<f32>(out_rgba[0] * r, out_rgba[1] * g, out_rgba[2] * b, out_rgba[3]);
+    return vec4<f32>(out_rgba[0] * r, out_rgba[1] * g, out_rgba[2] * b, out_rgba[3] * a);
 }

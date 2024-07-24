@@ -4,8 +4,8 @@ use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use crate::prelude::*;
 
 mod commands;
-mod fps;
 mod dphysics;
+mod fps;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
 struct DebugState {
@@ -37,7 +37,7 @@ fn update_debug_state(
 
 fn set_gizmo_config(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
-    config.line_width = 2.0;
+    config.line_width = 4.0;
     config.render_layers = SpriteCamera::render_layers();
 }
 
