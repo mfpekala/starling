@@ -87,3 +87,42 @@ impl MyAngleSetter for Transform {
         self.rotation = Quat::from_rotation_z(angle)
     }
 }
+
+/// Helpful function to generate the points of a rectangle, centered at zero, with our clockwise convention
+pub fn simple_rect(width: f32, height: f32) -> Vec<Vec2> {
+    vec![
+        Vec2::new(-width / 2.0, -height / 2.0),
+        Vec2::new(width / 2.0, -height / 2.0),
+        Vec2::new(width / 2.0, height / 2.0),
+        Vec2::new(-width / 2.0, height / 2.0),
+    ]
+}
+
+/// Given a list of points, return points that retain the same shape, but produce an outline
+pub fn outline_points(points: &[Vec2], width: f32) -> Vec<Vec2> {
+    let mut new_points = vec![];
+    for (ix, point) in points.iter().enumerate() {
+        let point_before = points[if ix == 0 { points.len() - 1 } else { ix - 1 }];
+        let point_after = points[if ix == points.len() - 1 { 0 } else { ix + 1 }];
+        let slope_before = (*point - point_before).normalize_or_zero();
+        let slope_after = (point_after - *point).normalize_or_zero();
+        let tang = (slope_before + slope_after).normalize_or_zero();
+        let perp = Vec2::new(-tang.y, tang.x);
+        new_points.push(*point + perp * width);
+    }
+    new_points
+}
+
+/// Returns the smallest UVec 2 such that an aabb of that size could cover points
+pub fn uvec2_bound(points: &[Vec2]) -> UVec2 {
+    let mut mins = Vec2::new(f32::MAX, f32::MAX);
+    let mut maxs = Vec2::new(f32::MIN, f32::MIN);
+    for vec in points {
+        mins = mins.min(*vec);
+        maxs = maxs.max(*vec);
+    }
+    UVec2 {
+        x: (maxs.x - mins.x).ceil() as u32,
+        y: (maxs.y - mins.y).ceil() as u32,
+    }
+}

@@ -15,3 +15,5 @@ pub const WINDOW_VEC_f32: Vec2 = Vec2::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32);
 pub const ZIX_BIRD: f32 = 5.0;
 pub const ZIX_BULLET: f32 = 4.0;
 pub const ZIX_STICKY: f32 = 3.0;
+
+pub const DEFAULT_ANIMATION_FPS: f32 = 24.0;

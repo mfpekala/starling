@@ -28,6 +28,7 @@ pub mod prelude {
     pub use super::state::*;
     pub use bevy::color::palettes::tailwind;
     pub use bevy::prelude::*;
+    pub use bevy::render::view::RenderLayers;
     pub use bevy::utils::HashMap;
     pub use bevy::utils::HashSet;
     pub use serde::{Deserialize, Serialize};

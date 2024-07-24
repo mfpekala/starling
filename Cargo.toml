@@ -9,6 +9,7 @@ bevy-inspector-egui = "0.25"
 paste = "1.0.15"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.113"
+earcutr = "0.4.3"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

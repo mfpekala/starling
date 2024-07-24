@@ -22,6 +22,7 @@ pub struct BirdBundle {
     name: Name,
     bird: Bird,
     physics: BirdPhysicsBundle,
+    multi: MultiAnimationManager,
 }
 impl BirdBundle {
     pub fn new(pos: Vec2, vel: Vec2, launches_left: u32, bullets_left: u32) -> Self {
@@ -32,6 +33,13 @@ impl BirdBundle {
                 bullets_left,
             },
             physics: BirdPhysicsBundle::new(pos, vel),
+            multi: MultiAnimationManager::well_lit(
+                AnimationManager::single_repeating(
+                    SpriteInfo::new("demo/replenish_explode.png", 12, 12),
+                    6,
+                )
+                .with_scale(Vec2::new(5.0, 5.0)),
+            ),
         }
     }
 }

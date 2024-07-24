@@ -14,8 +14,12 @@ pub use mesh::*;
 pub(super) struct AnimationPlugin;
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
+        // More plugins
         app.add_plugins(Material2dPlugin::<AnimationMaterial>::default());
         app.add_plugins(Material2dPlugin::<BlendTexturesMaterial>::default());
         app.add_plugins(layering::LayeringPlugin);
+
+        // Manager logic
+        manager::register_manager(app);
     }
 }
