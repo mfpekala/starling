@@ -14,26 +14,13 @@ pub struct AnimationMaterial {
     #[texture(1)]
     #[sampler(2)]
     pub texture: Handle<Image>,
+    // The below need to be packed for wasm where stuff has to be 16-byte aligned
     #[uniform(3)]
-    pub index: f32,
+    pub ix_length_pad_pad: Vec4, // NOTE: _pad_pad means last two things unused
     #[uniform(4)]
-    pub length: f32,
+    pub xoff_yoff_xrep_yrep: Vec4,
     #[uniform(5)]
-    pub x_offset: f32,
-    #[uniform(6)]
-    pub y_offset: f32,
-    #[uniform(7)]
-    pub x_repetitions: f32,
-    #[uniform(8)]
-    pub y_repetitions: f32,
-    #[uniform(9)]
-    pub r: f32,
-    #[uniform(10)]
-    pub g: f32,
-    #[uniform(11)]
-    pub b: f32,
-    #[uniform(12)]
-    pub a: f32,
+    pub rgba: Vec4,
 }
 impl AnimationMaterial {
     pub fn from_handle(
@@ -42,18 +29,17 @@ impl AnimationMaterial {
         repetitions: Vec2,
         color: Color,
     ) -> Self {
+        let srgba_thing = color.to_srgba();
         Self {
             texture: handle,
-            index: 0.0,
-            length: length as f32,
-            x_offset: 0.0,
-            y_offset: 0.0,
-            x_repetitions: repetitions.x,
-            y_repetitions: repetitions.y,
-            r: color.to_srgba().red,
-            g: color.to_srgba().blue,
-            b: color.to_srgba().green,
-            a: color.to_srgba().alpha,
+            ix_length_pad_pad: Vec4::new(0.0, length as f32, 0.0, 0.0),
+            xoff_yoff_xrep_yrep: Vec4::new(0.0, 0.0, repetitions.x, repetitions.y),
+            rgba: Vec4::new(
+                srgba_thing.red,
+                srgba_thing.green,
+                srgba_thing.blue,
+                srgba_thing.alpha,
+            ),
         }
     }
 }

@@ -547,18 +547,18 @@ fn play_animations(
             manager.force_index = None;
         }
         // First update the material
-        mat.index = index.ix as f32;
-        mat.length = data.length as f32;
+        mat.ix_length_pad_pad[0] = index.ix as f32;
+        mat.ix_length_pad_pad[1] = data.length as f32;
         match manager.growth {
             AnimationGrowth::Repeat => {
                 let mesh_size = uvec2_bound(&manager.points);
                 let image_size = current_node.sprite.size;
-                mat.x_repetitions = mesh_size.x as f32 / image_size.x as f32;
-                mat.y_repetitions = mesh_size.y as f32 / image_size.y as f32;
+                mat.xoff_yoff_xrep_yrep[2] = mesh_size.x as f32 / image_size.x as f32;
+                mat.xoff_yoff_xrep_yrep[3] = mesh_size.y as f32 / image_size.y as f32;
             }
             AnimationGrowth::Stretch => {
-                mat.x_repetitions = 1.0;
-                mat.y_repetitions = 1.0;
+                mat.xoff_yoff_xrep_yrep[2] = 1.0;
+                mat.xoff_yoff_xrep_yrep[3] = 1.0;
             }
         }
         // Then progress the animation (so in case it swaps it'll be correct by next frame)
