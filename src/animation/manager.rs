@@ -1,5 +1,7 @@
 use crate::prelude::*;
-use bevy::{render::primitives::Aabb, sprite::Mesh2dHandle, utils::hashbrown::HashMap};
+use bevy::{
+    math::VectorSpace, render::primitives::Aabb, sprite::Mesh2dHandle, utils::hashbrown::HashMap,
+};
 
 #[derive(Clone, Reflect, Debug)]
 pub struct SpriteInfo {
@@ -98,6 +100,7 @@ pub struct AnimationManager {
     scale: Vec2,
     render_layers: RenderLayers,
     hidden: bool,
+    scroll: Vec2,
     // Internal stuff
     /// The entity that actually has the mesh and everything for this manager
     body_eid: Entity,
@@ -151,6 +154,7 @@ impl AnimationManager {
     impl_animation_manager_field!(scale, Vec2);
     impl_animation_manager_field!(render_layers, RenderLayers);
     impl_animation_manager_field!(hidden, bool);
+    impl_animation_manager_field!(scroll, Vec2);
 
     pub fn reset_force_index(&mut self, ix: u32) {
         self.force_index = Some(ix);
@@ -223,6 +227,7 @@ impl Default for AnimationManager {
             hidden: false,
             body_eid: Entity::PLACEHOLDER,
             force_index: Some(0),
+            scroll: Vec2::ZERO,
         }
     }
 }
@@ -343,6 +348,7 @@ struct AnimationData {
     /// Seconds per frame
     spf: f32,
     length: u32,
+    scroll: Vec2,
 }
 
 /// Marks an animation body as not needing to be queried in `play_animations`
@@ -474,7 +480,8 @@ fn update_animation_bodies(
         // NOTE: We also add AnimationStatic whenever this node is hidden to avoid work
         data.length = current_node.length;
         data.spf = 1.0 / current_node.fps;
-        if data.length == 1 || manager.hidden {
+        data.scroll = manager.scroll;
+        if (data.length == 1 || manager.hidden) && !(data.scroll.length_squared() > 0.0) {
             commands.entity(eid).insert(AnimationStatic);
         } else {
             commands.entity(eid).remove::<AnimationStatic>();
@@ -509,7 +516,7 @@ fn update_animation_bodies(
         meshes.remove(old_mesh_handle.id());
 
         // Finally mark this animation as stable
-        commands.entity(eid).remove::<AnimationStable>();
+        commands.entity(eid).insert(AnimationStable);
     }
 }
 
@@ -531,6 +538,7 @@ fn play_animations(
     bullet_time: Res<BulletTime>,
     mut commands: Commands,
 ) {
+    let time_factor = time.delta_seconds() * bullet_time.factor();
     for (parent, body, mat_handle, mut index, data) in bodies.iter_mut() {
         let Ok(mut multi) = multis.get_mut(parent.get()) else {
             continue;
@@ -549,6 +557,10 @@ fn play_animations(
         // First update the material
         mat.ix_length_pad_pad[0] = index.ix as f32;
         mat.ix_length_pad_pad[1] = data.length as f32;
+        mat.xoff_yoff_xrep_yrep[0] =
+            (mat.xoff_yoff_xrep_yrep[0] + data.scroll.x * time_factor).rem_euclid(1.0);
+        mat.xoff_yoff_xrep_yrep[1] =
+            (mat.xoff_yoff_xrep_yrep[1] + data.scroll.y * time_factor).rem_euclid(1.0);
         match manager.growth {
             AnimationGrowth::Repeat => {
                 let mesh_size = uvec2_bound(&manager.points);
@@ -563,7 +575,7 @@ fn play_animations(
         }
         // Then progress the animation (so in case it swaps it'll be correct by next frame)
         let current_node = current_node.clone();
-        index.time += time.delta_seconds() * bullet_time.factor();
+        index.time += time_factor;
         if index.time > data.spf {
             index.ix += 1;
             index.time -= data.spf;

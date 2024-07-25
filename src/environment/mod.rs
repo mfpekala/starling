@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+pub mod background;
 pub mod platforms;
 
 pub(super) struct EnvironmentPlugin;

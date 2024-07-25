@@ -1,3 +1,4 @@
+use background::BackgroundKind;
 use platforms::StickyPlatformBundle;
 
 use crate::prelude::*;
@@ -20,10 +21,12 @@ fn setup_tutorial(
             Vec2::ZERO,
             Shape::Circle { radius: 50.0 },
         ))
+        .insert(DynoRot { rot: 2.0 })
         .set_parent(tutorial_root.eid());
     commands
         .spawn(StickyPlatformBundle::around_room())
         .set_parent(tutorial_root.eid());
+    BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
 }
 
 /// Sets up the tutorial.

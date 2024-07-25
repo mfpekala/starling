@@ -61,7 +61,7 @@ impl Default for LayeringSettings {
     fn default() -> Self {
         Self {
             bg_clear_color: ClearColorConfig::Default,
-            bg_ambient_light: ClearColorConfig::Custom(Color::srgb(0.2, 0.2, 0.2)),
+            bg_ambient_light: ClearColorConfig::Custom(Color::srgb(0.6, 0.6, 0.6)),
             clear_color: ClearColorConfig::Custom(Color::srgba(0.1, 0.1, 0.1, 0.05)),
             ambient_light: ClearColorConfig::Custom(Color::srgb(0.7, 0.7, 0.7)),
             menu_clear_color: ClearColorConfig::Custom(Color::srgba(0.0, 0.0, 0.0, 0.0)),
