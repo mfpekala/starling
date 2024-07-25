@@ -7,7 +7,7 @@ use crate::prelude::*;
 fn update_box(
     time: Res<Time>,
     mut progress: Query<&mut Progress>,
-    mouse_state: Res<MouseInput>,
+    convo_input: Res<ConvoInput>,
     mut content: Query<(&mut Text, &mut FullContent)>,
     stale: Query<Entity, With<ProgressStale>>,
     mut commands: Commands,
@@ -18,7 +18,7 @@ fn update_box(
         return;
     };
     progress.timer.tick(time.delta());
-    if mouse_state.buttons.just_pressed(MouseButton::Right) {
+    if convo_input.get_next() {
         if progress.timer.finished() {
             progress.absolutely_finished = true;
         } else {

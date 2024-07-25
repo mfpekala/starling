@@ -2,18 +2,14 @@ use crate::prelude::*;
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
 /// occur in steps of this length to resolve collisions for fast-moving objects.
-const MAX_TRAN_STEP_LENGTH: f32 = 1.0;
+const MAX_TRAN_STEP_LENGTH: f32 = 2.0;
 
-/// Resets all records (collisions + triggers (TODO: add trigger support here))
-/// TODO: Do something more extensible. The collision records should exist in the world.
-///       BUT there should be a fast way to get the collisions associated with a given Eid.
-///       Why?
-///           - This would enable an ergonomic system that iterates through all collisions to spawn collision sounds, particles, etc
-///           - Without this, all of this kind of stuff^ has to iterate over all providers and receivers (bad), even though most of them will not be involved in a collision
-///           - I could see a world where when there is an object we spawn a `CollisionRecord` and make these VecDeques the eids of htat spawned record
+/// Resets all records (collisions + triggers)
 fn reset_collision_records(
     mut statics_provider_q: Query<&mut StaticProvider>,
     mut statics_receiver_q: Query<&mut StaticReceiver>,
+    collision_root: Res<CollisionRoot>,
+    mut commands: Commands,
 ) {
     for mut provider in statics_provider_q.iter_mut() {
         provider.collisions = VecDeque::new();
@@ -21,6 +17,7 @@ fn reset_collision_records(
     for mut receiver in statics_receiver_q.iter_mut() {
         receiver.collisions = VecDeque::new();
     }
+    commands.entity(collision_root.eid()).despawn_descendants();
 }
 
 /// Moves all dynos (both rot and tran) that are not statics, do not collide with statics, and have no triggers
@@ -159,6 +156,7 @@ fn resolve_static_collisions(
             continue;
         };
 
+        // Create a collision record
         let collision_record = StaticCollisionRecord {
             pos: cp,
             provider_eid,
@@ -170,7 +168,6 @@ fn resolve_static_collisions(
             .spawn(StaticCollisionBundle::new(collision_record))
             .set_parent(collision_root.eid())
             .id();
-
         rx.collisions.push_back(collision_eid);
         provider_data.collisions.push_back(collision_eid);
 
@@ -210,16 +207,152 @@ fn resolve_static_collisions(
     }
 }
 
+/// I actually believe this has a slight bug. It always uses global transform, which is static all frame.
+/// I.e. if bullet a moves and then bullet b goes it will still be checking against bullet a old pos.
+/// Ehh probably fine
 fn resolve_trigger_collisions(
     eid: Entity,
     bounds: &Bounds,
     rx: &mut TriggerReceiver,
-    dyno_tran: &mut DynoTran,
-    gtran: &Vec2,
-    providers: &mut Query<(Entity, &Bounds, &mut TriggerReceiver, &GlobalTransform)>,
+    gtran: &Transform,
+    shared_data: &Query<(Entity, &Bounds, &GlobalTransform)>,
+    trigger_data: &mut Query<(Entity, &mut TriggerReceiver)>,
     commands: &mut Commands,
     collision_root: &CollisionRoot,
+    dup_set: &mut HashSet<(Entity, Entity)>,
 ) {
+    for (other_eid, mut other_rx) in trigger_data {
+        if other_eid == eid {
+            // You can't collide with your own trigger, idiot
+            continue;
+        }
+        let my_tran_n_angle = gtran.tran_n_angle();
+        let (_, other_bounds, other_gtran) = shared_data.get(other_eid).unwrap();
+        let rhs_tran_n_angle = other_gtran.tran_n_angle();
+        let Some((_, cp)) = bounds.get_shape().bounce_off(
+            my_tran_n_angle,
+            (
+                other_bounds.get_shape(),
+                rhs_tran_n_angle.0,
+                rhs_tran_n_angle.1,
+            ),
+        ) else {
+            // These things don't overlap, nothing to do
+            continue;
+        };
+        // Create collision records (NOTE: It's symmetric, one for each, and we don't dup)
+        if !dup_set.contains(&(eid, other_eid)) {
+            let my_collision_record = TriggerCollisionRecord {
+                pos: cp,
+                other_eid,
+                other_kind: other_rx.kind.clone(),
+            };
+            let my_collision_eid = commands
+                .spawn(TriggerCollisionBundle::new(my_collision_record))
+                .set_parent(collision_root.eid())
+                .id();
+            rx.collisions.push_back(my_collision_eid);
+        }
+        if !dup_set.contains(&(other_eid, eid)) {
+            let other_collision_record = TriggerCollisionRecord {
+                pos: cp,
+                other_eid: eid,
+                other_kind: rx.kind.clone(),
+            };
+            let other_collision_eid = commands
+                .spawn(TriggerCollisionBundle::new(other_collision_record))
+                .set_parent(collision_root.eid())
+                .id();
+            other_rx.collisions.push_back(other_collision_eid);
+        }
+    }
+}
+
+fn new_move_unstuck_static_receiver_dynos(
+    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
+    relevant_eids: Query<
+        Entity,
+        (
+            With<StaticReceiver>,
+            Without<StaticProvider>,
+            Without<Stuck>,
+        ),
+    >,
+    shared_data: Query<(Entity, &Bounds, &GlobalTransform)>,
+    mut static_data: Query<
+        (Entity, &mut StaticReceiver, &mut DynoTran, &mut Transform),
+        (Without<StaticProvider>, Without<Stuck>),
+    >,
+    mut trigger_data: Query<(Entity, &mut TriggerReceiver)>,
+    mut static_providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
+    mut commands: Commands,
+    collision_root: Res<CollisionRoot>,
+) {
+    let time_factor = time.delta_seconds() * bullet_time.factor();
+    for eid in &relevant_eids {
+        // Shared data (immutable)
+        let (_, my_bounds, my_gtran) = shared_data.get(eid).unwrap();
+        let my_bounds = my_bounds.clone();
+        let my_gtran = my_gtran.clone();
+
+        // Mutable static data (need to mutate and then assign at end)
+        let (_, my_static_rx, my_dyno_tran, my_tran) = static_data.get(eid).unwrap();
+        let mut my_static_rx = my_static_rx.clone();
+        let mut my_dyno_tran = my_dyno_tran.clone();
+        let mut my_tran = my_tran.clone();
+
+        // Mutable trigger data (need to mutate and then assign at end)
+        let mut my_trigger = trigger_data.get(eid).ok().map(|inner| inner.1.clone());
+        let mut dup_set = HashSet::<(Entity, Entity)>::new();
+
+        let gtran_offset = my_gtran.translation().truncate() - my_tran.translation.truncate();
+        let mut amount_moved = 0.0;
+        let mut total_to_move = my_dyno_tran.vel.length() * time_factor;
+        while amount_moved < total_to_move {
+            // TODO: This is hella inefficient but I just wanna get it working first
+            let dir = my_dyno_tran.vel.normalize_or_zero();
+            let mag =
+                (my_dyno_tran.vel.length() * time_factor - amount_moved).min(MAX_TRAN_STEP_LENGTH);
+            let moving = dir * mag;
+            my_tran.translation += moving.extend(0.0);
+            resolve_static_collisions(
+                eid,
+                &my_bounds,
+                &mut my_static_rx,
+                &mut my_dyno_tran,
+                &mut my_tran,
+                gtran_offset,
+                &mut static_providers,
+                &mut commands,
+                &collision_root,
+            );
+            if let Some(my_trigger_rx) = my_trigger.as_mut() {
+                // Basically because GlobalTransform doesn't update mid-system we need to do this shenanigans
+                let mut mid_step_gtran = my_tran.clone();
+                mid_step_gtran.translation += gtran_offset.extend(0.0);
+                resolve_trigger_collisions(
+                    eid,
+                    &my_bounds,
+                    my_trigger_rx,
+                    &mid_step_gtran,
+                    &shared_data,
+                    &mut trigger_data,
+                    &mut commands,
+                    &collision_root,
+                    &mut dup_set,
+                );
+            }
+            // Update the loop stuff
+            amount_moved += MAX_TRAN_STEP_LENGTH;
+            total_to_move = total_to_move.min(my_dyno_tran.vel.length() * time_factor);
+        }
+        let (_, mut reset_rx, mut reset_dyno_tran, mut reset_tran) =
+            static_data.get_mut(eid).unwrap();
+        *reset_rx = my_static_rx;
+        *reset_dyno_tran = my_dyno_tran;
+        *reset_tran = my_tran;
+    }
 }
 
 /// Moves all dynos (both rot and tran) that receive static collisions and ARE NOT stuck. Some may have triggers!
@@ -256,7 +389,6 @@ fn move_unstuck_static_receiver_dynos(
         let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
-        println!("total_to_move {total_to_move}");
         while amount_moved < total_to_move {
             // TODO: This is hella inefficient but I just wanna get it working first
             let dir = dyno_tran.vel.normalize_or_zero();
@@ -331,19 +463,23 @@ fn apply_gravity(
 
 pub(super) fn register_logic(app: &mut App) {
     app.add_systems(
+        PreUpdate,
+        reset_collision_records
+            .in_set(PhysicsSet)
+            .run_if(in_state(PhysicsState::Active)),
+    );
+    app.add_systems(
         Update,
         (
-            reset_collision_records,
             move_uninteresting_dynos,
             move_static_kind_dynos,
-            move_unstuck_static_receiver_dynos,
+            new_move_unstuck_static_receiver_dynos,
             move_stuck_static_receiver_dynos,
             move_trigger_only_dynos,
             apply_gravity,
         )
             .chain()
             .in_set(PhysicsSet)
-            // TODO: Once back on wifi google the proper way to do this
             .after(InputSet)
             .run_if(in_state(PhysicsState::Active)),
     );

@@ -41,6 +41,17 @@ impl MovementInput {
     }
 }
 
+/// Input controlling text boxes
+#[derive(Resource)]
+pub struct ConvoInput {
+    next: bool,
+}
+impl ConvoInput {
+    pub fn get_next(&self) -> bool {
+        self.next
+    }
+}
+
 /// Event that corresponds to input that _should_ send a bird flying.
 /// Usually means click and drag left mouse button.
 #[derive(Event)]
@@ -125,8 +136,16 @@ fn update_movement_input(keyboard: Res<ButtonInput<KeyCode>>, mut movement: ResM
     if keyboard.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]) {
         unnormal += -Vec2::Y;
     }
-    // movement.dir = unnormal.normalize_or_zero();
     movement.dir = unnormal;
+}
+
+fn update_convo_input(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    mut convo: ResMut<ConvoInput>,
+) {
+    convo.next =
+        keyboard.any_just_pressed([KeyCode::Enter]) || mouse.just_pressed(MouseButton::Right);
 }
 
 /// Send any and all non-game input. Note the early returns, we only handle at most one
@@ -149,6 +168,7 @@ impl Plugin for InputPlugin {
             right_drag_start: None,
         });
         app.insert_resource(MovementInput { dir: default() });
+        app.insert_resource(ConvoInput { next: false });
 
         // Events
         app.add_event::<Launch>();
@@ -161,6 +181,7 @@ impl Plugin for InputPlugin {
             (
                 update_mouse_input,
                 update_movement_input,
+                update_convo_input,
                 watch_non_game_input,
             )
                 .in_set(InputSet),
