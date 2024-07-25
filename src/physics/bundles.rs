@@ -33,12 +33,12 @@ impl BirdPhysicsBundle {
 
 /// Sticky physics objects that are not translating or rotating
 #[derive(Bundle)]
-pub struct StickyPlainPhysicsBundle {
+pub struct StickyPhysicsBundle {
     bounds: Bounds,
     statics: StaticProvider,
     spatial: SpatialBundle,
 }
-impl StickyPlainPhysicsBundle {
+impl StickyPhysicsBundle {
     pub fn new(pos: Vec2, bounds: Bounds) -> Self {
         Self {
             bounds,
@@ -50,72 +50,6 @@ impl StickyPlainPhysicsBundle {
     }
 }
 
-/// Sticky physics objects that are moving translating but not rotating
-#[derive(Bundle)]
-pub struct StickyTranPhysicsBundle {
-    bounds: Bounds,
-    statics: StaticProvider,
-    spatial: SpatialBundle,
-    dyno_tran: DynoTran,
-}
-impl StickyTranPhysicsBundle {
-    pub fn new(pos: Vec2, bounds: Bounds, dyno_tran: DynoTran) -> Self {
-        Self {
-            bounds,
-            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
-            spatial: SpatialBundle::from_transform(Transform::from_translation(
-                pos.extend(ZIX_STICKY),
-            )),
-            dyno_tran,
-        }
-    }
-}
-
-/// Sticky physics objects that are rotating but not translating
-#[derive(Bundle)]
-pub struct StickyRotPhysicsBundle {
-    bounds: Bounds,
-    statics: StaticProvider,
-    spatial: SpatialBundle,
-    dyno_rot: DynoRot,
-}
-impl StickyRotPhysicsBundle {
-    pub fn new(pos: Vec2, bounds: Bounds, dyno_rot: DynoRot) -> Self {
-        Self {
-            bounds,
-            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
-            spatial: SpatialBundle::from_transform(Transform::from_translation(
-                pos.extend(ZIX_STICKY),
-            )),
-            dyno_rot,
-        }
-    }
-}
-
-/// Sticky physics objects that are both translating and rotating
-#[derive(Bundle)]
-pub struct StickyBothPhysicsBundle {
-    bounds: Bounds,
-    statics: StaticProvider,
-    spatial: SpatialBundle,
-    dyno_tran: DynoTran,
-    dyno_rot: DynoRot,
-}
-impl StickyBothPhysicsBundle {
-    pub fn new(pos: Vec2, bounds: Bounds, dyno_tran: DynoTran, dyno_rot: DynoRot) -> Self {
-        Self {
-            bounds,
-            statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
-            spatial: SpatialBundle::from_transform(Transform::from_translation(
-                pos.extend(ZIX_STICKY),
-            )),
-            dyno_tran,
-            dyno_rot,
-        }
-    }
-}
-
-/// Bullet physics
 #[derive(Bundle)]
 pub struct BulletPhysicsBundle {
     dyno_tran: DynoTran,

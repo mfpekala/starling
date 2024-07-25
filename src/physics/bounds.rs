@@ -68,6 +68,14 @@ impl Shape {
         }
     }
 }
+impl Shape {
+    pub fn to_anim_points(&self) -> Vec<Vec2> {
+        match self {
+            Self::Circle { radius } => regular_polygon(radius.ceil() as u32, 0.0, *radius),
+            Self::Polygon { points } => points.clone(),
+        }
+    }
+}
 
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct Bounds {

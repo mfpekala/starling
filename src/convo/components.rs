@@ -177,6 +177,7 @@ impl Content {
     fn new(pos: BoxPos, speaker: BoxSpeaker, content: BoxContent) -> Self {
         let (mut offset, bounds) = pos.get_text_offset_n_bounds(speaker);
         offset.x -= bounds.x / 2.0;
+        offset.y += bounds.y / 2.0;
         Self {
             name: Name::new(format!("content_{:?}", speaker)),
             full_content: FullContent {
@@ -191,9 +192,13 @@ impl Content {
                         ..default()
                     },
                 )
-                .with_justify(JustifyText::Left),
+                .with_justify(if speaker == BoxSpeaker::None {
+                    JustifyText::Center
+                } else {
+                    JustifyText::Left
+                }),
                 text_2d_bounds: Text2dBounds { size: bounds },
-                text_anchor: bevy::sprite::Anchor::CenterLeft,
+                text_anchor: bevy::sprite::Anchor::TopLeft,
                 transform: spat_tran(offset.x, offset.y, offset.z).transform,
                 ..default()
             },
@@ -211,7 +216,7 @@ pub(super) struct Progress {
     pub(super) absolutely_finished: bool,
 }
 impl Progress {
-    const SECONDS_PER_CHAR: f32 = 0.1;
+    const SECONDS_PER_CHAR: f32 = 0.04;
 
     fn new(content_length: usize) -> Self {
         Self {

@@ -7,6 +7,7 @@ pub mod camera;
 pub mod consts;
 pub mod convo;
 pub mod debug;
+pub mod environment;
 pub mod input;
 pub mod macros;
 pub mod math;
@@ -26,6 +27,7 @@ pub mod prelude {
     pub use super::camera::*;
     pub use super::consts::*;
     pub use super::convo::*;
+    pub use super::environment::*;
     pub use super::input::*;
     pub use super::macros::*;
     pub use super::math::*;
@@ -69,6 +71,7 @@ fn main() {
         .add_plugins(camera::CameraPlugin)
         .add_plugins(convo::ConvoPlugin)
         .add_plugins(debug::DebugPlugin)
+        .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
         .add_plugins(physics::PhysicsPlugin)

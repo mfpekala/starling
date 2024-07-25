@@ -20,13 +20,13 @@ impl ComputedStates for ShowPhysicsBounds {
     }
 }
 
-fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
+fn _startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands.spawn(BirdBundle::new(default(), default(), 3, 3));
     let outer_width = 4.0;
     commands
         .spawn((
             Name::new("physics_debug_sticky1"),
-            StickyPlainPhysicsBundle::new(
+            StickyPhysicsBundle::new(
                 Vec2::new(0.0, IDEAL_HEIGHT_f32 - outer_width) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
@@ -42,7 +42,7 @@ fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands
         .spawn((
             Name::new("physics_debug_sticky2"),
-            StickyPlainPhysicsBundle::new(
+            StickyPhysicsBundle::new(
                 Vec2::new(0.0, -IDEAL_HEIGHT_f32 + outer_width) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
@@ -58,7 +58,7 @@ fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands
         .spawn((
             Name::new("physics_debug_sticky3"),
-            StickyPlainPhysicsBundle::new(
+            StickyPhysicsBundle::new(
                 Vec2::new(-IDEAL_WIDTH_f32 + outer_width, 0.0) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
@@ -74,7 +74,7 @@ fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands
         .spawn((
             Name::new("physics_debug_sticky4"),
-            StickyPlainPhysicsBundle::new(
+            StickyPhysicsBundle::new(
                 Vec2::new(IDEAL_WIDTH_f32 - outer_width, 0.0) / 2.0,
                 Bounds::from_shape(Shape::Polygon {
                     points: vec![
@@ -90,23 +90,12 @@ fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
     commands
         .spawn((
             Name::new("physics_debug_sticky5"),
-            StickyPlainPhysicsBundle::new(
+            StickyPhysicsBundle::new(
                 Vec2::new(-300.0 * 4.0, -IDEAL_HEIGHT_f32) / 4.0,
                 Bounds::from_shape(Shape::Circle { radius: 10.0 }),
             ),
         ))
         .set_parent(room_root.eid());
-    commands
-        .spawn((
-            Name::new("physics_debug_sticky6"),
-            StickyRotPhysicsBundle::new(
-                Vec2::new(0.0, -IDEAL_HEIGHT_f32) / 4.0,
-                Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-                DynoRot { rot: 6.0 },
-            ),
-        ))
-        .set_parent(room_root.eid());
-
     commands
         .spawn((
             Name::new("physics_debug_uninteresting_tran_only"),
@@ -130,30 +119,6 @@ fn startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
             DynoRot { rot: 0.1 },
             SpatialBundle::default(),
             Bounds::from_shape(Shape::Circle { radius: 10.0 }),
-        ))
-        .set_parent(room_root.eid());
-
-    commands
-        .spawn((
-            Name::new("physics_debug_sticky_both"),
-            StickyBothPhysicsBundle::new(
-                Vec2::new(-100.0, 0.0),
-                Bounds::from_shape(Shape::Circle { radius: 15.0 }),
-                DynoTran {
-                    vel: Vec2::ONE * 4.0,
-                },
-                DynoRot { rot: 2.0 },
-            ),
-        ))
-        .set_parent(room_root.eid());
-    commands
-        .spawn((
-            Name::new("physics_debug_sticky_rot"),
-            StickyRotPhysicsBundle::new(
-                Vec2::new(-150.0, 0.0),
-                Bounds::from_shape(Shape::Circle { radius: 15.0 }),
-                DynoRot { rot: 0.2 },
-            ),
         ))
         .set_parent(room_root.eid());
 }

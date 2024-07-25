@@ -131,3 +131,14 @@ pub fn uvec2_bound(points: &[Vec2]) -> UVec2 {
 pub fn spat_tran(x: f32, y: f32, z: f32) -> SpatialBundle {
     SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, y, z)))
 }
+
+pub fn regular_polygon(num_sides: u32, mut angle: f32, radius: f32) -> Vec<Vec2> {
+    let mut points: Vec<Vec2> = vec![];
+    for _ in 0..num_sides {
+        let x = angle.to_radians().cos() * radius;
+        let y = angle.to_radians().sin() * radius;
+        points.push(Vec2 { x, y });
+        angle -= 360.0 / (num_sides as f32);
+    }
+    points
+}

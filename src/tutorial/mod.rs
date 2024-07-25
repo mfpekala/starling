@@ -1,3 +1,5 @@
+use platforms::StickyPlatformBundle;
+
 use crate::prelude::*;
 
 /// Sets up the tutorial.
@@ -12,6 +14,16 @@ fn setup_tutorial(
     mut next_convo_state: ResMut<NextState<ConvoState>>,
 ) {
     next_convo_state.set(ConvoState::TutorialEggUnwrap);
+    commands
+        .spawn(StickyPlatformBundle::new(
+            "test",
+            Vec2::ZERO,
+            Shape::Circle { radius: 50.0 },
+        ))
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(StickyPlatformBundle::around_room())
+        .set_parent(tutorial_root.eid());
 }
 
 /// Sets up the tutorial.

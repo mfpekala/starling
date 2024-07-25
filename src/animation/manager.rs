@@ -321,12 +321,12 @@ impl MultiAnimationManager {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 struct AnimationBodyMarker {
     key: String,
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 struct AnimationMap {
     handle_map: HashMap<String, Handle<Image>>,
 }
@@ -474,7 +474,7 @@ fn update_animation_bodies(
         // NOTE: We also add AnimationStatic whenever this node is hidden to avoid work
         data.length = current_node.length;
         data.spf = 1.0 / current_node.fps;
-        if data.length == 0 || manager.hidden {
+        if data.length == 1 || manager.hidden {
             commands.entity(eid).insert(AnimationStatic);
         } else {
             commands.entity(eid).remove::<AnimationStatic>();
@@ -587,6 +587,8 @@ pub(super) fn register_manager(app: &mut App) {
     );
     app.add_systems(Update, play_animations);
 
+    app.register_type::<AnimationBodyMarker>();
+    app.register_type::<AnimationMap>();
     app.register_type::<AnimationManager>();
     app.register_type::<AnimationIndex>();
     app.register_type::<AnimationData>();

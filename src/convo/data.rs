@@ -31,11 +31,15 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
         ConvoState::TutorialEggUnwrap => cvbb!([
             {
                 speaker: None,
-                content: "Yoooo",
+                content: "Are you alright?",
             },
             {
                 speaker: Lennox,
-                content: "Who said that???"
+                content: "I think so."
+            },
+            {
+                speaker: Lennox,
+                content: "Who said that?"
             },
         ]),
     }
