@@ -4,7 +4,7 @@ pub(self) mod components;
 mod data;
 mod operation;
 
-pub use components::*;
+use components::*;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect, States)]
 pub enum ConvoState {
@@ -35,7 +35,9 @@ fn setup_convo(
         .set_parent(convo_root.eid());
 }
 
-fn destroy_convo() {}
+fn destroy_convo(mut commands: Commands, convo_root: Res<ConvoRoot>) {
+    commands.entity(convo_root.eid()).despawn_descendants();
+}
 
 pub(super) struct ConvoPlugin;
 impl Plugin for ConvoPlugin {

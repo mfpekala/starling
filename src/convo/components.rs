@@ -1,4 +1,11 @@
+use bevy::text::Text2dBounds;
+
 use crate::prelude::*;
+
+const DEFAULT_BG_WIDTH: f32 = 160.0;
+const DEFAULT_BG_SPACING: f32 = 4.0;
+const DEFAULT_BG_BORDER: f32 = 2.0;
+const SPEAKER_SIZE: f32 = 24.0;
 
 #[derive(Clone, Copy, Debug, Default, Reflect)]
 pub(super) enum BoxPos {
@@ -17,9 +24,34 @@ impl BoxPos {
             Self::Default => self.get_bg_offset() + Vec3::new(-62.0, 0.0, 1.0),
         }
     }
+
+    fn get_text_offset_n_bounds(&self, speaker: BoxSpeaker) -> (Vec3, Vec2) {
+        match self {
+            Self::Default => match speaker {
+                BoxSpeaker::None => (
+                    self.get_bg_offset() + Vec3::new(0.0, 0.0, 1.0),
+                    Vec2::new(
+                        DEFAULT_BG_WIDTH - DEFAULT_BG_SPACING * 2.0 - DEFAULT_BG_BORDER * 2.0,
+                        SPEAKER_SIZE,
+                    ),
+                ),
+                _ => (
+                    self.get_bg_offset()
+                        + Vec3::new(SPEAKER_SIZE / 2.0 + DEFAULT_BG_SPACING / 2.0, 0.0, 1.0),
+                    Vec2::new(
+                        DEFAULT_BG_WIDTH
+                            - DEFAULT_BG_SPACING * 3.0
+                            - DEFAULT_BG_BORDER * 2.0
+                            - SPEAKER_SIZE,
+                        SPEAKER_SIZE,
+                    ),
+                ),
+            },
+        }
+    }
 }
 
-#[derive(Clone, Copy, Debug, Default, Reflect)]
+#[derive(Clone, Copy, Debug, Default, Reflect, PartialEq, Eq)]
 pub(super) enum BoxSpeaker {
     #[default]
     None,
@@ -90,13 +122,17 @@ struct Background {
     multi: MultiAnimationManager,
 }
 impl Background {
-    fn new(pos: BoxPos) -> Self {
+    fn new(pos: BoxPos, speaker: BoxSpeaker) -> Self {
         let bg_offset = pos.get_bg_offset();
+        let path = match speaker {
+            BoxSpeaker::None => "convo/background_none.png",
+            _ => "convo/background_speaker.png",
+        };
         Self {
             name: Name::new(format!("background_{:?}", pos)),
             spatial: spat_tran(bg_offset.x, bg_offset.y, bg_offset.z),
             multi: multi!(anim_man!({
-                path: "convo/background.png",
+                path: path,
                 size: (160, 36),
             })
             .with_render_layers(MenuCamera::render_layers())),
@@ -126,21 +162,48 @@ impl Portrait {
 }
 
 #[derive(Component)]
-struct FullContent {
-    content: String,
+pub(super) struct FullContent {
+    pub(super) content: String,
 }
 
 #[derive(Bundle)]
-struct Text {
+struct Content {
     name: Name,
     full_content: FullContent,
     text: Text2dBundle,
+    render_layers: RenderLayers,
 }
-impl Text {
-    fn new(pos: BoxPos, content: String) -> Self {
-        todo!();
+impl Content {
+    fn new(pos: BoxPos, speaker: BoxSpeaker, content: BoxContent) -> Self {
+        let (mut offset, bounds) = pos.get_text_offset_n_bounds(speaker);
+        offset.x -= bounds.x / 2.0;
+        Self {
+            name: Name::new(format!("content_{:?}", speaker)),
+            full_content: FullContent {
+                content: content.content,
+            },
+            text: Text2dBundle {
+                text: Text::from_section(
+                    "",
+                    TextStyle {
+                        font_size: 10.0,
+                        color: Color::WHITE,
+                        ..default()
+                    },
+                )
+                .with_justify(JustifyText::Left),
+                text_2d_bounds: Text2dBounds { size: bounds },
+                text_anchor: bevy::sprite::Anchor::CenterLeft,
+                transform: spat_tran(offset.x, offset.y, offset.z).transform,
+                ..default()
+            },
+            render_layers: MenuCamera::render_layers(),
+        }
     }
 }
+
+#[derive(Component)]
+pub(super) struct ProgressStale;
 
 #[derive(Component, Clone, Debug, Reflect)]
 pub(super) struct Progress {
@@ -164,26 +227,36 @@ impl Progress {
 struct ProgressBundle {
     name: Name,
     progress: Progress,
+    spatial: SpatialBundle,
 }
 impl ProgressBundle {
-    fn new(content: &BoxContent) -> Self {
+    fn new(z_adjust: f32, content: &BoxContent) -> Self {
         Self {
-            name: Name::new("progress"),
+            name: Name::new(format!("progress_{}", z_adjust as i32)),
             progress: Progress::new(content.content.len()),
+            spatial: spat_tran(0.0, 0.0, z_adjust),
         }
     }
 }
 
 impl ConvoBox {
     #[must_use]
-    pub fn do_spawn(self, commands: &mut Commands, parent: Entity) -> Entity {
-        commands.spawn(Background::new(self.pos)).set_parent(parent);
-        commands
-            .spawn(Portrait::new(self.pos, self.speaker))
-            .set_parent(parent);
-        commands
-            .spawn(ProgressBundle::new(&self.content))
+    pub fn do_spawn(self, z_adjust: f32, commands: &mut Commands, parent: Entity) -> Entity {
+        let new_dad = commands
+            .spawn(ProgressBundle::new(z_adjust, &self.content))
             .set_parent(parent)
-            .id()
+            .id();
+        commands
+            .spawn(Background::new(self.pos, self.speaker))
+            .set_parent(new_dad);
+        if self.speaker != BoxSpeaker::None {
+            commands
+                .spawn(Portrait::new(self.pos, self.speaker))
+                .set_parent(new_dad);
+        }
+        commands
+            .spawn(Content::new(self.pos, self.speaker, self.content.clone()))
+            .set_parent(new_dad);
+        new_dad
     }
 }
