@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 pub mod bounds;
 pub mod bundles;
+pub mod collision;
 pub mod dyno;
 mod logic;
 pub mod statics;
@@ -9,6 +10,7 @@ pub mod triggers;
 
 pub use bounds::*;
 pub use bundles::*;
+pub use collision::*;
 pub use dyno::*;
 pub use statics::*;
 pub use triggers::*;

@@ -93,6 +93,7 @@ macro_rules! impl_root_init {
 }
 
 impl_root_init!(
+    CollisionRoot,
     ConvoRoot,
     CutsceneRoot,
     DebugRoot {

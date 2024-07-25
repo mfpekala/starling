@@ -7,7 +7,7 @@ use crate::prelude::*;
 fn update_box(
     time: Res<Time>,
     mut progress: Query<&mut Progress>,
-    mouse_state: Res<MouseState>,
+    mouse_state: Res<MouseInput>,
     mut content: Query<(&mut Text, &mut FullContent)>,
     stale: Query<Entity, With<ProgressStale>>,
     mut commands: Commands,

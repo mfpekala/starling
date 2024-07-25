@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use crate::prelude::*;
 
 /// Different ways of providing a static collision hitbox. Admits the design space (StaticKind x StaticReceiver)
@@ -12,20 +10,13 @@ pub enum StaticProviderKind {
     Normal,
 }
 
-#[derive(Debug, Clone, Reflect)]
-pub struct StaticCollisionRecordProvider {
-    pub pos: Vec2,
-    pub receiver_eid: Entity,
-    pub receiver_kind: StaticReceiverKind,
-}
-
 /// Marks an object as being a "static" physics object. Should be attached to entities with `Bounds`.
 /// This means that it DOES NOT respond to collisions with other statics or triggers.
 /// BUT it provides collisions for any entity with a `StaticReceiver` component.
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct StaticProvider {
     pub kind: StaticProviderKind,
-    pub collisions: VecDeque<StaticCollisionRecordProvider>,
+    pub collisions: VecDeque<Entity>,
 }
 impl StaticProvider {
     pub fn from_kind(kind: StaticProviderKind) -> Self {
@@ -47,18 +38,11 @@ pub enum StaticReceiverKind {
     Stop,
 }
 
-#[derive(Debug, Clone, Reflect)]
-pub struct StaticCollisionRecordReceiver {
-    pub pos: Vec2,
-    pub provider_eid: Entity,
-    pub provider_kind: StaticProviderKind,
-}
-
 /// Marks a component as something that should interact with statics. Should be attached to entities with `Bounds`.
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct StaticReceiver {
     pub kind: StaticReceiverKind,
-    pub collisions: VecDeque<StaticCollisionRecordReceiver>,
+    pub collisions: VecDeque<Entity>,
 }
 impl StaticReceiver {
     pub fn from_kind(kind: StaticReceiverKind) -> Self {
@@ -76,4 +60,26 @@ pub struct Stuck {
     pub my_initial_angle: f32,
     pub parent_initial_angle: f32,
     pub initial_offset: Vec2,
+}
+
+#[derive(Component, Debug, Clone, Reflect)]
+pub struct StaticCollisionRecord {
+    pub pos: Vec2,
+    pub provider_eid: Entity,
+    pub provider_kind: StaticProviderKind,
+    pub receiver_eid: Entity,
+    pub receiver_kind: StaticReceiverKind,
+}
+#[derive(Bundle)]
+pub struct StaticCollisionBundle {
+    name: Name,
+    record: StaticCollisionRecord,
+}
+impl StaticCollisionBundle {
+    pub fn new(record: StaticCollisionRecord) -> Self {
+        Self {
+            name: Name::new("static_collision"),
+            record,
+        }
+    }
 }

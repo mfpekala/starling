@@ -10,13 +10,13 @@ pub struct InputSet;
 
 /// Mouse state. This may be hard to controler-ize. Oh well.
 #[derive(Resource)]
-pub struct MouseState {
+pub struct MouseInput {
     world_pos: Vec2,
     pub buttons: ButtonInput<MouseButton>,
     left_drag_start: Option<Vec2>,
     right_drag_start: Option<Vec2>,
 }
-impl MouseState {
+impl MouseInput {
     pub fn get_world_pos(&self) -> Vec2 {
         self.world_pos
     }
@@ -27,6 +27,17 @@ impl MouseState {
 
     pub fn get_right_drag_start(&self) -> Option<Vec2> {
         self.right_drag_start
+    }
+}
+
+/// The bird can do minimal movement using directional input
+#[derive(Resource)]
+pub struct MovementInput {
+    dir: Vec2,
+}
+impl MovementInput {
+    pub fn get_dir(&self) -> Vec2 {
+        self.dir
     }
 }
 
@@ -49,10 +60,10 @@ pub enum NonGameInput {
 // INTERNAL INPUT SYSTEM (ONLY USED IN THIS FILE)
 
 /// Updates the `MouseState` resource.
-fn update_mouse_state(
+fn update_mouse_input(
     buttons: Res<ButtonInput<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    mut state: ResMut<MouseState>,
+    mut state: ResMut<MouseInput>,
     mut launch_writer: EventWriter<Launch>,
     mut fire_writer: EventWriter<Fire>,
 ) {
@@ -92,12 +103,30 @@ fn update_mouse_state(
             None
         }
     };
-    *state = MouseState {
+    *state = MouseInput {
         world_pos,
         buttons: buttons.clone(),
         left_drag_start,
         right_drag_start,
     };
+}
+
+fn update_movement_input(keyboard: Res<ButtonInput<KeyCode>>, mut movement: ResMut<MovementInput>) {
+    let mut unnormal = Vec2::ZERO;
+    if keyboard.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]) {
+        unnormal += -Vec2::X;
+    }
+    if keyboard.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]) {
+        unnormal += Vec2::X;
+    }
+    if keyboard.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]) {
+        unnormal += Vec2::Y;
+    }
+    if keyboard.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]) {
+        unnormal += -Vec2::Y;
+    }
+    // movement.dir = unnormal.normalize_or_zero();
+    movement.dir = unnormal;
 }
 
 /// Send any and all non-game input. Note the early returns, we only handle at most one
@@ -113,12 +142,13 @@ pub(super) struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         // Resources
-        app.insert_resource(MouseState {
+        app.insert_resource(MouseInput {
             world_pos: default(),
             buttons: default(),
             left_drag_start: None,
             right_drag_start: None,
         });
+        app.insert_resource(MovementInput { dir: default() });
 
         // Events
         app.add_event::<Launch>();
@@ -128,7 +158,12 @@ impl Plugin for InputPlugin {
         // Systems
         app.add_systems(
             Update,
-            (update_mouse_state, watch_non_game_input).in_set(InputSet),
+            (
+                update_mouse_input,
+                update_movement_input,
+                watch_non_game_input,
+            )
+                .in_set(InputSet),
         );
     }
 }

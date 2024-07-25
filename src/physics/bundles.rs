@@ -10,9 +10,9 @@ pub struct BirdPhysicsBundle {
     /// The birds extent in the physical realm
     bounds: Bounds,
     /// The bird should respond normally to statics
-    statics: StaticReceiver,
+    static_rx: StaticReceiver,
     /// The bird is a trigger
-    triggers: TriggerKind,
+    trigger_rx: TriggerReceiver,
     /// The bird has to exist spatially
     spatial: SpatialBundle,
 }
@@ -22,8 +22,8 @@ impl BirdPhysicsBundle {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
             bounds: Bounds::from_shape(Shape::Circle { radius: 5.0 }),
-            statics: StaticReceiver::from_kind(StaticReceiverKind::Normal),
-            triggers: TriggerKind::Bird,
+            static_rx: StaticReceiver::from_kind(StaticReceiverKind::Normal),
+            trigger_rx: TriggerReceiver::from_kind(TriggerKind::Bird),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_BIRD),
             )),
@@ -55,22 +55,23 @@ pub struct BulletPhysicsBundle {
     dyno_tran: DynoTran,
     gravity: Gravity,
     bounds: Bounds,
-    statics: StaticReceiver,
-    triggers: TriggerKind,
+    static_rx: StaticReceiver,
+    trigger_rx: TriggerReceiver,
     spatial: SpatialBundle,
 }
 impl BulletPhysicsBundle {
     pub fn new(pos: Vec2, vel: Vec2, good: bool) -> Self {
+        let kind = if good {
+            TriggerKind::BulletGood
+        } else {
+            TriggerKind::BulletBad
+        };
         Self {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
             bounds: Bounds::from_shape(Shape::Circle { radius: 2.0 }),
-            statics: StaticReceiver::from_kind(StaticReceiverKind::Stop),
-            triggers: if good {
-                TriggerKind::BulletGood
-            } else {
-                TriggerKind::BulletBad
-            },
+            static_rx: StaticReceiver::from_kind(StaticReceiverKind::Stop),
+            trigger_rx: TriggerReceiver::from_kind(kind),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_BULLET),
             )),

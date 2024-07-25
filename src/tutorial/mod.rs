@@ -16,15 +16,43 @@ fn setup_tutorial(
 ) {
     next_convo_state.set(ConvoState::TutorialEggUnwrap);
     commands
+        .spawn(StickyPlatformBundle::around_room())
+        .set_parent(tutorial_root.eid());
+    commands
         .spawn(StickyPlatformBundle::new(
-            "test",
-            Vec2::ZERO,
-            Shape::Circle { radius: 50.0 },
+            "chain1",
+            Vec2::new(-90.0, -30.0),
+            Shape::Circle { radius: 15.0 },
         ))
         .insert(DynoRot { rot: 2.0 })
         .set_parent(tutorial_root.eid());
     commands
-        .spawn(StickyPlatformBundle::around_room())
+        .spawn(StickyPlatformBundle::new(
+            "chain2",
+            Vec2::new(-10.0, 10.0),
+            Shape::Circle { radius: 25.0 },
+        ))
+        .insert(DynoRot { rot: -4.0 })
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(StickyPlatformBundle::new(
+            "chain3",
+            Vec2::new(70.0, 35.0),
+            Shape::Circle { radius: 15.0 },
+        ))
+        .insert(DynoRot { rot: 2.0 })
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(StickyPlatformBundle::new(
+            "perch",
+            Vec2::new(140.0, 45.0),
+            Shape::Polygon {
+                points: simple_rect(40.0, 10.0),
+            },
+        ))
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(BirdBundle::new(Vec2::new(-125.0, -80.0), Vec2::ZERO, 1, 1))
         .set_parent(tutorial_root.eid());
     BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
 }

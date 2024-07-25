@@ -1,7 +1,5 @@
 use crate::prelude::*;
-use bevy::{
-    math::VectorSpace, render::primitives::Aabb, sprite::Mesh2dHandle, utils::hashbrown::HashMap,
-};
+use bevy::{render::primitives::Aabb, sprite::Mesh2dHandle, utils::hashbrown::HashMap};
 
 #[derive(Clone, Reflect, Debug)]
 pub struct SpriteInfo {

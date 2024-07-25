@@ -92,9 +92,9 @@ impl MyAngleSetter for Transform {
 pub fn simple_rect(width: f32, height: f32) -> Vec<Vec2> {
     vec![
         Vec2::new(-width / 2.0, -height / 2.0),
-        Vec2::new(width / 2.0, -height / 2.0),
-        Vec2::new(width / 2.0, height / 2.0),
         Vec2::new(-width / 2.0, height / 2.0),
+        Vec2::new(width / 2.0, height / 2.0),
+        Vec2::new(width / 2.0, -height / 2.0),
     ]
 }
 

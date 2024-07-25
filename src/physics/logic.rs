@@ -33,7 +33,7 @@ fn move_uninteresting_dynos(
             Without<DynoTran>,
             Without<StaticProvider>,
             Without<StaticReceiver>,
-            Without<TriggerKind>,
+            Without<TriggerReceiver>,
         ),
     >,
     mut both_dynos: Query<
@@ -41,7 +41,7 @@ fn move_uninteresting_dynos(
         (
             Without<StaticProvider>,
             Without<StaticReceiver>,
-            Without<TriggerKind>,
+            Without<TriggerReceiver>,
         ),
     >,
     mut tran_only_dynos: Query<
@@ -50,7 +50,7 @@ fn move_uninteresting_dynos(
             Without<DynoRot>,
             Without<StaticProvider>,
             Without<StaticReceiver>,
-            Without<TriggerKind>,
+            Without<TriggerReceiver>,
         ),
     >,
 ) {
@@ -78,7 +78,7 @@ fn move_static_kind_dynos(
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
     mut rot_only_dynos: Query<
-        (Option<&TriggerKind>, &DynoRot, &mut Transform),
+        (Option<&TriggerReceiver>, &DynoRot, &mut Transform),
         (
             Without<DynoTran>,
             With<StaticProvider>,
@@ -86,11 +86,16 @@ fn move_static_kind_dynos(
         ),
     >,
     mut both_dynos: Query<
-        (Option<&TriggerKind>, &DynoRot, &DynoTran, &mut Transform),
+        (
+            Option<&TriggerReceiver>,
+            &DynoRot,
+            &DynoTran,
+            &mut Transform,
+        ),
         (With<StaticProvider>, Without<StaticReceiver>),
     >,
     mut tran_only_dynos: Query<
-        (Option<&TriggerKind>, &DynoTran, &mut Transform),
+        (Option<&TriggerReceiver>, &DynoTran, &mut Transform),
         (
             Without<DynoRot>,
             With<StaticProvider>,
@@ -135,6 +140,7 @@ fn resolve_static_collisions(
     gtran_offset: Vec2,
     providers: &mut Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     commands: &mut Commands,
+    collision_root: &CollisionRoot,
 ) {
     for (provider_eid, provider_bounds, mut provider_data, provider_gtran) in providers {
         // Correct the global/local translation and see if there is a collision
@@ -153,19 +159,20 @@ fn resolve_static_collisions(
             continue;
         };
 
-        // Add the collision records
-        let receiver_record = StaticCollisionRecordReceiver {
+        let collision_record = StaticCollisionRecord {
             pos: cp,
             provider_eid,
             provider_kind: provider_data.kind,
-        };
-        rx.collisions.push_back(receiver_record);
-        let provider_record = StaticCollisionRecordProvider {
-            pos: cp,
             receiver_eid: eid,
             receiver_kind: rx.kind,
         };
-        provider_data.collisions.push_back(provider_record);
+        let collision_eid = commands
+            .spawn(StaticCollisionBundle::new(collision_record))
+            .set_parent(collision_root.eid())
+            .id();
+
+        rx.collisions.push_back(collision_eid);
+        provider_data.collisions.push_back(collision_eid);
 
         // Then actually move the objects out of each other and handle physics updates
         tran.translation += mvmt.extend(0.0);
@@ -203,6 +210,18 @@ fn resolve_static_collisions(
     }
 }
 
+fn resolve_trigger_collisions(
+    eid: Entity,
+    bounds: &Bounds,
+    rx: &mut TriggerReceiver,
+    dyno_tran: &mut DynoTran,
+    gtran: &Vec2,
+    providers: &mut Query<(Entity, &Bounds, &mut TriggerReceiver, &GlobalTransform)>,
+    commands: &mut Commands,
+    collision_root: &CollisionRoot,
+) {
+}
+
 /// Moves all dynos (both rot and tran) that receive static collisions and ARE NOT stuck. Some may have triggers!
 fn move_unstuck_static_receiver_dynos(
     time: Res<Time>,
@@ -214,7 +233,7 @@ fn move_unstuck_static_receiver_dynos(
             Entity,
             &Bounds,
             &mut StaticReceiver,
-            Option<&TriggerKind>,
+            Option<&TriggerReceiver>,
             &mut DynoTran,
             &mut Transform,
             &GlobalTransform,
@@ -223,6 +242,7 @@ fn move_unstuck_static_receiver_dynos(
     >,
     mut providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     mut commands: Commands,
+    collision_root: Res<CollisionRoot>,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     if !rot_only_dynos.is_empty() {
@@ -231,10 +251,12 @@ fn move_unstuck_static_receiver_dynos(
     if !both_dynos.is_empty() {
         unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
     }
-    for (eid, bounds, mut rx, _trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
+
+    for (eid, bounds, mut rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
         let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
         let mut amount_moved = 0.0;
         let mut total_to_move = dyno_tran.vel.length() * time_factor;
+        println!("total_to_move {total_to_move}");
         while amount_moved < total_to_move {
             // TODO: This is hella inefficient but I just wanna get it working first
             let dir = dyno_tran.vel.normalize_or_zero();
@@ -251,7 +273,9 @@ fn move_unstuck_static_receiver_dynos(
                 gtran_offset,
                 &mut providers,
                 &mut commands,
+                &collision_root,
             );
+            if let Some(trigger) = trigger {}
             // Update the loop stuff
             amount_moved += MAX_TRAN_STEP_LENGTH;
             total_to_move = total_to_move.min(dyno_tran.vel.length() * time_factor);
@@ -262,7 +286,12 @@ fn move_unstuck_static_receiver_dynos(
 /// Moves all dynos (both rot and tran) that receive static collisions and ARE stuck. Some may have triggers!
 fn move_stuck_static_receiver_dynos(
     mut tran_only_dynos: Query<
-        (&Stuck, Option<&TriggerKind>, &mut DynoTran, &mut Transform),
+        (
+            &Stuck,
+            Option<&TriggerReceiver>,
+            &mut DynoTran,
+            &mut Transform,
+        ),
         (
             With<Bounds>,
             With<StaticReceiver>,

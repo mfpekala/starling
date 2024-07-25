@@ -147,14 +147,17 @@ fn draw_bounds(
         &Bounds,
         &GlobalTransform,
         Option<&StaticProvider>,
-        Option<&TriggerKind>,
+        Option<&TriggerReceiver>,
     )>,
-    mouse_state: Res<MouseState>,
+    mouse_state: Res<MouseInput>,
     mut gz: Gizmos,
 ) {
     for (bound, gtran, stat, trig) in &bounds_q {
         let (tran, angle) = gtran.tran_n_angle();
-        let color = match (stat.map(|provider| provider.kind), trig) {
+        let color = match (
+            stat.map(|provider| provider.kind),
+            trig.map(|thing| thing.kind.clone()),
+        ) {
             (Some(StaticProviderKind::Normal), _) => tailwind::STONE_700,
             (Some(StaticProviderKind::Sticky), _) => tailwind::PINK_600,
             (None, Some(TriggerKind::Bird)) => tailwind::GREEN_600,
