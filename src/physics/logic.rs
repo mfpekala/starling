@@ -4,7 +4,7 @@ use crate::prelude::*;
 /// occur in steps of this length to resolve collisions for fast-moving objects.
 const MAX_TRAN_STEP_LENGTH: f32 = 2.0;
 
-/// Resets all records (collisions + triggers)
+/// Resets all records (collisions + triggers). Happens during PreUpdate
 fn reset_collision_records(
     mut statics_provider_q: Query<&mut StaticProvider>,
     mut statics_receiver_q: Query<&mut StaticReceiver>,
@@ -18,6 +18,55 @@ fn reset_collision_records(
         receiver.collisions = VecDeque::new();
     }
     commands.entity(collision_root.eid()).despawn_descendants();
+}
+
+/// Enforces current limitations in the physics system by panicking if I ever fuck up.
+fn enforce_invariants(
+    provider_and_receiver: Query<Entity, (With<StaticProvider>, With<StaticReceiver>)>,
+    trigger_on_static: Query<Entity, (With<TriggerReceiver>, With<StaticProvider>)>,
+    no_bounds: Query<
+        Entity,
+        (
+            Or<(
+                With<StaticProvider>,
+                With<StaticReceiver>,
+                With<TriggerReceiver>,
+            )>,
+            Without<Bounds>,
+        ),
+    >,
+    no_gtran: Query<
+        Entity,
+        (
+            Or<(
+                With<StaticProvider>,
+                With<StaticReceiver>,
+                With<TriggerReceiver>,
+            )>,
+            Without<GlobalTransform>,
+        ),
+    >,
+    no_dyno_tran_on_static_receiver: Query<Entity, (With<StaticReceiver>, Without<DynoTran>)>,
+    dyno_rot_on_static_receiver: Query<Entity, (With<StaticReceiver>, With<DynoRot>)>,
+) {
+    if !provider_and_receiver.is_empty() {
+        panic!("An entity cannot be both a static provider and a static receiver");
+    }
+    if !trigger_on_static.is_empty() {
+        panic!("Trigger receivers on static providers are not yet supported");
+    }
+    if !no_bounds.is_empty() {
+        panic!("No bounds on a static/trigger");
+    }
+    if !no_gtran.is_empty() {
+        panic!("No global transform on a static/trigger");
+    }
+    if !no_dyno_tran_on_static_receiver.is_empty() {
+        panic!("No dynotran on static receiver (how is it supposed to move?)");
+    }
+    if !dyno_rot_on_static_receiver.is_empty() {
+        panic!("Cannot yet put a dynoRot on a staticreceiver, sorry");
+    }
 }
 
 /// Moves all dynos (both rot and tran) that are not statics, do not collide with statics, and have no triggers
@@ -70,27 +119,16 @@ fn move_uninteresting_dynos(
     }
 }
 
-/// Moves all dynos (both rot and tran) that are statics. Some may have triggers!
-fn move_static_kind_dynos(
+/// Moves all dynos (both rot and tran) that are static providers.
+/// NOTE: Trigger support does not yet exist on static providers, i.e. these entities cannot have triggers.
+fn move_static_provider_dynos(
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
     mut rot_only_dynos: Query<
-        (Option<&TriggerReceiver>, &DynoRot, &mut Transform),
-        (
-            Without<DynoTran>,
-            With<StaticProvider>,
-            Without<StaticReceiver>,
-        ),
+        (&DynoRot, &mut Transform),
+        (Without<DynoTran>, With<StaticProvider>),
     >,
-    mut both_dynos: Query<
-        (
-            Option<&TriggerReceiver>,
-            &DynoRot,
-            &DynoTran,
-            &mut Transform,
-        ),
-        (With<StaticProvider>, Without<StaticReceiver>),
-    >,
+    mut both_dynos: Query<(&DynoRot, &DynoTran, &mut Transform), With<StaticProvider>>,
     mut tran_only_dynos: Query<
         (Option<&TriggerReceiver>, &DynoTran, &mut Transform),
         (
@@ -107,16 +145,10 @@ fn move_static_kind_dynos(
     let apply_translation = |dyno_tran: &DynoTran, tran: &mut Mut<Transform>| {
         tran.translation += (dyno_tran.vel * time_factor).extend(0.0);
     };
-    for (triggers, dyno_rot, mut tran) in &mut rot_only_dynos {
-        if triggers.is_some() {
-            unimplemented!("Triggers on StaticKind (providers) is not yet supported");
-        }
+    for (dyno_rot, mut tran) in &mut rot_only_dynos {
         apply_rotation(dyno_rot, &mut tran);
     }
-    for (triggers, dyno_rot, dyno_tran, mut tran) in &mut both_dynos {
-        if triggers.is_some() {
-            unimplemented!("Triggers on StaticKind (providers) is not yet supported");
-        }
+    for (dyno_rot, dyno_tran, mut tran) in &mut both_dynos {
         apply_rotation(dyno_rot, &mut tran);
         apply_translation(dyno_tran, &mut tran);
     }
@@ -128,6 +160,8 @@ fn move_static_kind_dynos(
     }
 }
 
+/// A helper function to resolve static collisions for a single entity. This will do the work of pushing the
+/// entity given by eid outside of other entities it's colliding with
 fn resolve_static_collisions(
     eid: Entity,
     bounds: &Bounds,
@@ -207,6 +241,9 @@ fn resolve_static_collisions(
     }
 }
 
+/// Resolves trigger collisions. Note that the data is broken up into multiple queries to allow for
+/// proper handling in the parent systems.
+///
 /// I actually believe this has a slight bug. It always uses global transform, which is static all frame.
 /// I.e. if bullet a moves and then bullet b goes it will still be checking against bullet a old pos.
 /// Ehh probably fine
@@ -268,22 +305,29 @@ fn resolve_trigger_collisions(
     }
 }
 
-fn new_move_unstuck_static_receiver_dynos(
+/// Handles moving all unstuck dynos that have _either_ a staticreceiver or a triggerreceiver
+fn move_unstuck_static_or_trigger_receivers(
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
     relevant_eids: Query<
         Entity,
         (
-            With<StaticReceiver>,
-            Without<StaticProvider>,
+            Or<(With<StaticReceiver>, With<TriggerReceiver>)>,
             Without<Stuck>,
+            Or<(With<DynoTran>, With<DynoRot>)>,
         ),
     >,
     shared_data: Query<(Entity, &Bounds, &GlobalTransform)>,
-    mut static_data: Query<
-        (Entity, &mut StaticReceiver, &mut DynoTran, &mut Transform),
-        (Without<StaticProvider>, Without<Stuck>),
+    mut dyno_data: Query<
+        (
+            Entity,
+            Option<&mut DynoTran>,
+            Option<&mut DynoRot>,
+            &mut Transform,
+        ),
+        Or<(With<DynoTran>, With<DynoRot>)>,
     >,
+    mut static_data: Query<(Entity, &mut StaticReceiver), Without<Stuck>>,
     mut trigger_data: Query<(Entity, &mut TriggerReceiver)>,
     mut static_providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     mut commands: Commands,
@@ -296,41 +340,75 @@ fn new_move_unstuck_static_receiver_dynos(
         let my_bounds = my_bounds.clone();
         let my_gtran = my_gtran.clone();
 
-        // Mutable static data (need to mutate and then assign at end)
-        let (_, my_static_rx, my_dyno_tran, my_tran) = static_data.get(eid).unwrap();
-        let mut my_static_rx = my_static_rx.clone();
-        let mut my_dyno_tran = my_dyno_tran.clone();
+        // Mutable dyno data (need to mutate and then assign at end)
+        let (_, my_dyno_tran, my_dyno_rot, my_tran) = dyno_data.get(eid).unwrap();
+        let mut my_dyno_tran = my_dyno_tran.map(|inner| inner.clone());
+        let mut my_dyno_rot = my_dyno_rot.map(|inner| inner.clone());
         let mut my_tran = my_tran.clone();
+        let my_gtran_offset = my_gtran.translation().truncate() - my_tran.translation.truncate();
+
+        // Mutable static data (need to mutate and then assign at end)
+        let mut my_static = static_data.get(eid).ok().map(|inner| inner.1.clone());
 
         // Mutable trigger data (need to mutate and then assign at end)
         let mut my_trigger = trigger_data.get(eid).ok().map(|inner| inner.1.clone());
         let mut dup_set = HashSet::<(Entity, Entity)>::new();
 
-        let gtran_offset = my_gtran.translation().truncate() - my_tran.translation.truncate();
-        let mut amount_moved = 0.0;
-        let mut total_to_move = my_dyno_tran.vel.length() * time_factor;
-        while amount_moved < total_to_move {
-            // TODO: This is hella inefficient but I just wanna get it working first
-            let dir = my_dyno_tran.vel.normalize_or_zero();
-            let mag =
-                (my_dyno_tran.vel.length() * time_factor - amount_moved).min(MAX_TRAN_STEP_LENGTH);
-            let moving = dir * mag;
-            my_tran.translation += moving.extend(0.0);
-            resolve_static_collisions(
-                eid,
-                &my_bounds,
-                &mut my_static_rx,
-                &mut my_dyno_tran,
-                &mut my_tran,
-                gtran_offset,
-                &mut static_providers,
-                &mut commands,
-                &collision_root,
-            );
+        // If we have rotational movement, rotate first
+        if let Some(my_dyno_rot) = my_dyno_rot.as_mut() {
+            my_tran.rotate_z(my_dyno_rot.rot * time_factor);
+        }
+
+        // If we have translational movement, inch along
+        if let Some(mut my_dyno_tran) = my_dyno_tran.as_mut() {
+            let mut amount_moved = 0.0;
+            let mut total_to_move = my_dyno_tran.vel.length() * time_factor;
+            while amount_moved < total_to_move {
+                // TODO: This is hella inefficient but I just wanna get it working first
+                let dir = my_dyno_tran.vel.normalize_or_zero();
+                let mag = (my_dyno_tran.vel.length() * time_factor - amount_moved)
+                    .min(MAX_TRAN_STEP_LENGTH);
+                let moving = dir * mag;
+                my_tran.translation += moving.extend(0.0);
+                if let Some(mut my_static_rx) = my_static.as_mut() {
+                    resolve_static_collisions(
+                        eid,
+                        &my_bounds,
+                        &mut my_static_rx,
+                        &mut my_dyno_tran,
+                        &mut my_tran,
+                        my_gtran_offset,
+                        &mut static_providers,
+                        &mut commands,
+                        &collision_root,
+                    );
+                }
+                if let Some(my_trigger_rx) = my_trigger.as_mut() {
+                    // Basically because GlobalTransform doesn't update mid-system we need to do this shenanigans
+                    let mut mid_step_gtran = my_tran.clone();
+                    mid_step_gtran.translation += my_gtran_offset.extend(0.0);
+                    resolve_trigger_collisions(
+                        eid,
+                        &my_bounds,
+                        my_trigger_rx,
+                        &mid_step_gtran,
+                        &shared_data,
+                        &mut trigger_data,
+                        &mut commands,
+                        &collision_root,
+                        &mut dup_set,
+                    );
+                }
+                // Update the loop stuff
+                amount_moved += MAX_TRAN_STEP_LENGTH;
+                total_to_move = total_to_move.min(my_dyno_tran.vel.length() * time_factor);
+            }
+        } else {
+            // We're not translating, resolve triggers once to be sure;
             if let Some(my_trigger_rx) = my_trigger.as_mut() {
                 // Basically because GlobalTransform doesn't update mid-system we need to do this shenanigans
                 let mut mid_step_gtran = my_tran.clone();
-                mid_step_gtran.translation += gtran_offset.extend(0.0);
+                mid_step_gtran.translation += my_gtran_offset.extend(0.0);
                 resolve_trigger_collisions(
                     eid,
                     &my_bounds,
@@ -343,74 +421,25 @@ fn new_move_unstuck_static_receiver_dynos(
                     &mut dup_set,
                 );
             }
-            // Update the loop stuff
-            amount_moved += MAX_TRAN_STEP_LENGTH;
-            total_to_move = total_to_move.min(my_dyno_tran.vel.length() * time_factor);
         }
-        let (_, mut reset_rx, mut reset_dyno_tran, mut reset_tran) =
-            static_data.get_mut(eid).unwrap();
-        *reset_rx = my_static_rx;
-        *reset_dyno_tran = my_dyno_tran;
+
+        let (_, reset_dyno_tran, reset_dyno_rot, mut reset_tran) = dyno_data.get_mut(eid).unwrap();
+        if let Some(mut reset_dyno_tran) = reset_dyno_tran {
+            *reset_dyno_tran = my_dyno_tran.unwrap();
+        }
+        if let Some(mut reset_dyno_rot) = reset_dyno_rot {
+            *reset_dyno_rot = my_dyno_rot.unwrap();
+        }
         *reset_tran = my_tran;
-    }
-}
 
-/// Moves all dynos (both rot and tran) that receive static collisions and ARE NOT stuck. Some may have triggers!
-fn move_unstuck_static_receiver_dynos(
-    time: Res<Time>,
-    bullet_time: Res<BulletTime>,
-    rot_only_dynos: Query<(&StaticReceiver, &DynoRot), (Without<DynoTran>,)>,
-    both_dynos: Query<(&StaticReceiver, &DynoRot, &DynoTran)>,
-    mut tran_only_dynos: Query<
-        (
-            Entity,
-            &Bounds,
-            &mut StaticReceiver,
-            Option<&TriggerReceiver>,
-            &mut DynoTran,
-            &mut Transform,
-            &GlobalTransform,
-        ),
-        (Without<DynoRot>, Without<StaticProvider>, Without<Stuck>),
-    >,
-    mut providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
-    mut commands: Commands,
-    collision_root: Res<CollisionRoot>,
-) {
-    let time_factor = time.delta_seconds() * bullet_time.factor();
-    if !rot_only_dynos.is_empty() {
-        unimplemented!("DynoRot on StaticReceiver is not yet supported (single)");
-    }
-    if !both_dynos.is_empty() {
-        unimplemented!("DynoRot on StaticReceiver is not yet supported (both)");
-    }
+        let reset_rx = static_data.get_mut(eid).ok().map(|inner| inner.1);
+        if let Some(mut reset_rx) = reset_rx {
+            *reset_rx = my_static.unwrap();
+        }
 
-    for (eid, bounds, mut rx, trigger, mut dyno_tran, mut tran, gtran) in &mut tran_only_dynos {
-        let gtran_offset = gtran.translation().truncate() - tran.translation.truncate();
-        let mut amount_moved = 0.0;
-        let mut total_to_move = dyno_tran.vel.length() * time_factor;
-        while amount_moved < total_to_move {
-            // TODO: This is hella inefficient but I just wanna get it working first
-            let dir = dyno_tran.vel.normalize_or_zero();
-            let mag =
-                (dyno_tran.vel.length() * time_factor - amount_moved).min(MAX_TRAN_STEP_LENGTH);
-            let moving = dir * mag;
-            tran.translation += moving.extend(0.0);
-            resolve_static_collisions(
-                eid,
-                bounds,
-                &mut rx,
-                &mut dyno_tran,
-                &mut tran,
-                gtran_offset,
-                &mut providers,
-                &mut commands,
-                &collision_root,
-            );
-            if let Some(trigger) = trigger {}
-            // Update the loop stuff
-            amount_moved += MAX_TRAN_STEP_LENGTH;
-            total_to_move = total_to_move.min(dyno_tran.vel.length() * time_factor);
+        let reset_rx = trigger_data.get_mut(eid).ok().map(|inner| inner.1);
+        if let Some(mut reset_rx) = reset_rx {
+            *reset_rx = my_trigger.unwrap();
         }
     }
 }
@@ -462,18 +491,28 @@ fn apply_gravity(
 }
 
 pub(super) fn register_logic(app: &mut App) {
+    // Reset collisions during preupdate
     app.add_systems(
         PreUpdate,
         reset_collision_records
             .in_set(PhysicsSet)
             .run_if(in_state(PhysicsState::Active)),
     );
+    // Enforce invariants during update when in dev mode
+    app.add_systems(
+        Update,
+        enforce_invariants
+            .in_set(PhysicsSet)
+            .run_if(in_state(PhysicsState::Active))
+            .run_if(in_state(AppMode::Dev)),
+    );
+    // Physics yay!
     app.add_systems(
         Update,
         (
             move_uninteresting_dynos,
-            move_static_kind_dynos,
-            new_move_unstuck_static_receiver_dynos,
+            move_static_provider_dynos,
+            move_unstuck_static_or_trigger_receivers,
             move_stuck_static_receiver_dynos,
             move_trigger_only_dynos,
             apply_gravity,
