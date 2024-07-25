@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use crate::prelude::*;
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
@@ -7,6 +5,12 @@ use crate::prelude::*;
 const MAX_TRAN_STEP_LENGTH: f32 = 1.0;
 
 /// Resets all records (collisions + triggers (TODO: add trigger support here))
+/// TODO: Do something more extensible. The collision records should exist in the world.
+///       BUT there should be a fast way to get the collisions associated with a given Eid.
+///       Why?
+///           - This would enable an ergonomic system that iterates through all collisions to spawn collision sounds, particles, etc
+///           - Without this, all of this kind of stuff^ has to iterate over all providers and receivers (bad), even though most of them will not be involved in a collision
+///           - I could see a world where when there is an object we spawn a `CollisionRecord` and make these VecDeques the eids of htat spawned record
 fn reset_collision_records(
     mut statics_provider_q: Query<&mut StaticProvider>,
     mut statics_receiver_q: Query<&mut StaticReceiver>,

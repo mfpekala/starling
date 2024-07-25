@@ -95,7 +95,9 @@ macro_rules! impl_root_init {
 impl_root_init!(
     ConvoRoot,
     CutsceneRoot,
-    DebugRoot,
+    DebugRoot {
+        offset: Vec3::new(0.0, 0.0, ZIX_DEBUG),
+    },
     LayeringRoot,
     MenuRoot {
         offset: Vec3::new(0.0, 0.0, ZIX_MENU),

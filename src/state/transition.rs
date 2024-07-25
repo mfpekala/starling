@@ -150,10 +150,8 @@ fn update_transition(
     }
 }
 
-fn destroy_transition(roots: Query<Entity, With<TransitionData>>, mut commands: Commands) {
-    for root in &roots {
-        commands.entity(root).despawn_recursive();
-    }
+fn destroy_transition(mut commands: Commands, transition_root: Res<TransitionRoot>) {
+    commands.entity(transition_root.eid()).despawn_descendants();
 }
 
 pub(super) fn register_transition(app: &mut App) {

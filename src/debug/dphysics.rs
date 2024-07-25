@@ -214,6 +214,6 @@ fn draw_bounds(
 
 pub(super) fn register_physics_debug(app: &mut App) {
     app.add_computed_state::<ShowPhysicsBounds>();
-    app.add_systems(OnEnter(ShowPhysicsBounds), startup_debug);
+    // app.add_systems(OnEnter(ShowPhysicsBounds), startup_debug);
     app.add_systems(Update, draw_bounds.run_if(in_state(ShowPhysicsBounds)));
 }

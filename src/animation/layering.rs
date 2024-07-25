@@ -55,6 +55,7 @@ pub struct LayeringSettings {
     bg_ambient_light: ClearColorConfig,
     clear_color: ClearColorConfig,
     ambient_light: ClearColorConfig,
+    menu_clear_color: ClearColorConfig,
 }
 impl Default for LayeringSettings {
     fn default() -> Self {
@@ -63,6 +64,7 @@ impl Default for LayeringSettings {
             bg_ambient_light: ClearColorConfig::Custom(Color::srgb(0.2, 0.2, 0.2)),
             clear_color: ClearColorConfig::Custom(Color::srgba(0.1, 0.1, 0.1, 0.05)),
             ambient_light: ClearColorConfig::Custom(Color::srgb(0.7, 0.7, 0.7)),
+            menu_clear_color: ClearColorConfig::Custom(Color::srgba(0.0, 0.0, 0.0, 0.0)),
         }
     }
 }
@@ -289,7 +291,7 @@ fn setup_layers(
         "menu_camera",
         4,
         camera_targets.menu_target.clone(),
-        layering_settings.clear_color
+        layering_settings.menu_clear_color
     );
 }
 

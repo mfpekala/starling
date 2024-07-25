@@ -8,12 +8,14 @@ pub mod consts;
 pub mod convo;
 pub mod debug;
 pub mod input;
+pub mod macros;
 pub mod math;
 pub mod menu;
 pub mod physics;
 pub mod roots;
 pub mod settings;
 pub mod state;
+pub mod tutorial;
 
 use consts::*;
 
@@ -25,6 +27,7 @@ pub mod prelude {
     pub use super::consts::*;
     pub use super::convo::*;
     pub use super::input::*;
+    pub use super::macros::*;
     pub use super::math::*;
     #[allow(unused_imports)]
     pub use super::menu::*;
@@ -32,6 +35,7 @@ pub mod prelude {
     pub use super::roots::*;
     pub use super::settings::*;
     pub use super::state::*;
+    pub use super::tutorial;
     pub use bevy::color::palettes::tailwind;
     pub use bevy::prelude::*;
     pub use bevy::render::view::RenderLayers;
@@ -70,6 +74,7 @@ fn main() {
         .add_plugins(physics::PhysicsPlugin)
         .add_plugins(roots::RootPlugin)
         .add_plugins(settings::SettingsPlugin)
-        .add_plugins(state::StatePlugin);
+        .add_plugins(state::StatePlugin)
+        .add_plugins(tutorial::TutorialPlugin);
     app.run();
 }

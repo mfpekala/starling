@@ -141,8 +141,8 @@ pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         // Ground truth states
-        // app.insert_state(MetaState::Menu(MenuState::Studio));
-        app.insert_state(MetaState::Tutorial(TutorialState::LearnFlight));
+        // app.insert_state(MetaState::Menu(MenuState::Studio)); // INITIAL STATE (control f this silly)
+        app.insert_state(MetaState::Tutorial(TutorialState::LearnFlight)); // INITIAL STATE (control f this silly)
         app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);
         app.insert_state(AppMode::Dev);

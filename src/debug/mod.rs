@@ -55,6 +55,7 @@ impl Plugin for DebugPlugin {
         // Debug
         app.insert_resource(DebugInteractive(DebugState::default()));
         app.add_plugins(ResourceInspectorPlugin::<DebugInteractive>::new());
+        app.add_plugins(ResourceInspectorPlugin::<State<MetaState>>::new());
         app.add_systems(Update, update_debug_state.run_if(in_state(AppMode::Dev)));
     }
 }

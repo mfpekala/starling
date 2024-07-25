@@ -31,6 +31,7 @@ pub const WINDOW_VEC_f32: Vec2 = Vec2::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32);
 // Helpful to have all the z-indices here for rendor order shenanigans
 pub const ZIX_BIRD: f32 = 5.0;
 pub const ZIX_BULLET: f32 = 4.0;
+pub const ZIX_DEBUG: f32 = 350.0;
 pub const ZIX_MENU: f32 = 300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
 pub const ZIX_STICKY: f32 = 3.0;
