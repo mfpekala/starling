@@ -445,14 +445,11 @@ fn move_unstuck_static_or_trigger_receivers(
 }
 
 /// Moves all dynos (both rot and tran) that receive static collisions and ARE stuck. Some may have triggers!
+/// SLIGHT BUG: If there are two triggers that are both stuck, and come into contact while stuck, nothing will happen
+/// Should be more than fine for this game but is not a perfect physics engine.
 fn move_stuck_static_receiver_dynos(
-    mut tran_only_dynos: Query<
-        (
-            &Stuck,
-            Option<&TriggerReceiver>,
-            &mut DynoTran,
-            &mut Transform,
-        ),
+    mut stuck_dynos: Query<
+        (Entity, &Stuck, &mut DynoTran, &mut Transform),
         (
             With<Bounds>,
             With<StaticReceiver>,
@@ -461,10 +458,11 @@ fn move_stuck_static_receiver_dynos(
             Without<StaticProvider>,
         ),
     >,
-    providers: Query<&GlobalTransform, (With<Bounds>, With<StaticProvider>)>,
+    static_providers: Query<&GlobalTransform, (With<Bounds>, With<StaticProvider>)>,
 ) {
-    for (stuck, _trigger, mut dyno_tran, mut tran) in &mut tran_only_dynos {
-        let provider_gtran = providers.get(stuck.parent).unwrap();
+    // First move the things
+    for (_eid, stuck, mut dyno_tran, mut tran) in &mut stuck_dynos {
+        let provider_gtran = static_providers.get(stuck.parent).unwrap();
         dyno_tran.vel = Vec2::ZERO;
         let (provider_tran, provider_angle) = provider_gtran.tran_n_angle();
         let angle_diff = provider_angle - stuck.parent_initial_angle;
@@ -474,9 +472,6 @@ fn move_stuck_static_receiver_dynos(
         tran.translation.y = provider_tran.y + rotated_pos.y;
     }
 }
-
-/// Moves all dynos (both rot and tran) that have triggers but no static interactions (kind or receive)
-fn move_trigger_only_dynos() {}
 
 /// Apply gravity to all entities that have `Gravity` and `DynoTran`
 fn apply_gravity(
@@ -514,7 +509,6 @@ pub(super) fn register_logic(app: &mut App) {
             move_static_provider_dynos,
             move_unstuck_static_or_trigger_receivers,
             move_stuck_static_receiver_dynos,
-            move_trigger_only_dynos,
             apply_gravity,
         )
             .chain()
