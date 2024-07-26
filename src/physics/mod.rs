@@ -40,7 +40,7 @@ impl Plugin for PhysicsPlugin {
         app.register_type::<Inactive>();
         app.register_type::<StaticProvider>();
         app.register_type::<StaticReceiver>();
-        app.register_type::<TriggerKind>();
+        app.register_type::<TriggerReceiver>();
         app.register_type::<DynoTran>();
         app.register_type::<DynoRot>();
         app.register_type::<Gravity>();

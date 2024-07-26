@@ -78,3 +78,19 @@ impl BulletPhysicsBundle {
         }
     }
 }
+
+#[derive(Bundle)]
+pub struct TutorialTriggerPhysicsBundle {
+    pub bounds: Bounds,
+    trigger_rx: TriggerReceiver,
+    spatial: SpatialBundle,
+}
+impl TutorialTriggerPhysicsBundle {
+    pub fn new(pos: Vec2, radius: f32, key: String) -> Self {
+        Self {
+            bounds: Bounds::from_shape(Shape::Circle { radius }),
+            trigger_rx: TriggerReceiver::from_kind(TriggerKind::Tutorial { key }),
+            spatial: spat_tran(pos.x, pos.y, ZIX_TUTORIAL_TRIGGER),
+        }
+    }
+}

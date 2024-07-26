@@ -10,6 +10,11 @@ use components::*;
 pub enum ConvoState {
     None,
     TutorialEggUnwrap,
+    TutorialLaunchChallengeStart,
+    TutorialLaunchSlowMotionRemark,
+    TutorialLaunchExhaustedWarning,
+    TutorialLaunchFlightWarning,
+    TutorialLaunchChallengeCompleted,
 }
 
 fn setup_convo(

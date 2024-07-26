@@ -3,6 +3,9 @@ use platforms::StickyPlatformBundle;
 
 use crate::prelude::*;
 
+pub(self) mod fly_spots;
+mod learn_to_fly;
+
 /// Sets up the tutorial.
 /// NOTE: For simplicity, you can't save game mid tutorial, i.e. we are assuming that
 /// the state transitions will always go:
@@ -77,5 +80,7 @@ impl Plugin for TutorialPlugin {
             OnExit(TutorialState::LearnShooting.to_meta_state()),
             destroy_tutorial,
         );
+
+        learn_to_fly::register_learn_to_fly(app);
     }
 }

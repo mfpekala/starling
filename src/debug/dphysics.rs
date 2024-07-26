@@ -164,6 +164,7 @@ fn draw_bounds(
             (None, Some(TriggerKind::BulletGood)) => tailwind::GREEN_400,
             (None, Some(TriggerKind::Enemy)) => tailwind::RED_600,
             (None, Some(TriggerKind::BulletBad)) => tailwind::RED_500,
+            (None, Some(TriggerKind::Tutorial { .. })) => tailwind::ZINC_600,
             (None, None) => tailwind::ZINC_950,
         };
         bound.draw(tran, angle, &mut gz, color.into());

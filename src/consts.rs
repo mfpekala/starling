@@ -38,6 +38,7 @@ pub const ZIX_MENU: f32 = 300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
 pub const ZIX_STICKY: f32 = 3.0;
 pub const ZIX_TRANSITION: f32 = 500.0;
+pub const ZIX_TUTORIAL_TRIGGER: f32 = 4.0;
 pub const ZIX_MIN: f32 = -600.0; // Anything further back than this gets culled by the camera(s)
 pub const ZIX_MAX: f32 = 600.0; // Anything further forward than this gets culled by the camera(s)
 

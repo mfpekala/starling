@@ -29,7 +29,7 @@ macro_rules! anim_man {
         AnimationManager::from_nodes(vec![$(
             (&stringify!($name), AnimationNode {
                 sprite: SpriteInfo::new($path, $w, $h),
-                $(length: $length,)*
+                $(length: $length,)*r
                 $(fps: $fps,)*
                 $(next: Some($next.to_string()),)*
                 ..default()
@@ -42,9 +42,9 @@ pub use crate::anim_man;
 #[macro_export]
 macro_rules! multi {
     // Matches many animations
-    ([$(($name:expr, $anim:expr)$(,)?)+]) => {{
+    ([$(($name:expr, $anim:expr $(,)?)$(,)?)+]) => {{
         MultiAnimationManager::from_pairs(vec![$(
-            ($name, $anim)
+            ($name, $anim),
         )+])
     }};
     // Matches a single animation

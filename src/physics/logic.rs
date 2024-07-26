@@ -8,6 +8,7 @@ const MAX_TRAN_STEP_LENGTH: f32 = 2.0;
 fn reset_collision_records(
     mut statics_provider_q: Query<&mut StaticProvider>,
     mut statics_receiver_q: Query<&mut StaticReceiver>,
+    mut triggers_receiver_q: Query<&mut TriggerReceiver>,
     collision_root: Res<CollisionRoot>,
     mut commands: Commands,
 ) {
@@ -15,6 +16,9 @@ fn reset_collision_records(
         provider.collisions = VecDeque::new();
     }
     for mut receiver in statics_receiver_q.iter_mut() {
+        receiver.collisions = VecDeque::new();
+    }
+    for mut receiver in triggers_receiver_q.iter_mut() {
         receiver.collisions = VecDeque::new();
     }
     commands.entity(collision_root.eid()).despawn_descendants();
@@ -509,9 +513,15 @@ pub(super) fn register_logic(app: &mut App) {
             move_static_provider_dynos,
             move_unstuck_static_or_trigger_receivers,
             move_stuck_static_receiver_dynos,
-            apply_gravity,
         )
-            .chain()
+            .before(apply_gravity)
+            .in_set(PhysicsSet)
+            .after(InputSet)
+            .run_if(in_state(PhysicsState::Active)),
+    );
+    app.add_systems(
+        Update,
+        (apply_gravity)
             .in_set(PhysicsSet)
             .after(InputSet)
             .run_if(in_state(PhysicsState::Active)),

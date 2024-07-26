@@ -74,7 +74,7 @@ fn update_convo(
             Some(the_box) => {
                 // Time to have babies
                 convo.active_box_eid = Some(the_box.do_spawn(
-                    -(convo.bundles.len() as f32),
+                    -(convo.bundles.len() as f32) * 10.0 + 100.0,
                     &mut commands,
                     convo_root.eid(),
                 ));

@@ -11,6 +11,8 @@ pub enum TriggerKind {
     BulletGood,
     /// Basically marks the hitbox of an enemy
     Enemy,
+    /// Something used for the tutorial
+    Tutorial { key: String },
 }
 
 /// Marks an object as being a "triggerable" physics object. Should be attached to entities with `Bounds`.
