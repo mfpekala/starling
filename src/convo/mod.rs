@@ -15,6 +15,11 @@ pub enum ConvoState {
     TutorialLaunchExhaustedWarning,
     TutorialLaunchFlightWarning,
     TutorialLaunchChallengeCompleted,
+    TutorialBulletIntroStart,
+    TutorialBulletSpeedStart,
+    TutorialBulletSpeedTwoBirdsHelp,
+    TutorialBulletSpeedTwoBirdsJoke,
+    TutorialBulletSpeedComplete,
 }
 
 fn setup_convo(

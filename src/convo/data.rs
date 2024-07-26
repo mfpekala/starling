@@ -219,5 +219,103 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "I have something else to teach you."
             },
         ]),
+        ConvoState::TutorialBulletIntroStart => cvbb!([
+            {
+                speaker: Ghost,
+                content: "Flying away from your problems is nice..."
+            },
+            {
+                speaker: Ghost,
+                content: "but what if you could SHOOT them?"
+            },
+            {
+                speaker: Ghost,
+                content: "WOAH that came out wrong."
+            },
+            {
+                speaker: Ghost,
+                content: "I'm sorry."
+            },
+            {
+                speaker: Lennox,
+                content: "..."
+            },
+            {
+                speaker: Ghost,
+                content: "The forest is a dangerous place."
+            },
+            {
+                speaker: Ghost,
+                content: "I swear I'm not crazy or anything."
+            },
+            {
+                speaker: Lennox,
+                content: "*humph*"
+            },
+            {
+                speaker: Ghost,
+                content: "Anyway..."
+            },
+            {
+                speaker: Ghost,
+                content: "let's see if you have the nerve to fight back."
+            },
+        ]),
+        ConvoState::TutorialBulletSpeedStart => cvbb!([
+            {
+                speaker: Ghost,
+                content: "You're a natural."
+            },
+            {
+                speaker: Ghost,
+                content: "Let's make things more interesting."
+            },
+        ]),
+        ConvoState::TutorialBulletSpeedTwoBirdsHelp => cvbb!([
+            {
+                speaker: Ghost,
+                content: "Struggling?"
+            },
+            {
+                speaker: Ghost,
+                content: "Try to kill two targets with one bullet thing."
+            },
+            {
+                speaker: Ghost,
+                content: "P.S: Launching is much faster than flying."
+            },
+        ]),
+        ConvoState::TutorialBulletSpeedTwoBirdsJoke => cvbb!([
+            {
+                speaker: Ghost,
+                content: "Two targets with one bullet..."
+            },
+            {
+                speaker: Ghost,
+                content: "hehe."
+            },
+        ]),
+        ConvoState::TutorialBulletSpeedComplete => cvbb!([
+            {
+                speaker: Ghost,
+                content: "Pretty fun, eh?"
+            },
+            {
+                speaker: Ghost,
+                content: "I mean, only in self-defense obviously."
+            },
+            {
+                speaker: Ghost,
+                content: "Speaking of, I have one more test for you."
+            },
+            {
+                speaker: Ghost,
+                content: "And you'll have to forgive me."
+            },
+            {
+                speaker: Ghost,
+                content: "Because you're probably going to die."
+            },
+        ]),
     }
 }

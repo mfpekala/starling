@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 pub mod bounds;
 pub mod bundles;
-pub mod collision;
+pub mod collisions;
 pub mod dyno;
 mod logic;
 pub mod statics;
@@ -10,13 +10,16 @@ pub mod triggers;
 
 pub use bounds::*;
 pub use bundles::*;
-pub use collision::*;
+pub use collisions::*;
 pub use dyno::*;
 pub use statics::*;
 pub use triggers::*;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PhysicsSet;
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+struct CorePhysicsSet;
 
 #[derive(Resource, Debug, Copy, Clone)]
 pub enum BulletTime {
@@ -47,6 +50,9 @@ impl Plugin for PhysicsPlugin {
 
         // Resources
         app.insert_resource(BulletTime::Inactive);
+
+        // Collisions special
+        collisions::register_collisions(app);
 
         // Logic
         logic::register_logic(app);

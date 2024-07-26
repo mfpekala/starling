@@ -16,8 +16,9 @@ pub enum CutsceneState {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum TutorialState {
-    LearnFlight,
-    LearnShooting,
+    LearnToFly,
+    LearnToShoot,
+    ImpossibleBoss,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
@@ -46,7 +47,7 @@ pub enum MetaState {
 pub enum MetaTransitionState {
     Stable,
     Volatile {
-        transition: transition::Transition,
+        transition: transition::InternalTransition,
         next_state: MetaState,
     },
 }
@@ -142,7 +143,7 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         // Ground truth states
         // app.insert_state(MetaState::Menu(MenuState::Studio)); // INITIAL STATE (control f this silly)
-        app.insert_state(MetaState::Tutorial(TutorialState::LearnFlight)); // INITIAL STATE (control f this silly)
+        app.insert_state(MetaState::Tutorial(TutorialState::LearnToFly)); // INITIAL STATE (control f this silly)
         app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);
         app.insert_state(AppMode::Dev);

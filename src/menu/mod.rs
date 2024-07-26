@@ -21,7 +21,7 @@ fn handle_continue(
         NonGameInput::Continue => {
             let new_state = match menu_state {
                 MenuState::Studio => MenuState::Title.to_meta_state(),
-                MenuState::Title => TutorialState::LearnFlight.to_meta_state(),
+                MenuState::Title => TutorialState::LearnToFly.to_meta_state(),
             };
             next_transition_state
                 .set(TransitionKind::FadeToBlack.to_meta_transition_state(1.0, new_state));

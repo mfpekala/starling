@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::CorePhysicsSet;
+
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
 /// occur in steps of this length to resolve collisions for fast-moving objects.
 const MAX_TRAN_STEP_LENGTH: f32 = 2.0;
@@ -515,6 +517,7 @@ pub(super) fn register_logic(app: &mut App) {
             move_stuck_static_receiver_dynos,
         )
             .before(apply_gravity)
+            .in_set(CorePhysicsSet)
             .in_set(PhysicsSet)
             .after(InputSet)
             .run_if(in_state(PhysicsState::Active)),

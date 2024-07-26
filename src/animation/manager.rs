@@ -159,6 +159,25 @@ impl AnimationManager {
     impl_animation_manager_field!(flip_x, bool);
     impl_animation_manager_field!(flip_y, bool);
 
+    /// Sets the key and automatically sets the points to match the new sprite
+    pub fn set_key_with_points(&mut self, val: impl Into<String>, commands: &mut Commands) {
+        let key: String = val.into();
+        self.set_key(key.clone(), commands);
+        let size = self.map.get(&key).unwrap().sprite.size;
+        let points = simple_rect(size.x as f32, size.y as f32);
+        self.set_points(points, commands);
+    }
+
+    /// Resets the key and automatically sets the points to match the new sprite
+    pub fn reset_key_with_points(&mut self, val: impl Into<String>, commands: &mut Commands) {
+        let key: String = val.into();
+        self.reset_key(key.clone(), commands);
+        let size = self.map.get(&key).unwrap().sprite.size;
+        let points = simple_rect(size.x as f32, size.y as f32);
+        self.reset_points(points, commands);
+        self.reset_force_index(0);
+    }
+
     pub fn reset_force_index(&mut self, ix: u32) {
         self.force_index = Some(ix);
     }
@@ -418,12 +437,9 @@ fn stabilize_multi_animations(
     }
 }
 
-/// Looks for AnimationBodys whose manager has is_changed: true
-/// NOTE: This does NOT progress animations, because this happens in Update, not FixedUpdate
-/// It happens in Update so we can have these changes reflected as soon as possible
 fn update_animation_bodies(
     mut commands: Commands,
-    multis: Query<&MultiAnimationManager>,
+    multis: Query<(Entity, &MultiAnimationManager)>,
     mut bodies: Query<
         (
             Entity,
@@ -455,12 +471,16 @@ fn update_animation_bodies(
     ) in bodies.iter_mut()
     {
         let (manager, current_node) = {
-            let Ok(multi) = multis.get(parent.get()) else {
+            let Ok((mid, multi)) = multis.get(parent.get()) else {
                 continue;
             };
             let Some(manager) = multi.map.get(&body.key) else {
                 continue;
             };
+            if manager.key.as_str() == "despawn" {
+                commands.entity(mid).despawn_recursive();
+                continue;
+            }
             let current_node = manager.current_node();
             (manager, current_node)
         };

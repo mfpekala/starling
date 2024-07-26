@@ -166,6 +166,7 @@ fn update_debug_commands(
             bg.focused = false;
             bg.input = default();
         } else if keyboard.just_pressed(KeyCode::Enter) {
+            // TODO: Actual commands
             bg.focused = false;
             bg.input = default();
         } else {

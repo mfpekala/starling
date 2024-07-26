@@ -6,6 +6,8 @@ use crate::prelude::*;
 
 pub(self) mod fly_spots;
 mod learn_to_fly;
+mod learn_to_shoot;
+pub(self) mod targets;
 
 #[derive(Component)]
 struct HelpText;
@@ -75,8 +77,9 @@ fn setup_tutorial(
                         font_size: 12.0,
                         ..default()
                     },
-                ),
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, ZIX_BIRD - 0.5)),
+                )
+                .with_justify(JustifyText::Center),
+                transform: Transform::from_translation(Vec3::new(0.0, -60.0, ZIX_BIRD - 0.5)),
                 ..default()
             },
             SpriteCamera::render_layers(),
@@ -98,14 +101,15 @@ pub(super) struct TutorialPlugin;
 impl Plugin for TutorialPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(TutorialState::LearnFlight.to_meta_state()),
+            OnEnter(TutorialState::LearnToFly.to_meta_state()),
             setup_tutorial,
         );
         app.add_systems(
-            OnExit(TutorialState::LearnShooting.to_meta_state()),
+            OnExit(TutorialState::LearnToShoot.to_meta_state()),
             destroy_tutorial,
         );
 
         learn_to_fly::register_learn_to_fly(app);
+        learn_to_shoot::register_learn_to_shoot(app);
     }
 }

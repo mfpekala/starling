@@ -14,7 +14,7 @@ impl TransitionKind {
         next_state: MetaState,
     ) -> MetaTransitionState {
         MetaTransitionState::Volatile {
-            transition: Transition {
+            transition: InternalTransition {
                 kind: *self,
                 duration: Duration::from_secs_f32(duration_f32),
             },
@@ -24,7 +24,7 @@ impl TransitionKind {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
-pub struct Transition {
+pub struct InternalTransition {
     kind: TransitionKind,
     duration: Duration,
 }
@@ -72,7 +72,7 @@ impl TransitionDataBundle {
 #[derive(Component)]
 struct FadeToBlackSprite;
 
-impl Transition {
+impl InternalTransition {
     fn do_spawn(&self, next_state: MetaState, commands: &mut Commands, parent: Entity) {
         // First spawn the data, common no matter the transition kind
         let data = TransitionDataBundle::new(self.kind, next_state, self.duration);

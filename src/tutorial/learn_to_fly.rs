@@ -13,7 +13,7 @@ struct LearnToFlyData {
     has_passed_first_spot: bool,
     can_show_slow_mo_remark: bool,
     has_shown_slow_mo_remark: bool,
-    is_at_least_halfway_done_with_challenge: bool,
+    is_at_least_three_fourths_done_with_challenge: bool,
     has_shown_exhaustion_warning: bool,
     help_text: String,
 }
@@ -24,7 +24,10 @@ fn setup_learn_to_fly(mut commands: Commands, tutorial_root: Res<TutorialRoot>) 
         .set_parent(tutorial_root.eid());
 }
 
-fn destroy_learn_to_fly(data: Query<Entity, With<LearnToFlyData>>, mut commands: Commands) {
+fn destroy_learn_to_fly(
+    data: Query<Entity, Or<(With<LearnToFlyData>, With<FlySpot>)>>,
+    mut commands: Commands,
+) {
     for eid in data.iter() {
         commands.entity(eid).despawn_recursive();
     }
@@ -46,17 +49,21 @@ fn spawn_first_fly_spot(
     tutorial_root: Res<TutorialRoot>,
     mut data: Query<&mut LearnToFlyData>,
 ) {
-    let r = tutorial_root.eid();
-    // Commands, root_eid, x, y, radius, key
-    spawn_fly_spot!(c, r, 127, 66, 12, "first");
-    let mut data = data.single_mut();
-    data.help_text = "Use WASD or Arrow Keys to Fly".into();
+    if let Ok(mut data) = data.get_single_mut() {
+        // Wrap in an if because we might use our dev shortcut to skip LearnToFly
+        data.help_text = "Use WASD or Arrow Keys to Fly".into();
+        let r = tutorial_root.eid();
+        // Commands, root_eid, x, y, radius, key
+        spawn_fly_spot!(c, r, 127, 66, 12, "first");
+    }
 }
 
 fn spawn_challenge_fly_spots(
     mut c: Commands,
     tutorial_root: Res<TutorialRoot>,
     mut data: Query<&mut LearnToFlyData>,
+    mut permanent_skills: ResMut<PermanentSkill>,
+    mut ephemeral_skills: ResMut<EphemeralSkill>,
 ) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
@@ -66,6 +73,8 @@ fn spawn_challenge_fly_spots(
     spawn_fly_spot!(c, r, 100, -60, 6, "challenge_4");
     let mut data = data.single_mut();
     data.help_text = "Drag and release left mouse to launch".into();
+    permanent_skills.increase_num_launches(2);
+    ephemeral_skills.start_attempt(&permanent_skills);
 }
 
 fn spawn_challenge_end_fly_spot(mut c: Commands, tutorial_root: Res<TutorialRoot>) {
@@ -113,7 +122,7 @@ fn update_data(
     }
     // Show the exhaustion warning once it makes sense
     if convo_state.get() == &ConvoState::None
-        && data.is_at_least_halfway_done_with_challenge
+        && data.is_at_least_three_fourths_done_with_challenge
         && bird.get_launches_left() < 2
         && data.time_since_last_launch > 0.2
         && !data.has_shown_exhaustion_warning
@@ -128,9 +137,16 @@ fn update_fly_spots(
     fly_spots: Query<(Entity, &FlySpot, &TriggerReceiver)>,
     collisions: Query<&TriggerCollisionRecord>,
     convo_state: Res<State<ConvoState>>,
-    mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut data: Query<&mut LearnToFlyData>,
+    mut next_convo_state: ResMut<NextState<ConvoState>>,
+    mut next_meta_state: ResMut<NextState<MetaState>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
+    if keyboard.just_pressed(KeyCode::Backspace) {
+        next_convo_state.set(ConvoState::None);
+        next_meta_state.set(TutorialState::LearnToShoot.to_meta_state());
+        return;
+    }
     let mut data = data.single_mut();
     let num_left = fly_spots.iter().count();
     for (eid, fly_spot, trigger) in &fly_spots {
@@ -159,13 +175,17 @@ fn update_fly_spots(
                         data.time_since_last_warning = 0.0;
                     }
                 } else {
-                    data.is_at_least_halfway_done_with_challenge = num_left <= 3;
+                    data.is_at_least_three_fourths_done_with_challenge = num_left <= 2;
                     data.help_text = String::new();
                     commands.entity(eid).despawn_recursive();
                     if num_left <= 1 {
                         next_convo_state.set(ConvoState::TutorialLaunchChallengeCompleted);
                     }
                 }
+            }
+            "complete" => {
+                commands.entity(eid).despawn_recursive();
+                next_meta_state.set(TutorialState::LearnToShoot.to_meta_state());
             }
             _ => panic!("bad flyspot"),
         }
@@ -175,11 +195,11 @@ fn update_fly_spots(
 pub(super) fn register_learn_to_fly(app: &mut App) {
     app.register_type::<LearnToFlyData>();
     app.add_systems(
-        OnEnter(TutorialState::LearnFlight.to_meta_state()),
+        OnEnter(TutorialState::LearnToFly.to_meta_state()),
         setup_learn_to_fly.after(setup_tutorial),
     );
     app.add_systems(
-        OnExit(TutorialState::LearnFlight.to_meta_state()),
+        OnExit(TutorialState::LearnToFly.to_meta_state()),
         destroy_learn_to_fly,
     );
     app.add_systems(OnExit(ConvoState::TutorialEggUnwrap), spawn_first_fly_spot);
@@ -194,7 +214,7 @@ pub(super) fn register_learn_to_fly(app: &mut App) {
     app.add_systems(
         Update,
         (update_data, update_fly_spots)
-            .run_if(in_state(TutorialState::LearnFlight.to_meta_state()))
+            .run_if(in_state(TutorialState::LearnToFly.to_meta_state()))
             .after(PhysicsSet),
     );
 }

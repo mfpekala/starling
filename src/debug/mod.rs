@@ -6,19 +6,22 @@ use crate::prelude::*;
 mod commands;
 mod dphysics;
 mod fps;
+mod mouse_pos;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
 struct DebugState {
     pub show_commands: bool,
     pub show_fps: bool,
     pub show_physics_bounds: bool,
+    pub show_mouse_pos: bool,
 }
 impl Default for DebugState {
     fn default() -> Self {
         Self {
-            show_commands: true,
+            show_commands: false,
             show_fps: false,
-            show_physics_bounds: true,
+            show_physics_bounds: false,
+            show_mouse_pos: false,
         }
     }
 }
@@ -51,11 +54,18 @@ impl Plugin for DebugPlugin {
         commands::register_commands_debug(app);
         fps::register_fps_debug(app);
         dphysics::register_physics_debug(app);
+        mouse_pos::register_mouse_pos_debug(app);
 
         // Debug
         app.insert_resource(DebugInteractive(DebugState::default()));
-        app.add_plugins(ResourceInspectorPlugin::<DebugInteractive>::new());
-        app.add_plugins(ResourceInspectorPlugin::<State<MetaState>>::new());
+        app.add_plugins(
+            ResourceInspectorPlugin::<DebugInteractive>::new()
+                .run_if(input_toggle_active(false, KeyCode::Tab)),
+        );
+        app.add_plugins(
+            ResourceInspectorPlugin::<State<MetaState>>::new()
+                .run_if(input_toggle_active(false, KeyCode::Tab)),
+        );
         app.add_systems(Update, update_debug_state.run_if(in_state(AppMode::Dev)));
     }
 }

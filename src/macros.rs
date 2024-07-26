@@ -24,12 +24,12 @@ macro_rules! anim_man {
             $(length:$length:expr,)*
             $(fps:$fps:expr,)*
             $(next:$next:expr,)*
-        })*,
+        }$(,)?)+
     }) => {{
         AnimationManager::from_nodes(vec![$(
             (&stringify!($name), AnimationNode {
                 sprite: SpriteInfo::new($path, $w, $h),
-                $(length: $length,)*r
+                $(length: $length,)*
                 $(fps: $fps,)*
                 $(next: Some($next.to_string()),)*
                 ..default()

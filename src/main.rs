@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{input::common_conditions::input_toggle_active, prelude::*, window::WindowResolution};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod animation;
@@ -39,6 +39,7 @@ pub mod prelude {
     pub use super::state::*;
     pub use super::tutorial;
     pub use bevy::color::palettes::tailwind;
+    pub use bevy::input::common_conditions::input_toggle_active;
     pub use bevy::prelude::*;
     pub use bevy::render::view::RenderLayers;
     pub use bevy::utils::HashMap;
@@ -64,7 +65,7 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     )
     .insert_resource(ClearColor(Color::BLACK))
-    .add_plugins(WorldInspectorPlugin::new());
+    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
     // My plugins
     app.add_plugins(animation::AnimationPlugin)
         .add_plugins(bird::BirdPlugin)

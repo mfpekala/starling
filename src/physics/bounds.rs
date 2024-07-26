@@ -56,7 +56,13 @@ impl Shape {
         match self {
             Self::Circle { radius: my_radius } => {
                 let (signed_dist, cp) = rhs_bounds.closest_point((rhs_pos, rhs_rot), my_pos);
-                if signed_dist > *my_radius {
+                // NOTE: This abs is maybe not correct? Maybe it is?
+                // Basically it means we'll only bounce off if we're near the edge.
+                // If we're way inside another bounds, we're fucked, and we'll stay there forever.
+                // This is probably fine? Idk without it there were weird bugs on edges extending down (like mario 64).
+                // To handle the way inside thing would probably be another function (move outside) or something
+                // with more expensive logic for shape overlap calculations.
+                if signed_dist.abs() > *my_radius {
                     return None;
                 }
                 let dir = (my_pos - cp).normalize_or_zero();
