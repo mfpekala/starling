@@ -62,8 +62,8 @@ impl BoxSpeaker {
     fn get_path(&self) -> String {
         match self {
             Self::None => "sprites/default.png".into(),
-            Self::Lennox => "convo/speakers/default.png".into(),
-            Self::Ghost => "convo/speakers/default.png".into(),
+            Self::Lennox => "convo/speakers/lenny.png".into(),
+            Self::Ghost => "convo/speakers/ghost.png".into(),
         }
     }
 }

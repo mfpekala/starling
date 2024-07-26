@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::prelude::*;
 
 /// The physics objects that must be attached to the bird
@@ -21,7 +23,7 @@ impl BirdPhysicsBundle {
         Self {
             dyno_tran: DynoTran { vel },
             gravity: Gravity::Normal,
-            bounds: Bounds::from_shape(Shape::Circle { radius: 5.0 }),
+            bounds: Bounds::from_shape(Shape::Circle { radius: 7.0 }),
             static_rx: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             trigger_rx: TriggerReceiver::from_kind(TriggerKind::Bird),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
@@ -40,11 +42,12 @@ pub struct StickyPhysicsBundle {
 }
 impl StickyPhysicsBundle {
     pub fn new(pos: Vec2, bounds: Bounds) -> Self {
+        let mut rng = rand::thread_rng();
         Self {
             bounds,
             statics: StaticProvider::from_kind(StaticProviderKind::Sticky),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
-                pos.extend(ZIX_STICKY),
+                pos.extend(ZIX_STICKY) + rng.r#gen::<f32>(),
             )),
         }
     }

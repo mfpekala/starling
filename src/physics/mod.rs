@@ -50,5 +50,13 @@ impl Plugin for PhysicsPlugin {
 
         // Logic
         logic::register_logic(app);
+
+        // FaceDyno
+        app.add_systems(
+            Update,
+            dyno::update_face_dynos
+                .after(PhysicsSet)
+                .run_if(in_state(PhysicsState::Active)),
+        );
     }
 }

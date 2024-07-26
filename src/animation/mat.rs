@@ -16,7 +16,7 @@ pub struct AnimationMaterial {
     pub texture: Handle<Image>,
     // The below need to be packed for wasm where stuff has to be 16-byte aligned
     #[uniform(3)]
-    pub ix_length_pad_pad: Vec4, // NOTE: _pad_pad means last two things unused
+    pub ix_length_flipx_flipy: Vec4, // NOTE: 1.0 = don't flip, -1.0 = flip
     #[uniform(4)]
     pub xoff_yoff_xrep_yrep: Vec4,
     #[uniform(5)]
@@ -32,7 +32,7 @@ impl AnimationMaterial {
         let srgba_thing = color.to_srgba();
         Self {
             texture: handle,
-            ix_length_pad_pad: Vec4::new(0.0, length as f32, 0.0, 0.0),
+            ix_length_flipx_flipy: Vec4::new(0.0, length as f32, 1.0, 1.0),
             xoff_yoff_xrep_yrep: Vec4::new(0.0, 0.0, repetitions.x, repetitions.y),
             rgba: Vec4::new(
                 srgba_thing.red,

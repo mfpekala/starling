@@ -1,6 +1,8 @@
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
 use crate::prelude::*;
+mod drag_markers;
+pub mod ghost;
 
 /// The component that marks the bird entity (protagonist)
 /// There should only ever be one of these
@@ -23,6 +25,7 @@ impl Bird {
 pub struct BirdBundle {
     name: Name,
     bird: Bird,
+    face_dyno: FaceDyno,
     physics: BirdPhysicsBundle,
     multi: MultiAnimationManager,
 }
@@ -34,11 +37,30 @@ impl BirdBundle {
                 launches_left,
                 bullets_left,
             },
+            face_dyno: FaceDyno,
             physics: BirdPhysicsBundle::new(pos, vel),
-            multi: MultiAnimationManager::well_lit(AnimationManager::single_repeating(
-                SpriteInfo::new("demo/replenish_explode.png", 12, 12),
-                6,
-            )),
+            multi: multi!([
+                (
+                    "core",
+                    anim_man!({
+                        path: "lenny/fly.png",
+                        size: (24, 24),
+                        length: 3,
+                        fps: 16.0,
+                    })
+                    .with_offset(Vec3::new(-1.0, 0.0, 0.0))
+                ),
+                (
+                    "light",
+                    anim_man!({
+                        path: "lenny/spotlight.png",
+                        size: (48, 48),
+                        length: 1,
+                    })
+                    .with_render_layers(LightCamera::render_layers())
+                    .with_scale(Vec2::new(2.5, 2.5))
+                ),
+            ]),
         }
     }
 }
@@ -169,19 +191,20 @@ impl BirdFlightConsts {
 }
 
 fn flying(
-    mut bird_q: Query<(Entity, &mut DynoTran), With<Bird>>,
+    mut bird_q: Query<(Entity, &mut DynoTran, &mut Transform), With<Bird>>,
     movement: Res<MovementInput>,
     mut commands: Commands,
     flight_consts: Res<BirdFlightConsts>,
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
 ) {
-    let Ok((eid, mut dyno_tran)) = bird_q.get_single_mut() else {
+    let Ok((eid, mut dyno_tran, mut tran)) = bird_q.get_single_mut() else {
         return;
     };
     let time_factor = time.delta_seconds() * bullet_time.factor();
     let vel_nudge = flight_consts.apply(movement.get_dir()) * time_factor;
     if movement.get_dir().length_squared() > 0.0 {
+        tran.set_angle(0.0);
         commands.entity(eid).remove::<Stuck>();
         let new_vel = dyno_tran.vel + vel_nudge;
         if new_vel.x.abs() > dyno_tran.vel.x.abs() {
@@ -212,6 +235,7 @@ impl Plugin for BirdPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BirdFlightConsts::default());
         app.add_plugins(ResourceInspectorPlugin::<BirdFlightConsts>::new());
+        app.add_plugins(drag_markers::DragMarkerPlugin);
 
         app.add_systems(
             Update,

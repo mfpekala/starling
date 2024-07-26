@@ -1,3 +1,7 @@
+use tutorial::setup_tutorial;
+
+use super::HelpText;
+
 use super::fly_spots::*;
 use crate::prelude::*;
 
@@ -11,6 +15,7 @@ struct LearnToFlyData {
     has_shown_slow_mo_remark: bool,
     is_at_least_halfway_done_with_challenge: bool,
     has_shown_exhaustion_warning: bool,
+    help_text: String,
 }
 
 fn setup_learn_to_fly(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
@@ -36,19 +41,31 @@ macro_rules! spawn_fly_spot {
     }};
 }
 
-fn spawn_first_fly_spot(mut c: Commands, tutorial_root: Res<TutorialRoot>) {
+fn spawn_first_fly_spot(
+    mut c: Commands,
+    tutorial_root: Res<TutorialRoot>,
+    mut data: Query<&mut LearnToFlyData>,
+) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
     spawn_fly_spot!(c, r, 127, 66, 12, "first");
+    let mut data = data.single_mut();
+    data.help_text = "Use WASD or Arrow Keys to Fly".into();
 }
 
-fn spawn_challenge_fly_spots(mut c: Commands, tutorial_root: Res<TutorialRoot>) {
+fn spawn_challenge_fly_spots(
+    mut c: Commands,
+    tutorial_root: Res<TutorialRoot>,
+    mut data: Query<&mut LearnToFlyData>,
+) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
     spawn_fly_spot!(c, r, 35, 23, 8, "challenge_1");
     spawn_fly_spot!(c, r, -54, -13, 8, "challenge_2");
     spawn_fly_spot!(c, r, -114, 51, 6, "challenge_3");
     spawn_fly_spot!(c, r, 100, -60, 6, "challenge_4");
+    let mut data = data.single_mut();
+    data.help_text = "Drag and release left mouse to launch".into();
 }
 
 fn spawn_challenge_end_fly_spot(mut c: Commands, tutorial_root: Res<TutorialRoot>) {
@@ -66,9 +83,13 @@ fn update_data(
     time: Res<Time>,
     convo_state: Res<State<ConvoState>>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
+    mut text: Query<&mut Text, With<HelpText>>,
 ) {
     let mut data = data.single_mut();
     let bird = bird.single();
+    // Update the text
+    let mut text = text.single_mut();
+    text.sections[0].value = data.help_text.clone();
     // Update the launch data
     if launches.read().next().is_some() {
         data.no_fly_since_launch = true;
@@ -127,6 +148,7 @@ fn update_fly_spots(
                 commands.entity(eid).despawn_recursive();
                 next_convo_state.set(ConvoState::TutorialLaunchChallengeStart);
                 data.has_passed_first_spot = true;
+                data.help_text = String::new();
             }
             "challenge_1" | "challenge_2" | "challenge_3" | "challenge_4" => {
                 if !data.no_fly_since_launch {
@@ -138,6 +160,7 @@ fn update_fly_spots(
                     }
                 } else {
                     data.is_at_least_halfway_done_with_challenge = num_left <= 3;
+                    data.help_text = String::new();
                     commands.entity(eid).despawn_recursive();
                     if num_left <= 1 {
                         next_convo_state.set(ConvoState::TutorialLaunchChallengeCompleted);
@@ -153,7 +176,7 @@ pub(super) fn register_learn_to_fly(app: &mut App) {
     app.register_type::<LearnToFlyData>();
     app.add_systems(
         OnEnter(TutorialState::LearnFlight.to_meta_state()),
-        setup_learn_to_fly,
+        setup_learn_to_fly.after(setup_tutorial),
     );
     app.add_systems(
         OnExit(TutorialState::LearnFlight.to_meta_state()),

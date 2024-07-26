@@ -1,10 +1,14 @@
 use background::BackgroundKind;
+use ghost::GhostBundle;
 use platforms::StickyPlatformBundle;
 
 use crate::prelude::*;
 
 pub(self) mod fly_spots;
 mod learn_to_fly;
+
+#[derive(Component)]
+struct HelpText;
 
 /// Sets up the tutorial.
 /// NOTE: For simplicity, you can't save game mid tutorial, i.e. we are assuming that
@@ -55,7 +59,28 @@ fn setup_tutorial(
         ))
         .set_parent(tutorial_root.eid());
     commands
-        .spawn(BirdBundle::new(Vec2::new(-125.0, -80.0), Vec2::ZERO, 1, 1))
+        .spawn(BirdBundle::new(Vec2::new(-125.0, -78.0), Vec2::ZERO, 1, 1))
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(GhostBundle::new(Vec2::new(140.0, 70.0), true))
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn((
+            Name::new("help_text"),
+            HelpText,
+            Text2dBundle {
+                text: Text::from_section(
+                    "",
+                    TextStyle {
+                        font_size: 12.0,
+                        ..default()
+                    },
+                ),
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, ZIX_BIRD - 0.5)),
+                ..default()
+            },
+            SpriteCamera::render_layers(),
+        ))
         .set_parent(tutorial_root.eid());
     BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
 }

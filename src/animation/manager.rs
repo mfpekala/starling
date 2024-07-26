@@ -99,6 +99,8 @@ pub struct AnimationManager {
     render_layers: RenderLayers,
     hidden: bool,
     scroll: Vec2,
+    flip_x: bool,
+    flip_y: bool,
     // Internal stuff
     /// The entity that actually has the mesh and everything for this manager
     body_eid: Entity,
@@ -117,6 +119,7 @@ macro_rules! impl_animation_manager_field {
                 let val = val.into();
                 if val == self.$field {
                     // Do nothing. Use reset to force `is_changed`.
+                    return;
                 }
                 self.$field = val;
                 if let Some(mut commands) = commands.get_entity(self.body_eid) {
@@ -153,6 +156,8 @@ impl AnimationManager {
     impl_animation_manager_field!(render_layers, RenderLayers);
     impl_animation_manager_field!(hidden, bool);
     impl_animation_manager_field!(scroll, Vec2);
+    impl_animation_manager_field!(flip_x, bool);
+    impl_animation_manager_field!(flip_y, bool);
 
     pub fn reset_force_index(&mut self, ix: u32) {
         self.force_index = Some(ix);
@@ -226,6 +231,8 @@ impl Default for AnimationManager {
             body_eid: Entity::PLACEHOLDER,
             force_index: Some(0),
             scroll: Vec2::ZERO,
+            flip_x: false,
+            flip_y: false,
         }
     }
 }
@@ -238,7 +245,7 @@ pub struct MultiAnimationStable;
 
 #[derive(Component, Default, Clone, Reflect)]
 pub struct MultiAnimationManager {
-    map: HashMap<String, AnimationManager>,
+    pub map: HashMap<String, AnimationManager>,
 }
 impl MultiAnimationManager {
     /// Constructs a new multi animation manager from a single animation manager
@@ -347,6 +354,8 @@ struct AnimationData {
     spf: f32,
     length: u32,
     scroll: Vec2,
+    flip_x: bool,
+    flip_y: bool,
 }
 
 /// Marks an animation body as not needing to be queried in `play_animations`
@@ -484,9 +493,17 @@ fn update_animation_bodies(
         } else {
             commands.entity(eid).remove::<AnimationStatic>();
         }
+        data.flip_x = manager.flip_x;
+        data.flip_y = manager.flip_y;
 
         // Update the translation and scale
         tran.translation = manager.offset;
+        if data.flip_x {
+            tran.translation.x *= -1.0;
+        }
+        if data.flip_y {
+            tran.translation.y *= -1.0;
+        }
         tran.scale.x = manager.scale.x;
         tran.scale.y = manager.scale.y;
 
@@ -553,8 +570,10 @@ fn play_animations(
             manager.force_index = None;
         }
         // First update the material
-        mat.ix_length_pad_pad[0] = index.ix as f32;
-        mat.ix_length_pad_pad[1] = data.length as f32;
+        mat.ix_length_flipx_flipy[0] = index.ix as f32;
+        mat.ix_length_flipx_flipy[1] = data.length as f32;
+        mat.ix_length_flipx_flipy[2] = if data.flip_x { -1.0 } else { 1.0 };
+        mat.ix_length_flipx_flipy[3] = if data.flip_y { -1.0 } else { 1.0 };
         mat.xoff_yoff_xrep_yrep[0] =
             (mat.xoff_yoff_xrep_yrep[0] + data.scroll.x * time_factor).rem_euclid(1.0);
         mat.xoff_yoff_xrep_yrep[1] =

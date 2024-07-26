@@ -34,6 +34,7 @@ pub const ZIX_BACKGROUND: f32 = 0.0;
 pub const ZIX_BIRD: f32 = 5.0;
 pub const ZIX_BULLET: f32 = 4.0;
 pub const ZIX_DEBUG: f32 = 350.0;
+pub const ZIX_DRAG_MARKERS: f32 = -400.0;
 pub const ZIX_MENU: f32 = 300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
 pub const ZIX_STICKY: f32 = 3.0;
