@@ -1,0 +1,20 @@
+<html>
+
+<head>
+    
+<script type="module" nonce="3xRe1KsKyyYgO8ulBvlWSA==">
+import init, * as bindings from '/starling-ae8a66becad68dc8.js';
+const wasm = await init('/starling-ae8a66becad68dc8_bg.wasm');
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+
+<link rel="modulepreload" href="/starling-ae8a66becad68dc8.js" crossorigin=anonymous integrity="sha384-YbIxnkacZ+MZkTSPVNsDfWsWVdGOPtGOSk9nwJZ+gOW/YmLvcBsOt0RGgLshlmx0">
+<link rel="preload" href="/starling-ae8a66becad68dc8_bg.wasm" crossorigin=anonymous integrity="sha384-+X2fdYV5P/z+FRoj68qSXV23lR5YKyD1NTxAuG9Le2lQz1LcL9+m2T9u6IUD/9EC" as="fetch" type="application/wasm"></head>
+
+</html>
