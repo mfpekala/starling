@@ -24,6 +24,7 @@ pub enum ConvoState {
     TutorialUnleashSimp,
     TutorialTakeDamage,
     TutorialHelloDeath,
+    TutorialRightOnQueue,
 }
 
 fn setup_convo(

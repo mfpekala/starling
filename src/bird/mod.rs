@@ -72,7 +72,7 @@ impl BirdBundle {
                             path: "lenny/fly_damage.png",
                             size: (24, 24),
                             length: 3,
-                            fps: 10.0,
+                            fps: 12.0,
                         }
                         dead: {
                             path: "lenny/fly_damage.png",

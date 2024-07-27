@@ -1,4 +1,10 @@
+use upgrade_button::{color_upgrade_buttons, update_upgrade_buttons};
+
 use crate::prelude::*;
+
+pub mod upgrade_button;
+
+pub use upgrade_button::*;
 
 /// The skills that persist through attempts
 #[derive(Resource)]
@@ -108,5 +114,7 @@ impl Plugin for SkillTreePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(PermanentSkill::default());
         app.insert_resource(EphemeralSkill::default());
+
+        app.add_systems(Update, (update_upgrade_buttons, color_upgrade_buttons));
     }
 }

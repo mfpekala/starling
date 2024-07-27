@@ -41,6 +41,7 @@ pub const ZIX_SIMP: f32 = 1.0;
 pub const ZIX_STICKY: f32 = 3.0;
 pub const ZIX_TRANSITION: f32 = 500.0;
 pub const ZIX_TUTORIAL_TRIGGER: f32 = 4.0;
+pub const ZIX_UPGRADE_BUTTON: f32 = 10.0; // NOTE: In menu camera
 pub const ZIX_MIN: f32 = -600.0; // Anything further back than this gets culled by the camera(s)
 pub const ZIX_MAX: f32 = 600.0; // Anything further forward than this gets culled by the camera(s)
 

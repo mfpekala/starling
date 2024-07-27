@@ -381,15 +381,15 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: GhostGreen,
-                content: "But it's alright. It's a necessary..."
+                content: "But it's alright. It's a necessary sacrifice..."
             },
             {
                 speaker: GhostGreen,
-                content: "sacrifice if we want to get back to the nest."
+                content: "if we want to get back to the nest."
             },
             {
                 speaker: Ghost,
-                content: "I think you just killed me."
+                content: "We? I think you just killed me."
             },
             {
                 speaker: GhostGreen,
@@ -410,6 +410,60 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             {
                 speaker: Ghost,
                 content: "And also dead."
+            },
+        ]),
+        ConvoState::TutorialRightOnQueue => cvbb!([
+            {
+                speaker: GhostGreen,
+                content: "Right on queue."
+            },
+            {
+                speaker: GhostGreen,
+                content: "Well?"
+            },
+            {
+                speaker: Ghost,
+                content: "Well what?"
+            },
+            {
+                speaker: GhostGreen,
+                content: "It's your turn."
+            },
+            {
+                speaker: GhostGreen,
+                content: "I'm afraid I must leave you little one."
+            },
+            {
+                speaker: GhostGreen,
+                content: "But there is something off in the forest."
+            },
+            {
+                speaker: GhostGreen,
+                content: "It is now your job to fix it."
+            },
+            {
+                speaker: GhostGreen,
+                content: "Let the cycle continue..."
+            },
+            {
+                speaker: Ghost,
+                content: "Wait! Don't leave me!"
+            },
+            {
+                speaker: Ghost,
+                content: "I never even got your name."
+            },
+            {
+                speaker: None,
+                content: "Deep down, you know."
+            },
+            {
+                speaker: None,
+                content: "It's the same as yours..."
+            },
+            {
+                speaker: None,
+                content: "Lenny."
             },
         ]),
     }

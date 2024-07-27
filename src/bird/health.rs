@@ -176,7 +176,7 @@ fn drop_dead(
     dyno_tran.vel.y *= 0.99;
     commands.entity(eid).insert(DroppedDead);
     commands.entity(eid).remove::<Stuck>();
-    tran.translation.y -= 1.0;
+    tran.translation.y -= 0.5;
     *bullet_time = BulletTime::Inactive;
     let relevant_root = if meta_state.get_tutorial_state().is_some() {
         tutorial_root.eid()
@@ -223,7 +223,7 @@ fn ghost_up(
         return;
     }
     let mut tran = ghost.single_mut();
-    tran.translation *= 0.98;
+    tran.translation *= 0.97;
     if tran.translation.length_squared() < 0.5 {
         tran.translation = Vec3::ZERO;
         if meta_state.get_tutorial_state().is_some() {
@@ -248,6 +248,11 @@ pub(super) fn register_health_bar(app: &mut App) {
             .chain()
             .run_if(in_state(BirdExists::Yes))
             .run_if(in_state(BirdAlive::No))
+            .run_if(
+                in_state(TutorialState::ImpossibleBoss.to_meta_state()).or_else(in_state(
+                    RoomState::Encounter(EncounterState::Fighting).to_meta_state(),
+                )),
+            )
             .after(AnimationSet)
             .after(PhysicsSet),
     );
