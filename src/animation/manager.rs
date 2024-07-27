@@ -491,6 +491,10 @@ fn update_animation_bodies(
             (manager, current_node)
         };
 
+        if let None = commands.get_entity(eid) {
+            continue;
+        }
+
         // Add the render layers
         commands.entity(eid).insert(manager.render_layers.clone());
 

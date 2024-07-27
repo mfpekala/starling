@@ -29,7 +29,7 @@ fn setup_tutorial(
     ephemeral_skills.start_attempt(&permanent_skills);
     next_convo_state.set(ConvoState::TutorialEggUnwrap);
     commands
-        .spawn(StickyPlatformBundle::around_room())
+        .spawn(HardPlatformBundle::around_room())
         .set_parent(tutorial_root.eid());
     commands
         .spawn(StickyPlatformBundle::new(

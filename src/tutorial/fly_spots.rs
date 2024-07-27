@@ -27,7 +27,8 @@ impl FlySpotBundle {
                     anim_man!({
                         path: "tutorial/shiny_spot_core.png",
                         size: (6, 6),
-                        length: 6,
+                        length: 5,
+                        fps: 12.0,
                     })
                     .with_points(anim_points.clone()),
                 ),
@@ -36,7 +37,6 @@ impl FlySpotBundle {
                     anim_man!({
                         path: "tutorial/shiny_spot_light.png",
                         size: (6, 6),
-                        length: 6,
                     })
                     .with_points(anim_points)
                     .with_render_layers(LightCamera::render_layers()),

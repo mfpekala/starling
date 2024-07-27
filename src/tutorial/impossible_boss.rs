@@ -27,7 +27,7 @@ fn setup_impossible_boss(
     ephemeral_skills.start_attempt(&permanent_skills);
     commands.entity(tutorial_root.eid()).despawn_descendants();
     commands
-        .spawn(StickyPlatformBundle::around_room())
+        .spawn(HardPlatformBundle::around_room())
         .set_parent(tutorial_root.eid());
     commands
         .spawn(BirdBundle::new(
@@ -138,10 +138,12 @@ fn update_impossible_boss(
         let time_factor = time.delta_seconds() * bullet_time.factor();
         data.time_until_spawn
             .tick(Duration::from_secs_f32(time_factor));
-        if data.time_until_spawn.finished() {
+        if data.time_until_spawn.finished() || simp_guides.iter().count() == 0 {
             let range = IDEAL_VEC_f32 - IDEAL_VEC_f32 * 0.5;
             let mut rng = thread_rng();
-            let pos = rng.gen::<f32>() * range * 0.8;
+            let mut pos = Vec2::ZERO;
+            pos.x = rng.gen::<f32>() * range.x * 0.8;
+            pos.y = rng.gen::<f32>() * range.y * 0.8;
             SimpBundle::spawn(pos, &mut commands, tutorial_root.eid());
             data.time_until_spawn =
                 Timer::from_seconds(15.0 / data.num_simps_killed as f32, TimerMode::Once);

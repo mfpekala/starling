@@ -33,6 +33,26 @@ impl BirdPhysicsBundle {
     }
 }
 
+/// Hard physics objects that are not translating or rotating
+#[derive(Bundle)]
+pub struct HardPhysicsBundle {
+    bounds: Bounds,
+    statics: StaticProvider,
+    spatial: SpatialBundle,
+}
+impl HardPhysicsBundle {
+    pub fn new(pos: Vec2, bounds: Bounds) -> Self {
+        let mut rng = rand::thread_rng();
+        Self {
+            bounds,
+            statics: StaticProvider::from_kind(StaticProviderKind::Normal),
+            spatial: SpatialBundle::from_transform(Transform::from_translation(
+                pos.extend(ZIX_STICKY) + rng.r#gen::<f32>(),
+            )),
+        }
+    }
+}
+
 /// Sticky physics objects that are not translating or rotating
 #[derive(Bundle)]
 pub struct StickyPhysicsBundle {

@@ -7,6 +7,7 @@ use crate::prelude::*;
 
 #[derive(Component, Default, Reflect)]
 struct LearnToFlyData {
+    ever_could_launch: bool,
     no_fly_since_launch: bool,
     time_since_last_warning: f32,
     time_since_last_launch: f32,
@@ -74,7 +75,9 @@ fn spawn_challenge_fly_spots(
     spawn_fly_spot!(c, r, -114, 51, 6, "challenge_3");
     spawn_fly_spot!(c, r, 100, -60, 6, "challenge_4");
     let mut data = data.single_mut();
-    data.help_text = "Drag and release left mouse to launch".into();
+    data.help_text =
+        "Drag and release left mouse to launch!\nTo recharge, fly into a sticky (pink) object."
+            .into();
     permanent_skills.increase_num_launches(2);
     ephemeral_skills.start_attempt(&permanent_skills);
 }
@@ -98,14 +101,17 @@ fn update_data(
 ) {
     let mut data = data.single_mut();
     let bird = bird.single();
+    data.ever_could_launch = bird.get_launches_left() > 0;
     // Update the text
     let mut text = text.single_mut();
     text.sections[0].value = data.help_text.clone();
     // Update the launch data
     if launches.read().next().is_some() {
-        data.no_fly_since_launch = true;
         data.time_since_last_launch = 0.0;
-        data.can_show_slow_mo_remark = data.has_passed_first_spot;
+        if data.ever_could_launch {
+            data.no_fly_since_launch = true;
+            data.can_show_slow_mo_remark = data.has_passed_first_spot;
+        }
     }
     // Track the no flight warning
     data.no_fly_since_launch = data.no_fly_since_launch && mvmt.get_dir().length_squared() < 0.1;
@@ -178,7 +184,9 @@ fn update_fly_spots(
                     }
                 } else {
                     data.is_at_least_three_fourths_done_with_challenge = num_left <= 2;
-                    data.help_text = String::new();
+                    if num_left <= 3 {
+                        data.help_text = String::new();
+                    }
                     commands.entity(eid).despawn_recursive();
                     if num_left <= 1 {
                         next_convo_state.set(ConvoState::TutorialLaunchChallengeCompleted);
