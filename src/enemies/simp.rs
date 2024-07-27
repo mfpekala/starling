@@ -2,14 +2,17 @@ use rand::{thread_rng, Rng};
 
 use crate::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct SimpGuide {
     speed: f32,
     prefer_future: f32,
 }
 
-#[derive(Component)]
-pub struct SimpHurtbox;
+#[derive(Component, Reflect)]
+pub struct SimpHurtbox {
+    health: u32,
+    immune_to: HashSet<Entity>,
+}
 
 #[derive(Bundle)]
 pub struct SimpBundle {
@@ -44,14 +47,31 @@ impl SimpBundle {
                     (
                         "core",
                         anim_man!({
-                            path: "enemies/simp.png",
-                            size: (20, 20),
+                            health3: {
+                                path: "enemies/simp/simp_health3.png",
+                                size: (20, 20),
+                            },
+                            health2: {
+                                path: "enemies/simp/simp_health2.png",
+                                size: (20, 20),
+                            },
+                            health1: {
+                                path: "enemies/simp/simp_health1.png",
+                                size: (20, 20),
+                            },
+                            death: {
+                                path: "enemies/simp/simp_death.png",
+                                size: (20, 20),
+                                length: 4,
+                                fps: 12.0,
+                                next: "despawn",
+                            }
                         })
                     ),
                     (
                         "light",
                         anim_man!({
-                            path: "enemies/simp_light.png",
+                            path: "enemies/simp/simp_light.png",
                             size: (30, 30),
                         })
                         .with_render_layers(LightCamera::render_layers())
@@ -61,7 +81,10 @@ impl SimpBundle {
             .with_children(|dad| {
                 dad.spawn((
                     Name::new("vision"),
-                    SimpHurtbox,
+                    SimpHurtbox {
+                        health: 3,
+                        immune_to: default(),
+                    },
                     SimpHurtboxPhysicsBundle::new(Self::TRIGGER_RADIUS),
                 ));
             })
@@ -88,10 +111,56 @@ fn guide_simps(
     }
 }
 
+fn hurt_simps(
+    mut simp_guides: Query<(&mut DynoTran, &mut MultiAnimationManager), Without<AnyBullet>>,
+    mut simp_hurtboxes: Query<
+        (Entity, &mut SimpHurtbox, &TriggerReceiver, &Parent),
+        Without<Dying>,
+    >,
+    collisions: Query<&TriggerCollisionRecord>,
+    bullet_dyno_trans: Query<&DynoTran, With<AnyBullet>>,
+    mut commands: Commands,
+) {
+    for (eid, mut hurtbox, rx, parent) in &mut simp_hurtboxes {
+        let (mut parent_dyno_tran, mut parent_multi) = simp_guides.get_mut(parent.get()).unwrap();
+        let mut new_immune_to = hurtbox.immune_to.clone();
+        for cid in rx.collisions.iter() {
+            let collision = collisions.get(*cid).unwrap();
+            if collision.other_kind == TriggerKind::BulletGood {
+                new_immune_to.insert(collision.other_eid);
+                if !hurtbox.immune_to.contains(&collision.other_eid) {
+                    hurtbox.immune_to.insert(collision.other_eid);
+                    // Take damange!
+                    hurtbox.health = hurtbox.health.saturating_sub(1);
+                    let other_vel = bullet_dyno_trans.get(collision.other_eid).unwrap();
+                    parent_dyno_tran.vel += other_vel.vel / 10.0;
+                }
+            }
+        }
+        hurtbox.immune_to = new_immune_to;
+        if hurtbox.health > 0 {
+            parent_multi
+                .manager_mut("core")
+                .set_key(format!("health{}", hurtbox.health).as_str(), &mut commands);
+        } else {
+            parent_multi
+                .manager_mut("core")
+                .set_key("death", &mut commands);
+            parent_multi
+                .manager_mut("light")
+                .set_hidden(true, &mut commands);
+            commands.entity(eid).insert(Dying);
+        }
+    }
+}
+
 pub(super) fn register_simps(app: &mut App) {
+    app.register_type::<SimpGuide>();
+    app.register_type::<SimpHurtbox>();
+
     app.add_systems(
         Update,
-        guide_simps
+        (guide_simps, hurt_simps)
             .run_if(in_state(PhysicsState::Active))
             .after(PhysicsSet),
     );

@@ -508,7 +508,10 @@ fn update_animation_bodies(
         data.length = current_node.length;
         data.spf = 1.0 / current_node.fps;
         data.scroll = manager.scroll;
-        if (data.length == 1 || manager.hidden) && !(data.scroll.length_squared() > 0.0) {
+        if (data.length == 1 || manager.hidden)
+            && !(data.scroll.length_squared() > 0.0)
+            && (data.flip_x == manager.flip_x)
+        {
             commands.entity(eid).insert(AnimationStatic);
         } else {
             commands.entity(eid).remove::<AnimationStatic>();

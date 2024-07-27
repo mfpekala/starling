@@ -1,3 +1,4 @@
+use background::BackgroundKind;
 use platforms::StickyPlatformBundle;
 
 use crate::prelude::*;
@@ -27,11 +28,28 @@ fn setup_impossible_boss(
     commands
         .spawn(StickyPlatformBundle::new(
             "chain1",
-            Vec2::new(-90.0, -30.0),
-            Shape::Circle { radius: 15.0 },
+            Vec2::new(-80.0, -30.0),
+            Shape::Circle { radius: 25.0 },
         ))
-        .insert(DynoRot { rot: 2.0 })
+        .insert(DynoRot { rot: 4.0 })
         .set_parent(tutorial_root.eid());
+    commands
+        .spawn(StickyPlatformBundle::new(
+            "chain2",
+            Vec2::new(0.0, 30.0),
+            Shape::Circle { radius: 25.0 },
+        ))
+        .insert(DynoRot { rot: -4.0 })
+        .set_parent(tutorial_root.eid());
+    commands
+        .spawn(StickyPlatformBundle::new(
+            "chain3",
+            Vec2::new(80.0, -30.0),
+            Shape::Circle { radius: 25.0 },
+        ))
+        .insert(DynoRot { rot: 4.0 })
+        .set_parent(tutorial_root.eid());
+    BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
 }
 
 fn destroy_impossible_boss() {}

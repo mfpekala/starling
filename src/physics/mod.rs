@@ -35,6 +35,12 @@ impl BulletTime {
     }
 }
 
+#[derive(Component)]
+pub struct Dying;
+
+#[derive(Component)]
+pub struct Dead;
+
 pub(super) struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
