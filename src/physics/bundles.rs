@@ -99,32 +99,32 @@ impl TutorialTriggerPhysicsBundle {
 }
 
 #[derive(Bundle)]
-pub struct SimpBodyPhysicsBundle {
+pub struct SimpGuidePhysicsBundle {
     dyno_tran: DynoTran,
     bounds: Bounds,
     static_rx: StaticReceiver,
     spatial: SpatialBundle,
 }
-impl SimpBodyPhysicsBundle {
-    pub fn new(pos: Vec2, radius: f32) -> Self {
+impl SimpGuidePhysicsBundle {
+    pub fn new(pos: Vec2, radius: f32, mult: i32) -> Self {
         let mut rng = rand::thread_rng();
         let z_nudge = rng.r#gen::<f32>();
         Self {
             dyno_tran: DynoTran { vel: Vec2::ZERO },
             bounds: Bounds::from_shape(Shape::Circle { radius }),
-            static_rx: StaticReceiver::from_kind(StaticReceiverKind::Vision),
+            static_rx: StaticReceiver::from_kind(StaticReceiverKind::GoAround { mult }),
             spatial: spat_tran(pos.x, pos.y, ZIX_SIMP + z_nudge),
         }
     }
 }
 
 #[derive(Bundle)]
-pub struct SimpVisionPhysicsBundle {
+pub struct SimpHurtboxPhysicsBundle {
     bounds: Bounds,
     trigger_rx: TriggerReceiver,
     spatial: SpatialBundle,
 }
-impl SimpVisionPhysicsBundle {
+impl SimpHurtboxPhysicsBundle {
     pub fn new(radius: f32) -> Self {
         Self {
             bounds: Bounds::from_shape(Shape::Circle { radius }),

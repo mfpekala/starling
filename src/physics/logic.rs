@@ -230,8 +230,12 @@ fn resolve_static_collisions(
             (_, StaticReceiverKind::Stop) => {
                 dyno_tran.vel = Vec2::ZERO;
             }
-            (_, StaticReceiverKind::Vision) => {
-                // Do nothing
+            (_, StaticReceiverKind::GoAround { mult }) => {
+                // Try to move perpendicularly around this thing
+                // TODO: Come up with a better system so we don't have to do this
+                if matches!(provider_bounds.get_shape(), Shape::Circle { .. }) {
+                    dyno_tran.vel += Vec2::new(mvmt.y, -mvmt.x) * mult as f32;
+                }
             }
             (StaticProviderKind::Normal, StaticReceiverKind::Normal) => {
                 dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 0.2, 0.03);

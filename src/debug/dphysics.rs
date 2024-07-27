@@ -167,7 +167,7 @@ fn draw_bounds(
             (None, _, Some(TriggerKind::SimpBody)) => tailwind::RED_600,
             (None, _, Some(TriggerKind::BulletBad)) => tailwind::RED_500,
             (None, _, Some(TriggerKind::Tutorial { .. })) => tailwind::ZINC_600,
-            (None, Some(StaticReceiverKind::Vision), _) => tailwind::YELLOW_400,
+            (None, Some(StaticReceiverKind::GoAround { .. }), _) => tailwind::YELLOW_400,
             (None, _, None) => tailwind::ZINC_950,
         };
         bound.draw(tran, angle, &mut gz, color.into());
