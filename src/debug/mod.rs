@@ -20,7 +20,7 @@ impl Default for DebugState {
         Self {
             show_commands: false,
             show_fps: false,
-            show_physics_bounds: true,
+            show_physics_bounds: false,
             show_mouse_pos: false,
         }
     }
