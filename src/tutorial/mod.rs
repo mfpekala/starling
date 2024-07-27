@@ -20,7 +20,13 @@ fn setup_tutorial(
     mut commands: Commands,
     tutorial_root: Res<TutorialRoot>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
+    mut permanent_skills: ResMut<PermanentSkill>,
+    mut ephemeral_skills: ResMut<EphemeralSkill>,
 ) {
+    permanent_skills.force_set_num_launches(0);
+    permanent_skills.force_set_num_bullets(0);
+    permanent_skills.force_set_max_health(3);
+    ephemeral_skills.start_attempt(&permanent_skills);
     next_convo_state.set(ConvoState::TutorialEggUnwrap);
     commands
         .spawn(StickyPlatformBundle::around_room())
@@ -60,11 +66,11 @@ fn setup_tutorial(
         .set_parent(tutorial_root.eid());
     commands
         .spawn(BirdBundle::new(
-            Vec2::new(-125.0, -78.0),
+            Vec2::new(125.0, -78.0),
             Vec2::ZERO,
-            1,
-            1,
-            10,
+            ephemeral_skills.get_num_launches(),
+            ephemeral_skills.get_num_bullets(),
+            ephemeral_skills.get_max_health(),
         ))
         .set_parent(tutorial_root.eid());
     commands

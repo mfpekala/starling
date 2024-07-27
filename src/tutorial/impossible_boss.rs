@@ -38,7 +38,7 @@ fn setup_impossible_boss(
             ephemeral_skills.get_max_health(),
         ))
         .set_parent(tutorial_root.eid());
-    SimpBundle::spawn(Vec2::new(0.0, -20.0), &mut commands, tutorial_root.eid());
+    // SimpBundle::spawn(Vec2::new(0.0, -20.0), &mut commands, tutorial_root.eid());
     commands
         .spawn(StickyPlatformBundle::new(
             "chain1",
@@ -64,31 +64,13 @@ fn setup_impossible_boss(
         .insert(DynoRot { rot: 4.0 })
         .set_parent(tutorial_root.eid());
     BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
-    commands
-        .spawn(StickyPlatformBundle::new(
-            "perch_floor",
-            Vec2::new(140.0, 45.0),
-            Shape::Polygon {
-                points: simple_rect(40.0, 10.0),
-            },
-        ))
-        .set_parent(tutorial_root.eid());
-    commands
-        .spawn(StickyPlatformBundle::new(
-            "perch_wall",
-            Vec2::new(125.0, 65.0),
-            Shape::Polygon {
-                points: simple_rect(10.0, 50.0),
-            },
-        ))
-        .set_parent(tutorial_root.eid());
+
     commands
         .spawn(GhostBundle::new(Vec2::new(143.0, 70.0), true, true))
         .set_parent(tutorial_root.eid());
 
     next_convo_state.set(ConvoState::TutorialIntroduceSimp);
     let mut data = ImpossibleBossData::default();
-    data.num_simps_spawned += 1;
     commands
         .spawn((Name::new("imposible_boss_data"), data))
         .set_parent(tutorial_root.eid());
@@ -112,6 +94,29 @@ fn update_impossible_boss(
 
     // Sketch
     data.num_simps_killed = data.num_simps_spawned - simp_guides.iter().count() as u32;
+
+    if data.num_simps_spawned == 0 {
+        SimpBundle::spawn(Vec2::new(0.0, -20.0), &mut commands, tutorial_root.eid());
+        data.num_simps_spawned += 1;
+        commands
+            .spawn(StickyPlatformBundle::new(
+                "perch_floor",
+                Vec2::new(140.0, 45.0),
+                Shape::Polygon {
+                    points: simple_rect(40.0, 10.0),
+                },
+            ))
+            .set_parent(tutorial_root.eid());
+        commands
+            .spawn(StickyPlatformBundle::new(
+                "perch_wall",
+                Vec2::new(125.0, 65.0),
+                Shape::Polygon {
+                    points: simple_rect(10.0, 50.0),
+                },
+            ))
+            .set_parent(tutorial_root.eid());
+    }
 
     if data.num_simps_killed == 0 {
         if bird.get_health() < ephemeral_skills.get_max_health() {

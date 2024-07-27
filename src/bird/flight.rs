@@ -105,6 +105,11 @@ pub(super) fn flying(
     dyno_tran.vel *= if movement.get_fast_stop() {
         flight_consts.fast_stop_drag
     } else {
-        flight_consts.drag
+        if matches!(*bullet_time, BulletTime::Inactive) {
+            // Drag during bullet time is weird
+            flight_consts.drag
+        } else {
+            1.0
+        }
     };
 }

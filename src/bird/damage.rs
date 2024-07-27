@@ -8,13 +8,7 @@ pub struct BirdTakeDamageSet;
 fn take_simp_damage(
     mut birds: Query<(&mut Bird, &TriggerReceiver)>,
     collisions: Query<&TriggerCollisionRecord>,
-    irrelevant_simps: Query<
-        Entity,
-        (
-            Or<(With<Birthing>, With<Dying>, With<Dead>)>,
-            With<SimpGuide>,
-        ),
-    >,
+    irrelevant_simps: Query<Entity, Or<(With<Birthing>, With<Dying>, With<Dead>)>>,
 ) {
     for (mut bird, rx) in &mut birds {
         if bird.taking_damage.is_some() {

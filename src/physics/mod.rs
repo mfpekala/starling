@@ -23,7 +23,7 @@ pub struct PhysicsSet;
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 struct CorePhysicsSet;
 
-#[derive(Resource, Debug, Copy, Clone)]
+#[derive(Resource, Debug, Copy, Clone, PartialEq)]
 pub enum BulletTime {
     Inactive,
     Active,

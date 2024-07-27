@@ -115,7 +115,9 @@ fn update(
     target_eids: Query<Entity, With<PracticeTarget>>,
     mut commands: Commands,
 ) {
-    let mut data = data.single_mut();
+    let Ok(mut data) = data.get_single_mut() else {
+        return;
+    };
     // Update the text
     let mut text = text.single_mut();
     text.sections[0].value = data.help_text.clone();
@@ -128,7 +130,8 @@ fn update(
             if data.in_speed_challenge {
                 data.all_time_num_speed_targets_killed += 1;
             }
-            if !data.has_shown_two_birds_joke {
+            if !data.has_shown_two_birds_joke && false {
+                // rip the joke
                 data.killed_by
                     .insert(update.key.clone(), update.bullet_index);
                 let kb = data.killed_by.clone();
@@ -172,11 +175,16 @@ fn update(
 
 fn transition_to_impossible_boss(
     mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
+    mut commands: Commands,
+    bird: Query<Entity, With<Bird>>,
 ) {
     next_transition_state.set(
         TransitionKind::FadeToBlack
             .to_meta_transition_state(1.0, TutorialState::ImpossibleBoss.to_meta_state()),
-    )
+    );
+    if let Ok(eid) = bird.get_single() {
+        commands.entity(eid).despawn_recursive();
+    }
 }
 
 pub(super) fn register_learn_to_shoot(app: &mut App) {

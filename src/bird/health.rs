@@ -74,8 +74,12 @@ fn update_health_bar(
     mut multi: Query<&mut MultiAnimationManager, With<HealthBar>>,
     mut commands: Commands,
 ) {
-    let bird = bird.single();
-    let mut multi = multi.single_mut();
+    let Ok(bird) = bird.get_single() else {
+        return;
+    };
+    let Ok(mut multi) = multi.get_single_mut() else {
+        return;
+    };
     let frac_alive = bird.health as f32 / skills.get_max_health() as f32;
     let new_points = simple_rect(HealthBar::DIMS.x * frac_alive, HealthBar::DIMS.y)
         .into_iter()

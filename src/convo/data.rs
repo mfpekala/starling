@@ -435,11 +435,11 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: GhostGreen,
-                content: "But there is something off in the forest."
+                content: "But the forest is in grave danger."
             },
             {
                 speaker: GhostGreen,
-                content: "It is now your job to fix it."
+                content: "It is now your job to save it."
             },
             {
                 speaker: GhostGreen,
