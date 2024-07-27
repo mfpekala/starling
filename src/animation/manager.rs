@@ -496,7 +496,11 @@ fn update_animation_bodies(
         }
 
         // Add the render layers
-        commands.entity(eid).insert(manager.render_layers.clone());
+        if let Some(mut commands) = commands.get_entity(eid) {
+            commands.insert(manager.render_layers.clone());
+        } else {
+            continue;
+        }
 
         // Update the handle map
         for (key, node) in manager.map.iter() {
@@ -641,7 +645,7 @@ fn play_animations(
 
 pub(super) fn register_manager(app: &mut App) {
     app.add_systems(
-        PostUpdate,
+        PreUpdate,
         (
             manager::stabilize_multi_animations,
             manager::update_animation_bodies,

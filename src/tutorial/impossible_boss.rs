@@ -70,7 +70,7 @@ fn setup_impossible_boss(
         .set_parent(tutorial_root.eid());
 
     next_convo_state.set(ConvoState::TutorialIntroduceSimp);
-    let mut data = ImpossibleBossData::default();
+    let data = ImpossibleBossData::default();
     commands
         .spawn((Name::new("imposible_boss_data"), data))
         .set_parent(tutorial_root.eid());
