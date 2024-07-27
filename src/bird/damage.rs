@@ -2,9 +2,19 @@ use std::time::Duration;
 
 use crate::prelude::*;
 
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BirdTakeDamageSet;
+
 fn take_simp_damage(
     mut birds: Query<(&mut Bird, &TriggerReceiver)>,
     collisions: Query<&TriggerCollisionRecord>,
+    irrelevant_simps: Query<
+        Entity,
+        (
+            Or<(With<Birthing>, With<Dying>, With<Dead>)>,
+            With<SimpGuide>,
+        ),
+    >,
 ) {
     for (mut bird, rx) in &mut birds {
         if bird.taking_damage.is_some() {
@@ -13,6 +23,10 @@ fn take_simp_damage(
         for cid in rx.collisions.iter() {
             let collision = collisions.get(*cid).unwrap();
             if collision.other_kind != TriggerKind::SimpBody {
+                continue;
+            }
+            if irrelevant_simps.get(collision.other_eid).is_ok() {
+                // The simp is either dying or not spawned
                 continue;
             }
             bird.taking_damage = Some(Timer::from_seconds(1.0, TimerMode::Once));
@@ -58,6 +72,7 @@ pub(super) fn register_damage(app: &mut App) {
         (take_simp_damage, update_animation)
             .run_if(in_state(PhysicsState::Active))
             .run_if(in_state(BirdAlive::Yes))
+            .in_set(BirdTakeDamageSet)
             .after(PhysicsSet),
     );
 }

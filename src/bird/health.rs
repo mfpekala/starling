@@ -107,7 +107,7 @@ fn start_dying(
         bird.launches_left = 0;
         bird.bullets_left = 0;
         commands.entity(eid).insert(Dying {
-            timer: Timer::from_seconds(4.0, TimerMode::Once),
+            timer: Timer::from_seconds(3.0, TimerMode::Once),
             dont_despawn: true,
         });
     }
@@ -131,7 +131,7 @@ fn update_dying(
         .unwrap()
         .fps = (frac - 0.3).max(0.0);
     let color = Color::srgb(frac, frac, frac);
-    *bullet_time = BulletTime::Custom((frac * 0.6).powi(2));
+    *bullet_time = BulletTime::Custom((frac.powi(2) * 0.6).powi(2));
     for mut multi in &mut multis {
         for manager in multi.map.values_mut() {
             for anim in manager.map.values_mut() {

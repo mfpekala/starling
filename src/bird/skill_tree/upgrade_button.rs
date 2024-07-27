@@ -1,4 +1,3 @@
-use bevy::text::Text2dBounds;
 use rand::thread_rng;
 use rand::Rng;
 
@@ -154,7 +153,7 @@ pub(super) fn update_upgrade_buttons(
         let hovered_x = (world_pos.x - gt.x).abs() < UpgradeButtonBundle::SIZE.x / 2.0;
         let hovered_y = (world_pos.y - gt.y).abs() < UpgradeButtonBundle::SIZE.y / 2.0;
         let hovered = hovered_x && hovered_y;
-        if hovered  {
+        if hovered {
             commands.entity(eid).insert(Hovered);
             if already_applied.is_empty() && mouse_input.buttons.just_released(MouseButton::Left) {
                 commands.entity(eid).insert(UpgradeButtonApplied);

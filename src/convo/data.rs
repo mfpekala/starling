@@ -335,7 +335,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: GhostGreen,
-                content: "as a moving, thinking target."
+                content: r#"as a moving, "thinking" target."#
             },
         ]),
         ConvoState::TutorialTakeDamage => cvbb!([

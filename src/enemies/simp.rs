@@ -106,6 +106,7 @@ impl SimpBundle {
                         immune_to: default(),
                     },
                     SimpHurtboxPhysicsBundle::new(Self::TRIGGER_RADIUS),
+                    Birthing,
                 ));
             })
             .set_parent(parent);
@@ -114,9 +115,17 @@ impl SimpBundle {
 
 fn birth_simps(
     mut commands: Commands,
-    birthing: Query<(Entity, &MultiAnimationManager, &SimpGuide), With<Birthing>>,
+    birthing: Query<
+        (
+            Entity,
+            &MultiAnimationManager,
+            &SimpGuide,
+            Option<&Children>,
+        ),
+        With<Birthing>,
+    >,
 ) {
-    for (eid, multi, guide) in &birthing {
+    for (eid, multi, guide, children) in &birthing {
         if multi.manager("core").get_key().as_str() != "birthing" {
             commands.entity(eid).remove::<Birthing>();
             commands
@@ -124,6 +133,11 @@ fn birth_simps(
                 .insert(StaticReceiver::from_kind(StaticReceiverKind::GoAround {
                     mult: guide.mult,
                 }));
+            if let Some(children) = children {
+                for child in children {
+                    commands.entity(*child).remove::<Birthing>();
+                }
+            }
         }
     }
 }

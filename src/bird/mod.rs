@@ -2,7 +2,7 @@
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
 use crate::prelude::*;
-mod damage;
+pub mod damage;
 pub mod dragging;
 pub mod egg;
 pub mod flight;
@@ -11,6 +11,7 @@ mod health;
 mod resource_markers;
 pub mod skill_tree;
 
+pub use damage::*;
 pub use egg::*;
 pub use ghost::*;
 pub use skill_tree::*;
@@ -35,6 +36,14 @@ impl Bird {
 
     pub fn get_health(&self) -> u32 {
         self.health
+    }
+
+    pub fn set_health(&mut self, val: u32) {
+        self.health = val;
+    }
+
+    pub fn get_taking_damage(&self) -> Option<Timer> {
+        self.taking_damage.clone()
     }
 }
 
