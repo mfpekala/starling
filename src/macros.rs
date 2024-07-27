@@ -7,9 +7,10 @@ macro_rules! anim_man {
         $(length:$length:expr,)?
         $(fps:$fps:expr,)?
         $(next:$next:expr,)?
+        $(color:$color:expr,)?
     }) => {{
         AnimationManager::from_nodes(vec![("core", AnimationNode {
-            sprite: SpriteInfo::new($path, $w, $h),
+            sprite: SpriteInfo::new($path, $w, $h)$(.with_color($color))?,
             $(length: $length,)*
             $(fps: $fps,)*
             $(next: Some($next.to_string()),)*
@@ -21,14 +22,15 @@ macro_rules! anim_man {
         $($name:ident: {
             path: $path:expr,
             size: ($w:expr, $h:expr),
-            $(length:$length:expr,)*
-            $(fps:$fps:expr,)*
-            $(next:$next:expr,)*
+            $(length:$length:expr,)?
+            $(fps:$fps:expr,)?
+            $(next:$next:expr,)?
+            $(color:$color:expr,)?
         }$(,)?)+
     }) => {{
         AnimationManager::from_nodes(vec![$(
             (&stringify!($name), AnimationNode {
-                sprite: SpriteInfo::new($path, $w, $h),
+                sprite: SpriteInfo::new($path, $w, $h)$(.with_color($color))?,
                 $(length: $length,)*
                 $(fps: $fps,)*
                 $(next: Some($next.to_string()),)*

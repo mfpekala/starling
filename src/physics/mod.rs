@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 
 pub mod bounds;
@@ -25,12 +27,14 @@ struct CorePhysicsSet;
 pub enum BulletTime {
     Inactive,
     Active,
+    Custom(f32),
 }
 impl BulletTime {
     pub fn factor(&self) -> f32 {
         match self {
             Self::Inactive => 1.0,
             Self::Active => 0.1,
+            Self::Custom(val) => *val,
         }
     }
 }
@@ -42,10 +46,45 @@ pub struct Birthing;
 pub struct Birthed;
 
 #[derive(Component)]
-pub struct Dying;
+pub struct Dying {
+    pub timer: Timer,
+    pub dont_despawn: bool,
+}
 
 #[derive(Component)]
 pub struct Dead;
+#[derive(Component)]
+struct DeadDespawn;
+
+fn reap(
+    mut dying_souls: Query<(Entity, &mut Dying, Option<&Bird>)>,
+    dead_souls: Query<Entity, With<DeadDespawn>>,
+    mut commands: Commands,
+    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
+) {
+    for (eid, mut dying, has_bird) in &mut dying_souls {
+        let mut time_factor = time.delta_seconds();
+        if !has_bird.is_some() {
+            time_factor *= bullet_time.factor();
+        }
+        dying.timer.tick(Duration::from_secs_f32(time_factor));
+        if dying.timer.finished() {
+            if let Some(mut commands) = commands.get_entity(eid) {
+                commands.remove::<Dying>();
+                commands.insert(Dead);
+                if !dying.dont_despawn {
+                    commands.insert(DeadDespawn);
+                }
+            }
+        }
+    }
+    for soul in &dead_souls {
+        if let Some(commands) = commands.get_entity(soul) {
+            commands.despawn_recursive();
+        }
+    }
+}
 
 pub(super) struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
@@ -68,6 +107,9 @@ impl Plugin for PhysicsPlugin {
 
         // Logic
         logic::register_logic(app);
+
+        // Reaping dead stuff (idk why i put this in physics)
+        app.add_systems(PreUpdate, reap);
 
         // FaceDyno
         app.add_systems(

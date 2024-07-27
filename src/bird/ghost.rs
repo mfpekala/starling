@@ -6,6 +6,7 @@ pub struct Ghost;
 #[derive(Bundle)]
 pub struct GhostBundle {
     name: Name,
+    ghost: Ghost,
     multi: MultiAnimationManager,
     spatial: SpatialBundle,
 }
@@ -13,6 +14,7 @@ impl GhostBundle {
     pub fn new(pos: Vec2, flip_x: bool) -> Self {
         Self {
             name: Name::new("ghost"),
+            ghost: Ghost,
             multi: multi!([
                 (
                     "core",

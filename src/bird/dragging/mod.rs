@@ -148,6 +148,7 @@ impl Plugin for DraggingPlugin {
                 refresh_launches_n_bullets,
             )
                 .run_if(in_state(PhysicsState::Active))
+                .run_if(in_state(BirdAlive::Yes))
                 .after(PhysicsSet),
         );
     }

@@ -130,7 +130,7 @@ impl ResourceMarkerChildBundle {
 fn update_resource_markers(
     mut commands: Commands,
     permanent_skills: Res<PermanentSkill>,
-    bird: Query<(Entity, &Bird)>,
+    bird: Query<(Entity, &Bird), Without<Dying>>,
     mut parents: Query<(Entity, &ResourceMarkerKind, &mut SketchyChildMap)>,
     mut anims: Query<&mut MultiAnimationManager, With<ResourceMarkerChild>>,
 ) {
@@ -204,6 +204,16 @@ fn update_resource_markers(
     }
 }
 
+fn kill_resource_markers(mut commands: Commands, eids: Query<Entity, With<ResourceMarkerKind>>) {
+    for eid in &eids {
+        commands.entity(eid).despawn_recursive();
+    }
+}
+
 pub(super) fn register_resource_markers(app: &mut App) {
-    app.add_systems(Update, update_resource_markers);
+    app.add_systems(
+        Update,
+        update_resource_markers.run_if(in_state(BirdAlive::Yes)),
+    );
+    app.add_systems(OnExit(BirdAlive::Yes), kill_resource_markers);
 }

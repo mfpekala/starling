@@ -11,6 +11,9 @@ pub use manager::*;
 pub use mat::*;
 pub use mesh::*;
 
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AnimationSet;
+
 pub(super) struct AnimationPlugin;
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {

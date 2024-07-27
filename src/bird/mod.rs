@@ -6,6 +6,7 @@ mod damage;
 pub mod dragging;
 pub mod flight;
 pub mod ghost;
+mod health;
 mod resource_markers;
 pub mod skill_tree;
 
@@ -71,6 +72,13 @@ impl BirdBundle {
                             length: 3,
                             fps: 10.0,
                         }
+                        dead: {
+                            path: "lenny/fly_damage.png",
+                            size: (24, 24),
+                            length: 3,
+                            // I'm so lazy
+                            fps: 0.0,
+                        }
                     })
                     .with_offset(Vec3::new(-1.0, 0.0, 0.0))
                 ),
@@ -89,6 +97,46 @@ impl BirdBundle {
     }
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
+pub enum BirdAlive {
+    Yes,
+    No,
+}
+impl From<bool> for BirdAlive {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Yes
+        } else {
+            Self::No
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
+pub enum BirdExists {
+    Yes,
+    No,
+}
+impl From<bool> for BirdExists {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Yes
+        } else {
+            Self::No
+        }
+    }
+}
+
+fn update_bird_alive_and_exists(
+    mut next_bird_alive: ResMut<NextState<BirdAlive>>,
+    mut next_bird_exists: ResMut<NextState<BirdExists>>,
+    bird_dying: Query<&Bird, (Without<Dying>, Without<Dead>)>,
+    bird: Query<&Bird>,
+) {
+    next_bird_alive.set((!bird_dying.is_empty() && !bird.is_empty()).into());
+    next_bird_exists.set((!bird.is_empty()).into());
+}
+
 pub(super) struct BirdPlugin;
 impl Plugin for BirdPlugin {
     fn build(&self, app: &mut App) {
@@ -99,15 +147,20 @@ impl Plugin for BirdPlugin {
         );
         app.add_plugins(dragging::DraggingPlugin);
         app.add_plugins(skill_tree::SkillTreePlugin);
+        app.insert_state(BirdAlive::No);
+        app.insert_state(BirdExists::No);
 
+        app.add_systems(PreUpdate, update_bird_alive_and_exists);
         app.add_systems(
             Update,
-            (flight::flying,)
+            flight::flying
                 .run_if(in_state(PhysicsState::Active))
+                .run_if(in_state(BirdAlive::Yes))
                 .after(PhysicsSet),
         );
 
         damage::register_damage(app);
+        health::register_health_bar(app);
         resource_markers::register_resource_markers(app);
 
         app.register_type::<Bird>();

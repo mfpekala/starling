@@ -181,6 +181,12 @@ impl AnimationManager {
     pub fn reset_force_index(&mut self, ix: u32) {
         self.force_index = Some(ix);
     }
+
+    pub fn force_reset(&self, commands: &mut Commands) {
+        if let Some(mut commands) = commands.get_entity(self.body_eid) {
+            commands.remove::<AnimationStable>();
+        }
+    }
 }
 
 /// Helpful functions for constructing AnimationManagers
@@ -635,7 +641,8 @@ pub(super) fn register_manager(app: &mut App) {
         (
             manager::stabilize_multi_animations,
             manager::update_animation_bodies,
-        ),
+        )
+            .in_set(AnimationSet),
     );
     app.add_systems(Update, play_animations);
 

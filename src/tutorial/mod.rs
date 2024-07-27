@@ -92,10 +92,6 @@ fn setup_tutorial(
 }
 
 /// Sets up the tutorial.
-/// NOTE: For simplicity, you can't save game mid tutorial, i.e. we are assuming that
-/// the state transitions will always go:
-///   (non-tutorial) -> TutorialState::LearnFlight -> TutorialState::LearnShoot -> TutorialState::ImpossibleBoss -> (non-tutorial)
-/// This means destroy_tutorial only happens OnExit(MetaState::Tutorial(TutorialState::ImpossibleBoss))
 fn destroy_tutorial(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
     commands.entity(tutorial_root.eid()).despawn_descendants();
 }
@@ -108,7 +104,7 @@ impl Plugin for TutorialPlugin {
             setup_tutorial,
         );
         app.add_systems(
-            OnExit(TutorialState::LearnToShoot.to_meta_state()),
+            OnExit(TutorialState::Dead.to_meta_state()),
             destroy_tutorial,
         );
 

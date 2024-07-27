@@ -95,6 +95,8 @@ pub(super) fn register_impossible_boss(app: &mut App) {
     );
     app.add_systems(
         Update,
-        update_impossible_boss.run_if(in_state(TutorialState::ImpossibleBoss.to_meta_state())),
+        update_impossible_boss
+            .run_if(in_state(TutorialState::ImpossibleBoss.to_meta_state()))
+            .run_if(in_state(BirdAlive::Yes)),
     );
 }

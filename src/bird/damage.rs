@@ -57,6 +57,7 @@ pub(super) fn register_damage(app: &mut App) {
         Update,
         (take_simp_damage, update_animation)
             .run_if(in_state(PhysicsState::Active))
+            .run_if(in_state(BirdAlive::Yes))
             .after(PhysicsSet),
     );
 }

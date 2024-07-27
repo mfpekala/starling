@@ -194,7 +194,10 @@ fn hurt_simps(
             parent_multi
                 .manager_mut("light")
                 .set_hidden(true, &mut commands);
-            commands.entity(eid).insert(Dying);
+            commands.entity(eid).insert(Dying {
+                timer: Timer::from_seconds(2.0, TimerMode::Once),
+                dont_despawn: false,
+            });
         }
     }
 }

@@ -477,7 +477,9 @@ fn move_stuck_static_receiver_dynos(
 ) {
     // First move the things
     for (_eid, stuck, mut dyno_tran, mut tran) in &mut stuck_dynos {
-        let provider_gtran = static_providers.get(stuck.parent).unwrap();
+        let Ok(provider_gtran) = static_providers.get(stuck.parent) else {
+            continue;
+        };
         dyno_tran.vel = Vec2::ZERO;
         let (provider_tran, provider_angle) = provider_gtran.tran_n_angle();
         let angle_diff = provider_angle - stuck.parent_initial_angle;

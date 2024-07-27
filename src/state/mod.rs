@@ -19,6 +19,7 @@ pub enum TutorialState {
     LearnToFly,
     LearnToShoot,
     ImpossibleBoss,
+    Dead,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]

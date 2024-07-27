@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub struct StickyPlatformBundle {
     name: Name,
     physics: StickyPhysicsBundle,
-    multi: MultiAnimationManager,
+    pub multi: MultiAnimationManager,
 }
 impl StickyPlatformBundle {
     pub fn new(name: &str, pos: Vec2, shape: Shape) -> StickyPlatformBundle {
