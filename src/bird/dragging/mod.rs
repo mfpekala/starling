@@ -35,7 +35,7 @@ impl BulletBundle {
                     "light",
                     anim_man!({
                         path: "bullets/good_light.png",
-                        size: (6, 6),
+                        size: (12, 12),
                     })
                     .with_render_layers(LightCamera::render_layers()),
                 )

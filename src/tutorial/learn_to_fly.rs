@@ -19,8 +19,10 @@ struct LearnToFlyData {
 }
 
 fn setup_learn_to_fly(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
+    let mut data = LearnToFlyData::default();
+    data.help_text = String::from("Press WASD, Space, or either mouse\nbutton to advance dialogue");
     commands
-        .spawn((Name::new("learn_to_fly_data"), LearnToFlyData::default()))
+        .spawn((Name::new("learn_to_fly_data"), data))
         .set_parent(tutorial_root.eid());
 }
 

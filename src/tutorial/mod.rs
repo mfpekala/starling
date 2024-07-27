@@ -79,7 +79,7 @@ fn setup_tutorial(
                     },
                 )
                 .with_justify(JustifyText::Center),
-                transform: Transform::from_translation(Vec3::new(0.0, -60.0, ZIX_BIRD - 0.5)),
+                transform: Transform::from_translation(Vec3::new(0.0, 60.0, ZIX_BIRD - 0.5)),
                 ..default()
             },
             SpriteCamera::render_layers(),

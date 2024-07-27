@@ -34,10 +34,15 @@ impl MouseInput {
 #[derive(Resource)]
 pub struct MovementInput {
     dir: Vec2,
+    fast_stop: bool,
 }
 impl MovementInput {
     pub fn get_dir(&self) -> Vec2 {
         self.dir
+    }
+
+    pub fn get_fast_stop(&self) -> bool {
+        self.fast_stop
     }
 }
 
@@ -137,6 +142,7 @@ fn update_movement_input(keyboard: Res<ButtonInput<KeyCode>>, mut movement: ResM
         unnormal += -Vec2::Y;
     }
     movement.dir = unnormal;
+    movement.fast_stop = keyboard.pressed(KeyCode::Space);
 }
 
 fn update_convo_input(
@@ -144,8 +150,13 @@ fn update_convo_input(
     mouse: Res<ButtonInput<MouseButton>>,
     mut convo: ResMut<ConvoInput>,
 ) {
-    convo.next =
-        keyboard.any_just_pressed([KeyCode::Enter]) || mouse.just_pressed(MouseButton::Right);
+    convo.next = keyboard.any_just_pressed([
+        KeyCode::Space,
+        KeyCode::KeyA,
+        KeyCode::KeyW,
+        KeyCode::KeyS,
+        KeyCode::KeyD,
+    ]) || mouse.any_just_pressed([MouseButton::Left, MouseButton::Right]);
 }
 
 /// Send any and all non-game input. Note the early returns, we only handle at most one
@@ -167,7 +178,10 @@ impl Plugin for InputPlugin {
             left_drag_start: None,
             right_drag_start: None,
         });
-        app.insert_resource(MovementInput { dir: default() });
+        app.insert_resource(MovementInput {
+            dir: default(),
+            fast_stop: false,
+        });
         app.insert_resource(ConvoInput { next: false });
 
         // Events

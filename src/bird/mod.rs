@@ -5,6 +5,7 @@ use crate::prelude::*;
 pub mod dragging;
 pub mod flight;
 pub mod ghost;
+mod resource_markers;
 pub mod skill_tree;
 
 pub use skill_tree::*;
@@ -87,5 +88,7 @@ impl Plugin for BirdPlugin {
                 .run_if(in_state(PhysicsState::Active))
                 .after(PhysicsSet),
         );
+
+        resource_markers::register_resource_markers(app);
     }
 }

@@ -3,6 +3,7 @@ use crate::prelude::*;
 #[derive(Resource, Reflect)]
 pub struct BirdFlightConsts {
     drag: f32,
+    fast_stop_drag: f32,
     hor_mul: f32,
     down_mul: f32,
     up_mul: f32,
@@ -16,6 +17,8 @@ impl Default for BirdFlightConsts {
         Self {
             // Vel multiplied by this every frame
             drag: 0.99,
+            // When pressing space (fast stop) what is the drag?
+            fast_stop_drag: 0.9,
             // How quickly we speed up horizontally
             hor_mul: 125.0,
             // How quickly we speed up down
@@ -99,4 +102,9 @@ pub(super) fn flying(
             }
         }
     }
+    dyno_tran.vel *= if movement.get_fast_stop() {
+        flight_consts.fast_stop_drag
+    } else {
+        flight_consts.drag
+    };
 }

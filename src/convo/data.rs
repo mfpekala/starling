@@ -101,10 +101,6 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "You have insincts."
             },
             {
-                speaker: Ghost,
-                content: "Bird instincts."
-            },
-            {
                 speaker: Lennox,
                 content: "..."
             },
@@ -130,11 +126,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: Ghost,
-                content: "Then you'll launch wherever you happen..."
-            },
-            {
-                speaker: Ghost,
-                content: "to be aiming. Yikes."
+                content: "Then you'll be forced to launch."
             },
             {
                 speaker: Lennox,
@@ -142,11 +134,15 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: Ghost,
-                content: "Your instincts can take you far."
+                content: "Another tip: If you need to stop on a dime..."
             },
             {
                 speaker: Ghost,
-                content: "Use them wisely."
+                content: "hold down Space bar. Combining Space with..."
+            },
+            {
+                speaker: Ghost,
+                content: "launching gives maximum maneuverability."
             },
         ]),
         ConvoState::TutorialLaunchExhaustedWarning => cvbb!([
@@ -230,7 +226,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: Ghost,
-                content: "WOAH that came out wrong."
+                content: "WOAH that sounded dark."
             },
             {
                 speaker: Ghost,
@@ -310,11 +306,11 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: Ghost,
-                content: "And you'll have to forgive me."
+                content: "And you'll have to forgive me..."
             },
             {
                 speaker: Ghost,
-                content: "Because you're probably going to die."
+                content: "because you're probably going to die."
             },
         ]),
     }
