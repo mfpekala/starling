@@ -21,7 +21,6 @@ impl ComputedStates for ShowPhysicsBounds {
 }
 
 fn _startup_debug(mut commands: Commands, room_root: Res<RoomRoot>) {
-    commands.spawn(BirdBundle::new(default(), default(), 3, 3));
     let outer_width = 4.0;
     commands
         .spawn((

@@ -2,12 +2,14 @@
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
 use crate::prelude::*;
+mod damage;
 pub mod dragging;
 pub mod flight;
 pub mod ghost;
 mod resource_markers;
 pub mod skill_tree;
 
+pub use ghost::*;
 pub use skill_tree::*;
 
 /// The component that marks the bird entity (protagonist)
@@ -16,6 +18,8 @@ pub use skill_tree::*;
 pub struct Bird {
     launches_left: u32,
     bullets_left: u32,
+    health: u32,
+    taking_damage: Option<Timer>,
 }
 impl Bird {
     pub fn get_launches_left(&self) -> u32 {
@@ -24,6 +28,10 @@ impl Bird {
 
     pub fn get_bullets_left(&self) -> u32 {
         self.bullets_left
+    }
+
+    pub fn get_health(&self) -> u32 {
+        self.health
     }
 }
 
@@ -36,12 +44,14 @@ pub struct BirdBundle {
     multi: MultiAnimationManager,
 }
 impl BirdBundle {
-    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32, bullets_left: u32) -> Self {
+    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32, bullets_left: u32, health: u32) -> Self {
         Self {
             name: Name::new("bird"),
             bird: Bird {
                 launches_left,
                 bullets_left,
+                health,
+                taking_damage: None,
             },
             face_dyno: FaceDyno,
             physics: BirdPhysicsBundle::new(pos, vel),
@@ -49,10 +59,18 @@ impl BirdBundle {
                 (
                     "core",
                     anim_man!({
-                        path: "lenny/fly.png",
-                        size: (24, 24),
-                        length: 3,
-                        fps: 16.0,
+                        normal: {
+                            path: "lenny/fly.png",
+                            size: (24, 24),
+                            length: 3,
+                            fps: 16.0,
+                        },
+                        taking_damage: {
+                            path: "lenny/fly_damage.png",
+                            size: (24, 24),
+                            length: 3,
+                            fps: 10.0,
+                        }
                     })
                     .with_offset(Vec3::new(-1.0, 0.0, 0.0))
                 ),
@@ -89,6 +107,9 @@ impl Plugin for BirdPlugin {
                 .after(PhysicsSet),
         );
 
+        damage::register_damage(app);
         resource_markers::register_resource_markers(app);
+
+        app.register_type::<Bird>();
     }
 }

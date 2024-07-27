@@ -36,6 +36,12 @@ impl BulletTime {
 }
 
 #[derive(Component)]
+pub struct Birthing;
+
+#[derive(Component)]
+pub struct Birthed;
+
+#[derive(Component)]
 pub struct Dying;
 
 #[derive(Component)]

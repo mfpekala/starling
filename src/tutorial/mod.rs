@@ -1,7 +1,3 @@
-use background::BackgroundKind;
-use ghost::GhostBundle;
-use platforms::StickyPlatformBundle;
-
 use crate::prelude::*;
 
 pub(self) mod fly_spots;
@@ -62,7 +58,13 @@ fn setup_tutorial(
         ))
         .set_parent(tutorial_root.eid());
     commands
-        .spawn(BirdBundle::new(Vec2::new(-125.0, -78.0), Vec2::ZERO, 1, 1))
+        .spawn(BirdBundle::new(
+            Vec2::new(-125.0, -78.0),
+            Vec2::ZERO,
+            1,
+            1,
+            10,
+        ))
         .set_parent(tutorial_root.eid());
     commands
         .spawn(GhostBundle::new(Vec2::new(140.0, 70.0), true))
