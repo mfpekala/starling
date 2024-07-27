@@ -39,7 +39,7 @@ impl EggBundle {
             ]),
             spatial: spat_tran(pos.x, pos.y, ZIX_BIRD - 0.1),
             gravity: Gravity::Normal,
-            bounds: Bounds::from_shape(Shape::Circle { radius: 8.0 }),
+            bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
         }
     }
 }

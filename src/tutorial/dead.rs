@@ -6,7 +6,7 @@ fn setup_dead(mut next_convo_state: ResMut<NextState<ConvoState>>) {
 
 fn drop_egg(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
     commands
-        .spawn(EggBundle::new(Vec2::new(-20.0, 120.0)))
+        .spawn(EggBundle::new(Vec2::new(-30.0, 120.0)))
         .set_parent(tutorial_root.eid());
 }
 
