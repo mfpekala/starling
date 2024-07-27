@@ -4,12 +4,14 @@ use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use crate::prelude::*;
 mod damage;
 pub mod dragging;
+pub mod egg;
 pub mod flight;
 pub mod ghost;
 mod health;
 mod resource_markers;
 pub mod skill_tree;
 
+pub use egg::*;
 pub use ghost::*;
 pub use skill_tree::*;
 

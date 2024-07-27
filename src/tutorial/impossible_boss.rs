@@ -68,7 +68,7 @@ fn setup_impossible_boss(
         ))
         .set_parent(tutorial_root.eid());
     commands
-        .spawn(GhostBundle::new(Vec2::new(143.0, 70.0), true))
+        .spawn(GhostBundle::new(Vec2::new(143.0, 70.0), true, true))
         .set_parent(tutorial_root.eid());
 }
 

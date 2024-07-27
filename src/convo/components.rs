@@ -56,6 +56,7 @@ pub(super) enum BoxSpeaker {
     #[default]
     None,
     Lennox,
+    GhostGreen,
     Ghost,
 }
 impl BoxSpeaker {
@@ -63,6 +64,7 @@ impl BoxSpeaker {
         match self {
             Self::None => "sprites/default.png".into(),
             Self::Lennox => "convo/speakers/lenny.png".into(),
+            Self::GhostGreen => "convo/speakers/ghost_green.png".into(),
             Self::Ghost => "convo/speakers/ghost.png".into(),
         }
     }

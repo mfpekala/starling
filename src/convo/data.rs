@@ -9,6 +9,9 @@ macro_rules! get_speaker {
     (Lennox) => {
         BoxSpeaker::Lennox
     };
+    (GhostGreen) => {
+        BoxSpeaker::GhostGreen
+    };
     (Ghost) => {
         BoxSpeaker::Ghost
     };
@@ -51,7 +54,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
         ]),
         ConvoState::TutorialLaunchChallengeStart => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "You took quite a fall there, little one.",
             },
             {
@@ -59,7 +62,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Not a fall you planned on taking?",
             },
             {
@@ -67,29 +70,29 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*chirp*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Well, the good news is your wings look fine.",
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "More than fine, actually.",
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Hey could you do me a favor?",
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I want to see how strong you are.",
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Launch youself through these goals.",
             },
         ]),
         ConvoState::TutorialLaunchSlowMotionRemark => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Did you notice that, little one?"
             },
             {
@@ -97,7 +100,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*chirp?*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "You have insincts."
             },
             {
@@ -105,11 +108,11 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "When you're charging up a launch..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "everything moves slower."
             },
             {
@@ -117,15 +120,15 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*chirp!*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Instincts don't last forever, though."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Your body will give out after a couple seconds."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Then you'll be forced to launch."
             },
             {
@@ -133,21 +136,21 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*chirp.*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Another tip: If you need to stop on a dime..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "hold down Space bar. Combining Space with..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "launching gives maximum maneuverability."
             },
         ]),
         ConvoState::TutorialLaunchExhaustedWarning => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Woah, slow down there."
             },
             {
@@ -155,81 +158,81 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*puff*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Launching yourself is exhausing stuff."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Everytime you touch the ground you get..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "enough energy for two launches."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "After that, you're back to flying until..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "you can find a place to rest."
             },
         ]),
         ConvoState::TutorialLaunchFlightWarning => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Not quite."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I said LAUNCH through the goals."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Not fly through them."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Try holding and releasing left mouse."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "After you launch, don't touch the keyboard..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "until you hit your target."
             },
         ]),
         ConvoState::TutorialLaunchChallengeCompleted => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Well done!"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Come back up here."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I have something else to teach you."
             },
         ]),
         ConvoState::TutorialBulletIntroStart => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Flying away from your problems is nice..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "but what if you could SHOOT them?"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "WOAH that sounded dark."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I'm sorry."
             },
             {
@@ -237,11 +240,11 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "The forest is a dangerous place."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I swear I'm not crazy or anything."
             },
             {
@@ -249,68 +252,164 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 content: "*humph*"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Anyway..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "let's see if you have the nerve to fight back."
             },
         ]),
         ConvoState::TutorialBulletSpeedStart => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "You're a natural."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Let's make things more interesting."
             },
         ]),
         ConvoState::TutorialBulletSpeedTwoBirdsHelp => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Struggling?"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Try to kill two targets with one bullet thing."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "P.S: Launching is much faster than flying."
             },
         ]),
         ConvoState::TutorialBulletSpeedTwoBirdsJoke => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Two targets with one bullet..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "hehe."
             },
         ]),
         ConvoState::TutorialBulletSpeedComplete => cvbb!([
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Pretty fun, eh?"
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "I mean, only in self-defense obviously."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "Speaking of, I have one more test for you."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "And you'll have to forgive me..."
             },
             {
-                speaker: Ghost,
+                speaker: GhostGreen,
                 content: "because you're probably going to die."
+            },
+        ]),
+        ConvoState::TutorialIntroduceSimp => cvbb!([
+            {
+                speaker: GhostGreen,
+                content: "This here's a Steelbeak Cuckoo."
+            },
+            {
+                speaker: GhostGreen,
+                content: "Looks kinda like us..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "squaks kinda like us..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "but it's probably best you think of him..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "as a moving, thinking target."
+            },
+        ]),
+        ConvoState::TutorialTakeDamage => cvbb!([
+            {
+                speaker: GhostGreen,
+                content: "Ouch! That looked like it hurt."
+            },
+            {
+                speaker: GhostGreen,
+                content: "You can see your health in the bottom left."
+            },
+            {
+                speaker: GhostGreen,
+                content: "Try not to get hit again, okay?"
+            },
+        ]),
+        ConvoState::TutorialUnleashSimp => cvbb!([
+            {
+                speaker: GhostGreen,
+                content: "One down, infinity to go..."
+            },
+        ]),
+        ConvoState::TutorialHelloDeath => cvbb!([
+            {
+                speaker: Ghost,
+                content: "AHHHHH"
+            },
+            {
+                speaker: Ghost,
+                content: "What the? Where am I?"
+            },
+            {
+                speaker: GhostGreen,
+                content: "It's alright. Believe me, I've been there."
+            },
+            {
+                speaker: Ghost,
+                content: "Am I dead? Did I just die?"
+            },
+            {
+                speaker: GhostGreen,
+                content: "Yes, yes you did."
+            },
+            {
+                speaker: GhostGreen,
+                content: "But it's alright. It's a necessary..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "sacrifice if we want to get back to the nest."
+            },
+            {
+                speaker: Ghost,
+                content: "I think you just killed me."
+            },
+            {
+                speaker: GhostGreen,
+                content: "You see, when I died, I was only capable..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "of charging one launch and one bullet every..."
+            },
+            {
+                speaker: GhostGreen,
+                content: "time I landed. But you?"
+            },
+            {
+                speaker: GhostGreen,
+                content: "With my help you were so much stronger."
+            },
+            {
+                speaker: Ghost,
+                content: "And also dead."
             },
         ]),
     }

@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+mod dead;
 pub(self) mod fly_spots;
 mod impossible_boss;
 mod learn_to_fly;
@@ -67,7 +68,7 @@ fn setup_tutorial(
         ))
         .set_parent(tutorial_root.eid());
     commands
-        .spawn(GhostBundle::new(Vec2::new(140.0, 70.0), true))
+        .spawn(GhostBundle::new(Vec2::new(140.0, 70.0), true, true))
         .set_parent(tutorial_root.eid());
     commands
         .spawn((
@@ -111,5 +112,6 @@ impl Plugin for TutorialPlugin {
         learn_to_fly::register_learn_to_fly(app);
         learn_to_shoot::register_learn_to_shoot(app);
         impossible_boss::register_impossible_boss(app);
+        dead::register_dead(app);
     }
 }

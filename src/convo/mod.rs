@@ -20,6 +20,10 @@ pub enum ConvoState {
     TutorialBulletSpeedTwoBirdsHelp,
     TutorialBulletSpeedTwoBirdsJoke,
     TutorialBulletSpeedComplete,
+    TutorialIntroduceSimp,
+    TutorialUnleashSimp,
+    TutorialTakeDamage,
+    TutorialHelloDeath,
 }
 
 fn setup_convo(

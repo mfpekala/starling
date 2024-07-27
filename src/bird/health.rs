@@ -148,7 +148,12 @@ struct DroppedDead;
 
 fn drop_dead(
     mut dead_bird: Query<
-        (Entity, &mut Transform, &mut MultiAnimationManager),
+        (
+            Entity,
+            &mut DynoTran,
+            &mut Transform,
+            &mut MultiAnimationManager,
+        ),
         (With<Bird>, With<Dead>, Without<DroppedDead>),
     >,
     mut commands: Commands,
@@ -158,7 +163,7 @@ fn drop_dead(
     room_root: Res<RoomRoot>,
     children: Query<&Children>,
 ) {
-    let Ok((eid, mut tran, mut multi)) = dead_bird.get_single_mut() else {
+    let Ok((eid, mut dyno_tran, mut tran, mut multi)) = dead_bird.get_single_mut() else {
         return;
     };
     multi
@@ -168,6 +173,7 @@ fn drop_dead(
         .unwrap()
         .fps = 0.0;
     multi.manager_mut("core").force_reset(&mut commands);
+    dyno_tran.vel.y *= 0.99;
     commands.entity(eid).insert(DroppedDead);
     commands.entity(eid).remove::<Stuck>();
     tran.translation.y -= 1.0;
@@ -212,7 +218,7 @@ fn ghost_up(
         room_root.eid()
     };
     if ghost.is_empty() {
-        let bund = GhostBundle::new(gt.translation().truncate(), true);
+        let bund = GhostBundle::new(gt.translation().truncate(), true, false);
         commands.spawn(bund).set_parent(relevant_root);
         return;
     }

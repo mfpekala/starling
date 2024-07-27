@@ -1,30 +1,31 @@
 use crate::prelude::*;
 
 #[derive(Component, Reflect)]
-pub struct Ghost;
+pub struct Egg;
 
 #[derive(Bundle)]
-pub struct GhostBundle {
+pub struct EggBundle {
     name: Name,
-    ghost: Ghost,
+    egg: Egg,
     multi: MultiAnimationManager,
     spatial: SpatialBundle,
+    gravity: Gravity,
+    dyno_tran: DynoTran,
+    bounds: Bounds,
 }
-impl GhostBundle {
-    pub fn new(pos: Vec2, flip_x: bool, green: bool) -> Self {
+impl EggBundle {
+    pub fn new(pos: Vec2) -> Self {
         Self {
-            name: Name::new("ghost"),
-            ghost: Ghost,
+            name: Name::new("egg"),
+            egg: Egg,
+            dyno_tran: DynoTran { vel: default() },
             multi: multi!([
                 (
                     "core",
                     anim_man!({
-                        path: format!("ghost/fly{}.png", if green { "_green" } else {""}).as_str(),
+                        path: "lenny/egg.png",
                         size: (24, 24),
-                        length: 3,
-                        fps: 12.0,
                     })
-                    .with_flip_x(flip_x)
                 ),
                 (
                     "light",
@@ -32,10 +33,13 @@ impl GhostBundle {
                         path: "lenny/spotlight.png",
                         size: (48, 48),
                     })
-                    .with_render_layers(LightCamera::render_layers()),
+                    .with_render_layers(LightCamera::render_layers())
+                    .with_scale(Vec2::ONE * 0.5),
                 ),
             ]),
             spatial: spat_tran(pos.x, pos.y, ZIX_BIRD - 0.1),
+            gravity: Gravity::Normal,
+            bounds: Bounds::from_shape(Shape::Circle { radius: 8.0 }),
         }
     }
 }
