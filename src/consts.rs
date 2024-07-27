@@ -37,6 +37,7 @@ pub const ZIX_DEBUG: f32 = 350.0;
 pub const ZIX_DRAG_MARKERS: f32 = -400.0;
 pub const ZIX_MENU: f32 = 300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
+pub const ZIX_SIMP: f32 = 1.0;
 pub const ZIX_STICKY: f32 = 3.0;
 pub const ZIX_TRANSITION: f32 = 500.0;
 pub const ZIX_TUTORIAL_TRIGGER: f32 = 4.0;

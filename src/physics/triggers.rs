@@ -9,8 +9,8 @@ pub enum TriggerKind {
     BulletBad,
     /// Any projectile fired by the protagonist
     BulletGood,
-    /// Basically marks the hitbox of an enemy
-    Enemy,
+    /// A simp's body
+    SimpBody,
     /// Something used for the tutorial
     Tutorial { key: String },
 }

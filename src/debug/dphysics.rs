@@ -147,25 +147,28 @@ fn draw_bounds(
         &Bounds,
         &GlobalTransform,
         Option<&StaticProvider>,
+        Option<&StaticReceiver>,
         Option<&TriggerReceiver>,
     )>,
     mouse_state: Res<MouseInput>,
     mut gz: Gizmos,
 ) {
-    for (bound, gtran, stat, trig) in &bounds_q {
+    for (bound, gtran, stat_tx, stat_rx, trig_rx) in &bounds_q {
         let (tran, angle) = gtran.tran_n_angle();
         let color = match (
-            stat.map(|provider| provider.kind),
-            trig.map(|thing| thing.kind.clone()),
+            stat_tx.map(|provider| provider.kind),
+            stat_rx.map(|receiver| receiver.kind),
+            trig_rx.map(|receiver| receiver.kind.clone()),
         ) {
-            (Some(StaticProviderKind::Normal), _) => tailwind::STONE_700,
-            (Some(StaticProviderKind::Sticky), _) => tailwind::PINK_600,
-            (None, Some(TriggerKind::Bird)) => tailwind::GREEN_600,
-            (None, Some(TriggerKind::BulletGood)) => tailwind::GREEN_400,
-            (None, Some(TriggerKind::Enemy)) => tailwind::RED_600,
-            (None, Some(TriggerKind::BulletBad)) => tailwind::RED_500,
-            (None, Some(TriggerKind::Tutorial { .. })) => tailwind::ZINC_600,
-            (None, None) => tailwind::ZINC_950,
+            (Some(StaticProviderKind::Normal), _, _) => tailwind::STONE_700,
+            (Some(StaticProviderKind::Sticky), _, _) => tailwind::PINK_600,
+            (None, _, Some(TriggerKind::Bird)) => tailwind::GREEN_600,
+            (None, _, Some(TriggerKind::BulletGood)) => tailwind::GREEN_400,
+            (None, _, Some(TriggerKind::SimpBody)) => tailwind::RED_600,
+            (None, _, Some(TriggerKind::BulletBad)) => tailwind::RED_500,
+            (None, _, Some(TriggerKind::Tutorial { .. })) => tailwind::ZINC_600,
+            (None, Some(StaticReceiverKind::Vision), _) => tailwind::YELLOW_400,
+            (None, _, None) => tailwind::ZINC_950,
         };
         bound.draw(tran, angle, &mut gz, color.into());
     }

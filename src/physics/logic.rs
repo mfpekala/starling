@@ -230,6 +230,9 @@ fn resolve_static_collisions(
             (_, StaticReceiverKind::Stop) => {
                 dyno_tran.vel = Vec2::ZERO;
             }
+            (_, StaticReceiverKind::Vision) => {
+                // Do nothing
+            }
             (StaticProviderKind::Normal, StaticReceiverKind::Normal) => {
                 dyno_tran.vel = bounce_with_friction(dyno_tran.vel, 0.2, 0.03);
             }
@@ -369,7 +372,9 @@ fn move_unstuck_static_or_trigger_receivers(
         if let Some(mut my_dyno_tran) = my_dyno_tran.as_mut() {
             let mut amount_moved = 0.0;
             let mut total_to_move = my_dyno_tran.vel.length() * time_factor;
-            while amount_moved < total_to_move {
+            let mut at_least_one_iter = false;
+            while !at_least_one_iter || amount_moved < total_to_move {
+                at_least_one_iter = true;
                 // TODO: This is hella inefficient but I just wanna get it working first
                 let dir = my_dyno_tran.vel.normalize_or_zero();
                 let mag = (my_dyno_tran.vel.length() * time_factor - amount_moved)

@@ -7,6 +7,7 @@ pub mod camera;
 pub mod consts;
 pub mod convo;
 pub mod debug;
+pub mod enemies;
 pub mod environment;
 pub mod input;
 pub mod macros;
@@ -27,6 +28,8 @@ pub mod prelude {
     pub use super::camera::*;
     pub use super::consts::*;
     pub use super::convo::*;
+    #[allow(unused_imports)]
+    pub use super::enemies::*;
     pub use super::environment::*;
     pub use super::input::*;
     pub use super::macros::*;
@@ -72,6 +75,7 @@ fn main() {
         .add_plugins(camera::CameraPlugin)
         .add_plugins(convo::ConvoPlugin)
         .add_plugins(debug::DebugPlugin)
+        .add_plugins(enemies::EnemiesPlugin)
         .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)

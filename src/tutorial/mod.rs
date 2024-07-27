@@ -5,6 +5,7 @@ use platforms::StickyPlatformBundle;
 use crate::prelude::*;
 
 pub(self) mod fly_spots;
+mod impossible_boss;
 mod learn_to_fly;
 mod learn_to_shoot;
 pub(self) mod targets;
@@ -91,8 +92,8 @@ fn setup_tutorial(
 /// Sets up the tutorial.
 /// NOTE: For simplicity, you can't save game mid tutorial, i.e. we are assuming that
 /// the state transitions will always go:
-///   (non-tutorial) -> TutorialState::LearnFlight -> TutorialState::LearnShoot -> (non-tutorial)
-/// This means destroy_tutorial only happens OnExit(MetaState::Tutorial(TutorialState::LearnShoot))
+///   (non-tutorial) -> TutorialState::LearnFlight -> TutorialState::LearnShoot -> TutorialState::ImpossibleBoss -> (non-tutorial)
+/// This means destroy_tutorial only happens OnExit(MetaState::Tutorial(TutorialState::ImpossibleBoss))
 fn destroy_tutorial(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
     commands.entity(tutorial_root.eid()).despawn_descendants();
 }
@@ -111,5 +112,6 @@ impl Plugin for TutorialPlugin {
 
         learn_to_fly::register_learn_to_fly(app);
         learn_to_shoot::register_learn_to_shoot(app);
+        impossible_boss::register_impossible_boss(app);
     }
 }

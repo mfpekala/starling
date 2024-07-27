@@ -36,6 +36,9 @@ pub enum StaticReceiverKind {
     /// It will not stick or bounce. Useful to put on projectiles that should stop and
     /// explode on contact with something static.
     Stop,
+    /// Will apply no forces. Is useful for things like enemy AI that need to see if they are going to collide,
+    /// but should move programatically
+    Vision,
 }
 
 /// Marks a component as something that should interact with statics. Should be attached to entities with `Bounds`.
