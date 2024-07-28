@@ -237,16 +237,18 @@ fn enter_meandering(
     commands.spawn(SoundEffect::universal("sound_effects/room_clear.ogg", 0.3));
     music_manager.fade_to_song(MusicKind::SandCastles);
 
-    let mut heart_poses = vec![];
+    let mut possible_heart_poses = vec![];
     for (eid, spawner) in &steelbeak_spawners {
-        heart_poses.extend(spawner.poses.clone().into_iter());
+        possible_heart_poses.extend(spawner.poses.clone().into_iter());
         commands.entity(eid).despawn_recursive();
     }
 
-    for pos in heart_poses {
-        commands
-            .spawn(HeartBundle::new(pos))
-            .set_parent(room_root.eid());
+    for pos in possible_heart_poses {
+        if thread_rng().gen::<f32>() < 0.2 {
+            commands
+                .spawn(HeartBundle::new(pos))
+                .set_parent(room_root.eid());
+        }
     }
 
     commands

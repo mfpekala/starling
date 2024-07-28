@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::CorePhysicsSet;
+use super::{CorePhysicsSet, InitializedPhysics};
 
 /// When moving `DynoTran`s that have a vel with mag greater than this number, the movement will
 /// occur in steps of this length to resolve collisions for fast-moving objects.
@@ -75,6 +75,27 @@ fn enforce_invariants(
     }
 }
 
+fn initialize_physics(
+    mut commands: Commands,
+    relevant_eids: Query<
+        Entity,
+        (
+            Or<(
+                With<DynoTran>,
+                With<DynoRot>,
+                With<StaticReceiver>,
+                With<StaticProvider>,
+                With<TriggerReceiver>,
+            )>,
+            Without<InitializedPhysics>,
+        ),
+    >,
+) {
+    for eid in &relevant_eids {
+        commands.entity(eid).insert(InitializedPhysics);
+    }
+}
+
 /// Moves all dynos (both rot and tran) that are not statics, do not collide with statics, and have no triggers
 fn move_uninteresting_dynos(
     time: Res<Time>,
@@ -86,6 +107,7 @@ fn move_uninteresting_dynos(
             Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerReceiver>,
+            With<InitializedPhysics>,
         ),
     >,
     mut both_dynos: Query<
@@ -94,6 +116,7 @@ fn move_uninteresting_dynos(
             Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerReceiver>,
+            With<InitializedPhysics>,
         ),
     >,
     mut tran_only_dynos: Query<
@@ -103,6 +126,7 @@ fn move_uninteresting_dynos(
             Without<StaticProvider>,
             Without<StaticReceiver>,
             Without<TriggerReceiver>,
+            With<InitializedPhysics>,
         ),
     >,
 ) {
@@ -132,15 +156,23 @@ fn move_static_provider_dynos(
     bullet_time: Res<BulletTime>,
     mut rot_only_dynos: Query<
         (&DynoRot, &mut Transform),
-        (Without<DynoTran>, With<StaticProvider>),
+        (
+            Without<DynoTran>,
+            With<StaticProvider>,
+            With<InitializedPhysics>,
+        ),
     >,
-    mut both_dynos: Query<(&DynoRot, &DynoTran, &mut Transform), With<StaticProvider>>,
+    mut both_dynos: Query<
+        (&DynoRot, &DynoTran, &mut Transform),
+        (With<StaticProvider>, With<InitializedPhysics>),
+    >,
     mut tran_only_dynos: Query<
         (Option<&TriggerReceiver>, &DynoTran, &mut Transform),
         (
             Without<DynoRot>,
             With<StaticProvider>,
             Without<StaticReceiver>,
+            With<InitializedPhysics>,
         ),
     >,
 ) {
@@ -332,6 +364,7 @@ fn move_unstuck_static_or_trigger_receivers(
             Or<(With<StaticReceiver>, With<TriggerReceiver>)>,
             Without<Stuck>,
             Or<(With<DynoTran>, With<DynoRot>)>,
+            With<InitializedPhysics>,
         ),
     >,
     shared_data: Query<(Entity, &Bounds, &GlobalTransform)>,
@@ -475,6 +508,7 @@ fn move_stuck_static_receiver_dynos(
             With<DynoTran>,
             Without<DynoRot>,
             Without<StaticProvider>,
+            With<InitializedPhysics>,
         ),
     >,
     static_providers: Query<&GlobalTransform, (With<Bounds>, With<StaticProvider>)>,
@@ -498,7 +532,7 @@ fn move_stuck_static_receiver_dynos(
 fn apply_gravity(
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
-    mut dynos: Query<(&mut DynoTran, &Gravity)>,
+    mut dynos: Query<(&mut DynoTran, &Gravity), With<InitializedPhysics>>,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     for (mut dyno, gravity) in &mut dynos {
@@ -526,12 +560,12 @@ pub(super) fn register_logic(app: &mut App) {
     app.add_systems(
         Update,
         (
+            initialize_physics,
             move_uninteresting_dynos,
             move_static_provider_dynos,
             move_unstuck_static_or_trigger_receivers,
             move_stuck_static_receiver_dynos,
         )
-            .before(apply_gravity)
             .in_set(CorePhysicsSet)
             .in_set(PhysicsSet)
             .after(InputSet)
@@ -541,6 +575,7 @@ pub(super) fn register_logic(app: &mut App) {
         Update,
         (apply_gravity)
             .in_set(PhysicsSet)
+            .after(CorePhysicsSet)
             .after(InputSet)
             .run_if(in_state(PhysicsState::Active)),
     );

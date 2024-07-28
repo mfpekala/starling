@@ -56,6 +56,14 @@ pub struct Dead;
 #[derive(Component)]
 struct DeadDespawn;
 
+/// When there is a transition (from like an OnEnter for example) sometimes physics gets wonky
+/// I suspect this has something to do with spawning stuff that all has the same parent, and the transforms not updating
+/// before physics happens. This means they "fake" overlap and weird shit happens.
+/// Solution is to basically only do physics on stuff that has existed for at least one tick of whatever
+/// system physics runs in (rn Update, obviously), marked by this component
+#[derive(Component)]
+struct InitializedPhysics;
+
 fn reap(
     mut dying_souls: Query<(Entity, &mut Dying, Option<&Bird>)>,
     dead_souls: Query<Entity, With<DeadDespawn>>,

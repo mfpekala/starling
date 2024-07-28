@@ -1,7 +1,40 @@
 use crate::prelude::*;
 
+fn spawn_sky(commands: &mut ChildBuilder) {
+    commands.spawn((
+        Name::new("sky"),
+        spat_tran(0.0, 0.0, 0.0),
+        multi!(anim_man!({
+            path: "debug/background_sky.png",
+            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
+        })
+        .with_render_layers(BgSpriteCamera::render_layers())),
+    ));
+    commands.spawn((
+        Name::new("far_clouds"),
+        spat_tran(0.0, 0.0, 1.0),
+        multi!(anim_man!({
+            path: "debug/background_clouds_far.png",
+            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
+        })
+        .with_render_layers(BgSpriteCamera::render_layers())
+        .with_scroll(Vec2::new(0.002, 0.0))),
+    ));
+    commands.spawn((
+        Name::new("close_clouds"),
+        spat_tran(0.0, 0.0, 2.0),
+        multi!(anim_man!({
+            path: "debug/background_clouds_close.png",
+            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
+        })
+        .with_render_layers(BgSpriteCamera::render_layers())
+        .with_scroll(Vec2::new(0.01, 0.0))),
+    ));
+}
+
 #[derive(Debug)]
 pub enum BackgroundKind {
+    SkyOnly,
     Zenith,
 }
 impl BackgroundKind {
@@ -13,36 +46,11 @@ impl BackgroundKind {
             ))
             .set_parent(parent)
             .with_children(|commands| match self {
+                BackgroundKind::SkyOnly => {
+                    spawn_sky(commands);
+                }
                 BackgroundKind::Zenith => {
-                    commands.spawn((
-                        Name::new("sky"),
-                        spat_tran(0.0, 0.0, 0.0),
-                        multi!(anim_man!({
-                            path: "debug/background_sky.png",
-                            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
-                        })
-                        .with_render_layers(BgSpriteCamera::render_layers())),
-                    ));
-                    commands.spawn((
-                        Name::new("far_clouds"),
-                        spat_tran(0.0, 0.0, 1.0),
-                        multi!(anim_man!({
-                            path: "debug/background_clouds_far.png",
-                            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
-                        })
-                        .with_render_layers(BgSpriteCamera::render_layers())
-                        .with_scroll(Vec2::new(0.002, 0.0))),
-                    ));
-                    commands.spawn((
-                        Name::new("close_clouds"),
-                        spat_tran(0.0, 0.0, 2.0),
-                        multi!(anim_man!({
-                            path: "debug/background_clouds_close.png",
-                            size: (IDEAL_WIDTH, IDEAL_HEIGHT),
-                        })
-                        .with_render_layers(BgSpriteCamera::render_layers())
-                        .with_scroll(Vec2::new(0.01, 0.0))),
-                    ));
+                    spawn_sky(commands);
                     commands.spawn((
                         Name::new("mountains"),
                         spat_tran(0.0, 0.0, 3.0),

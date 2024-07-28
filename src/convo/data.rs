@@ -163,7 +163,7 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
             },
             {
                 speaker: GhostGreen,
-                content: "Everytime you touch the ground you get..."
+                content: "Everytime you touch sticky ground you get..."
             },
             {
                 speaker: GhostGreen,

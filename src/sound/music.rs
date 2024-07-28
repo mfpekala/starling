@@ -37,7 +37,8 @@ impl MusicKind {
             Self::ChildhoodFriends => 0.3,
             Self::BossBattle => 0.12,
             Self::NormalBattle => 0.12,
-            Self::Elegy => 0.36,
+            // Probably shouldn't be this loud but it BOPs
+            Self::Elegy => 0.42,
             Self::SandCastles => 0.12,
         }
     }

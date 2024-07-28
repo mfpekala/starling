@@ -161,9 +161,12 @@ fn update_convo_input(
 
 /// Send any and all non-game input. Note the early returns, we only handle at most one
 /// such input per frame
-fn watch_non_game_input(mut commands: Commands, keyboard: Res<ButtonInput<KeyCode>>) {
+fn watch_non_game_input(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut non_game_writer: EventWriter<NonGameInput>,
+) {
     if keyboard.just_pressed(KeyCode::Enter) {
-        commands.trigger(NonGameInput::Continue);
+        non_game_writer.send(NonGameInput::Continue);
         return;
     }
 }
