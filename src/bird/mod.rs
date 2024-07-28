@@ -8,6 +8,7 @@ pub mod egg;
 pub mod flight;
 pub mod ghost;
 mod health;
+mod progress;
 mod resource_markers;
 pub mod skill_tree;
 
@@ -22,8 +23,10 @@ pub use skill_tree::*;
 pub struct Bird {
     launches_left: u32,
     bullets_left: u32,
-    health: u32,
     taking_damage: Option<Timer>,
+    // How many more kills till this room is complete?
+    kills_left: u32,
+    total_kills_this_room: u32,
 }
 impl Bird {
     pub fn get_launches_left(&self) -> u32 {
@@ -34,16 +37,16 @@ impl Bird {
         self.bullets_left
     }
 
-    pub fn get_health(&self) -> u32 {
-        self.health
-    }
-
-    pub fn set_health(&mut self, val: u32) {
-        self.health = val;
-    }
-
     pub fn get_taking_damage(&self) -> Option<Timer> {
         self.taking_damage.clone()
+    }
+
+    pub fn get_kills_left(&self) -> u32 {
+        self.kills_left
+    }
+
+    pub fn dec_kills_left(&mut self, amt: u32) {
+        self.kills_left = self.kills_left.saturating_sub(amt);
     }
 }
 
@@ -56,14 +59,21 @@ pub struct BirdBundle {
     multi: MultiAnimationManager,
 }
 impl BirdBundle {
-    pub fn new(pos: Vec2, vel: Vec2, launches_left: u32, bullets_left: u32, health: u32) -> Self {
+    pub fn new(
+        pos: Vec2,
+        vel: Vec2,
+        launches_left: u32,
+        bullets_left: u32,
+        kills_left: u32,
+    ) -> Self {
         Self {
             name: Name::new("bird"),
             bird: Bird {
                 launches_left,
                 bullets_left,
-                health,
                 taking_damage: None,
+                kills_left,
+                total_kills_this_room: kills_left,
             },
             face_dyno: FaceDyno,
             physics: BirdPhysicsBundle::new(pos, vel),
@@ -172,6 +182,7 @@ impl Plugin for BirdPlugin {
 
         damage::register_damage(app);
         health::register_health_bar(app);
+        progress::register_progress_bar(app);
         resource_markers::register_resource_markers(app);
 
         app.register_type::<Bird>();

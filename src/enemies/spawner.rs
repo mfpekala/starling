@@ -6,12 +6,13 @@ use crate::prelude::*;
 enum SpawnerState {
     MidBatch { num_left: u32, timer: Timer },
     BetweenBatches(Timer),
+    Done,
 }
 impl SpawnerState {
     fn initial() -> Self {
         let mut rng = thread_rng();
         Self::BetweenBatches(Timer::from_seconds(
-            rng.gen_range(1.0..12.0),
+            rng.gen_range(0.5..2.0),
             TimerMode::Once,
         ))
     }
@@ -37,14 +38,14 @@ impl SpawnerState {
 }
 
 #[derive(Component, Clone, Debug)]
-struct EnemySpawner<B: EnemyBundle> {
+pub struct EnemySpawner<B: EnemyBundle> {
     pd: PhantomData<B>,
     batch_sizes: Vec<usize>,
     /// Range of time to wait between spawning enemies while actively in a batch
     batch_rate_range: Range<f32>,
     /// Range of time to wait between batches
     between_range: Range<f32>,
-    poses: Vec<Vec2>,
+    pub poses: Vec<Vec2>,
 }
 impl<B: EnemyBundle> Default for EnemySpawner<B> {
     fn default() -> Self {
@@ -94,16 +95,16 @@ fn update_spawners<B: EnemyBundle>(
     };
     let time_factor = time.delta_seconds() * bullet_time.factor();
     let mut rng = thread_rng();
-    for (eid, mut spawner, mut state) in &mut spawners {
+    for (_eid, mut spawner, mut state) in &mut spawners {
         let state_transition = match state.as_mut() {
             SpawnerState::MidBatch { num_left, timer } => {
                 if *num_left == 0 {
                     if spawner.batch_sizes.is_empty() {
                         // funny hack
                         // Some(None) means there is some state transition, going to no state
-                        Some(None)
+                        Some(SpawnerState::Done)
                     } else {
-                        Some(Some(SpawnerState::new_between(&mut spawner)))
+                        Some(SpawnerState::new_between(&mut spawner))
                     }
                 } else {
                     timer.tick(Duration::from_secs_f32(time_factor));
@@ -126,28 +127,16 @@ fn update_spawners<B: EnemyBundle>(
             SpawnerState::BetweenBatches(timer) => {
                 timer.tick(Duration::from_secs_f32(time_factor));
                 if timer.finished() {
-                    // if spawner.batch_sizes.is_empty() {
-                    //     // We should never get here but just in case
-                    //     Some(None)
-                    // } else {
-                    Some(Some(SpawnerState::new_mid(&mut spawner)))
-                    // }
+                    Some(SpawnerState::new_mid(&mut spawner))
                 } else {
                     None
                 }
             }
+            SpawnerState::Done => continue,
         };
-        if let Some(transition) = state_transition {
-            match transition {
-                Some(new_state) => {
-                    // No rust
-                    *state = new_state;
-                }
-                None => {
-                    // No rust
-                    commands.entity(eid).despawn_recursive();
-                }
-            }
+        if let Some(new_state) = state_transition {
+            // No rust
+            *state = new_state;
         }
     }
 }

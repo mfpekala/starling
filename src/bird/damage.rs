@@ -10,6 +10,7 @@ fn take_simp_damage(
     collisions: Query<&TriggerCollisionRecord>,
     irrelevant_simps: Query<Entity, Or<(With<Birthing>, With<Dying>, With<Dead>)>>,
     mut commands: Commands,
+    mut skills: ResMut<EphemeralSkill>,
 ) {
     for (mut bird, rx) in &mut birds {
         if bird.taking_damage.is_some() {
@@ -25,7 +26,7 @@ fn take_simp_damage(
                 continue;
             }
             bird.taking_damage = Some(Timer::from_seconds(1.0, TimerMode::Once));
-            bird.health = bird.health.saturating_sub(1);
+            skills.dec_current_health(1);
             commands.spawn(SoundEffect::universal(
                 "sound_effects/lenny_take_damage.ogg",
                 0.8,

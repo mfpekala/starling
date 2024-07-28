@@ -180,6 +180,7 @@ fn hurt_simps(
     collisions: Query<&TriggerCollisionRecord>,
     bullet_dyno_trans: Query<&DynoTran, With<AnyBullet>>,
     mut commands: Commands,
+    mut bird: Query<&mut Bird>,
 ) {
     for (eid, mut hurtbox, rx, parent) in &mut simp_hurtboxes {
         let Ok((mut parent_dyno_tran, mut parent_multi)) = simp_guides.get_mut(parent.get()) else {
@@ -221,6 +222,13 @@ fn hurt_simps(
                 dont_despawn: false,
             });
             commands.spawn(SoundEffect::universal("sound_effects/simp_death2.ogg", 0.6));
+            // Ahh if this weren't a jam I'd do something nicer here maybe but idk, this just feels clunky
+            bird.get_single_mut()
+                .and_then(|mut bird| {
+                    bird.dec_kills_left(1);
+                    Ok(())
+                })
+                .ok();
         }
     }
 }

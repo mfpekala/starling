@@ -70,7 +70,7 @@ fn setup_tutorial(
             Vec2::ZERO,
             ephemeral_skills.get_num_launches(),
             ephemeral_skills.get_num_bullets(),
-            ephemeral_skills.get_max_health(),
+            0,
         ))
         .set_parent(tutorial_root.eid());
     commands

@@ -37,7 +37,7 @@ fn setup_impossible_boss(
             default(),
             ephemeral_skills.get_num_launches(),
             ephemeral_skills.get_num_bullets(),
-            ephemeral_skills.get_max_health(),
+            0,
         ))
         .set_parent(tutorial_root.eid());
     // SimpBundle::spawn(Vec2::new(0.0, -20.0), &mut commands, tutorial_root.eid());
@@ -84,16 +84,16 @@ fn update_impossible_boss(
     simp_guides: Query<&SimpGuide>,
     mut commands: Commands,
     tutorial_root: Res<TutorialRoot>,
-    mut bird: Query<&mut Bird>,
+    bird: Query<&Bird>,
     mut data: Query<&mut ImpossibleBossData>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
-    ephemeral_skills: ResMut<EphemeralSkill>,
+    mut ephemeral_skills: ResMut<EphemeralSkill>,
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
     physics_state: Res<State<PhysicsState>>,
 ) {
     let mut data = data.single_mut();
-    let mut bird = bird.single_mut();
+    let bird = bird.single();
 
     // Sketch
     data.num_simps_killed = data.num_simps_spawned - simp_guides.iter().count() as u32;
@@ -122,9 +122,8 @@ fn update_impossible_boss(
     }
 
     if data.num_simps_killed == 0 {
-        if bird.get_health() < ephemeral_skills.get_max_health() {
-            bird.set_health(ephemeral_skills.get_max_health());
-        }
+        // Never take damage!!!
+        ephemeral_skills.inc_current_health(3);
     } else {
         if !data.has_shown_unleash {
             next_convo_state.set(ConvoState::TutorialUnleashSimp);

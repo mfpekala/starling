@@ -16,6 +16,7 @@ pub enum MusicKind {
     BossBattle,
     NormalBattle,
     Elegy,
+    SandCastles,
 }
 impl MusicKind {
     fn to_asset_path(&self) -> String {
@@ -25,6 +26,7 @@ impl MusicKind {
             Self::BossBattle => "music/BossBattle.ogg".into(),
             Self::NormalBattle => "music/NormalBattle.ogg".into(),
             Self::Elegy => "music/Elegy.ogg".into(),
+            Self::SandCastles => "music/SandCastles.ogg".into(),
         }
     }
 
@@ -36,6 +38,7 @@ impl MusicKind {
             Self::BossBattle => 0.12,
             Self::NormalBattle => 0.12,
             Self::Elegy => 0.36,
+            Self::SandCastles => 0.12,
         }
     }
 }

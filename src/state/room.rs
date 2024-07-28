@@ -32,6 +32,18 @@ impl RoomState {
             progress: EncounterProgress::Entering,
         })
     }
+
+    /// The next room to go to (assuming the bird doesn't die, or if it is dead, wants to play again)
+    pub fn next_room(&self) -> Self {
+        match self {
+            Self::Encounter(encounter_state) => Self::Encounter(EncounterState {
+                kind: encounter_state.kind,
+                difficulty: encounter_state.difficulty + 1,
+                progress: EncounterProgress::Entering,
+            }),
+            Self::Dead => Self::xth_encounter(EncounterKind::SteelbeakOnly, 1),
+        }
+    }
 }
 
 impl ComputedStates for EncounterKind {

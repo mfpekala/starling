@@ -69,18 +69,14 @@ fn destroy_health_bar(eids: Query<Entity, With<HealthBar>>, mut commands: Comman
 }
 
 fn update_health_bar(
-    bird: Query<&Bird>,
     skills: Res<EphemeralSkill>,
     mut multi: Query<&mut MultiAnimationManager, With<HealthBar>>,
     mut commands: Commands,
 ) {
-    let Ok(bird) = bird.get_single() else {
-        return;
-    };
     let Ok(mut multi) = multi.get_single_mut() else {
         return;
     };
-    let frac_alive = bird.health as f32 / skills.get_max_health() as f32;
+    let frac_alive = skills.get_current_health() as f32 / skills.get_max_health() as f32;
     let new_points = simple_rect(HealthBar::DIMS.x * frac_alive, HealthBar::DIMS.y)
         .into_iter()
         .map(|mut p| {
@@ -104,11 +100,12 @@ fn start_dying(
     >,
     mut commands: Commands,
     mut music_manager: ResMut<MusicManager>,
+    skills: Res<EphemeralSkill>,
 ) {
     let Ok((eid, mut bird, mut _multi)) = bird.get_single_mut() else {
         return;
     };
-    if bird.health == 0 {
+    if skills.get_current_health() == 0 {
         bird.launches_left = 0;
         bird.bullets_left = 0;
         commands.entity(eid).insert(Dying {

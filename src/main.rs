@@ -46,6 +46,8 @@ pub mod prelude {
     pub use super::tutorial;
     pub use bevy::color::palettes::tailwind;
     pub use bevy::input::common_conditions::input_toggle_active;
+    // Grr bevy... stop importing this when I try to use Vec2::ZERO... (autocomplete thing)
+    pub use bevy::math::VectorSpace;
     pub use bevy::prelude::*;
     pub use bevy::render::view::RenderLayers;
     pub use bevy::utils::HashMap;

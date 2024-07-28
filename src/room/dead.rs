@@ -88,10 +88,10 @@ fn update(
                 data.has_hatched = true;
                 let multi_key = format!("core{}", upgrade_applied.ix);
                 multi.manager_mut(&multi_key).set_key("bird", &mut commands);
-                next_transition_state.set(TransitionKind::FadeToBlack.to_meta_transition_state(
-                    1.0,
-                    RoomState::xth_encounter(EncounterKind::SteelbeakOnly, 1).to_meta_state(),
-                ));
+                next_transition_state.set(
+                    TransitionKind::FadeToBlack
+                        .to_meta_transition_state(1.0, RoomState::Dead.next_room().to_meta_state()),
+                );
             }
         }
     }

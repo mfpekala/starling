@@ -65,6 +65,9 @@ impl PermanentSkill {
 pub struct EphemeralSkill {
     num_launches: u32,
     num_bullets: u32,
+    /// Skill issue on my part. I shouldn't have put health on the bird bundle.
+    /// Oh well, this is fine I think.
+    current_health: u32,
     max_health: u32,
 }
 impl Default for EphemeralSkill {
@@ -73,6 +76,7 @@ impl Default for EphemeralSkill {
             num_launches: 0,
             num_bullets: 0,
             max_health: 3,
+            current_health: 3,
         }
     }
 }
@@ -81,6 +85,7 @@ impl EphemeralSkill {
     pub fn start_attempt(&mut self, permanent: &PermanentSkill) {
         self.num_launches = permanent.get_num_launches();
         self.num_bullets = permanent.get_num_bullets();
+        self.current_health = permanent.get_max_health();
         self.max_health = permanent.get_max_health();
     }
 
@@ -105,7 +110,24 @@ impl EphemeralSkill {
     }
 
     pub fn increase_max_health(&mut self, amt: u32) {
+        self.current_health += amt;
         self.max_health += amt;
+    }
+
+    pub fn get_current_health(&self) -> u32 {
+        self.current_health
+    }
+
+    pub fn set_current_health(&mut self, val: u32) {
+        self.current_health = val;
+    }
+
+    pub fn inc_current_health(&mut self, amt: u32) {
+        self.current_health = self.max_health.min(self.current_health + amt);
+    }
+
+    pub fn dec_current_health(&mut self, amt: u32) {
+        self.current_health = self.current_health.saturating_sub(amt);
     }
 }
 

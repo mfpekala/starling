@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 /// Different ways of providing a bird collision hitbox. Admits the design space (TriggerKind x TriggerKind)
-#[derive(Debug, Clone, Reflect, PartialEq, Eq)]
+#[derive(Debug, Clone, Reflect, PartialEq, Eq, Hash)]
 pub enum TriggerKind {
     /// Basically marks the hitbox of the protagonist
     Bird,
@@ -13,6 +13,10 @@ pub enum TriggerKind {
     SimpBody,
     /// Something used for the tutorial
     Tutorial { key: String },
+    /// A heart you can pick up between rooms
+    Heart,
+    /// The thing to shoot to go to the next room
+    GoNext,
 }
 
 /// Marks an object as being a "triggerable" physics object. Should be attached to entities with `Bounds`.

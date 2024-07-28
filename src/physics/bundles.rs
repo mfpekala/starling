@@ -119,6 +119,38 @@ impl TutorialTriggerPhysicsBundle {
 }
 
 #[derive(Bundle)]
+pub struct HeartTriggerPhysicsBundle {
+    pub bounds: Bounds,
+    trigger_rx: TriggerReceiver,
+    spatial: SpatialBundle,
+}
+impl HeartTriggerPhysicsBundle {
+    pub fn new(pos: Vec2, radius: f32) -> Self {
+        Self {
+            bounds: Bounds::from_shape(Shape::Circle { radius }),
+            trigger_rx: TriggerReceiver::from_kind(TriggerKind::Heart),
+            spatial: spat_tran(pos.x, pos.y, ZIX_TUTORIAL_TRIGGER),
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct GoNextTriggerPhysicsBundle {
+    pub bounds: Bounds,
+    trigger_rx: TriggerReceiver,
+    spatial: SpatialBundle,
+}
+impl GoNextTriggerPhysicsBundle {
+    pub fn new(pos: Vec2, radius: f32) -> Self {
+        Self {
+            bounds: Bounds::from_shape(Shape::Circle { radius }),
+            trigger_rx: TriggerReceiver::from_kind(TriggerKind::GoNext),
+            spatial: spat_tran(pos.x, pos.y, ZIX_TUTORIAL_TRIGGER),
+        }
+    }
+}
+
+#[derive(Bundle)]
 pub struct SimpGuidePhysicsBundle {
     dyno_tran: DynoTran,
     bounds: Bounds,
