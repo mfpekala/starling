@@ -20,7 +20,9 @@ fn setup_impossible_boss(
     mut permanent_skills: ResMut<PermanentSkill>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
+    mut music_manager: ResMut<MusicManager>,
 ) {
+    music_manager.fade_to_song(MusicKind::BossBattle);
     permanent_skills.force_set_num_launches(2);
     permanent_skills.force_set_num_bullets(3);
     permanent_skills.force_set_max_health(3);
@@ -88,6 +90,7 @@ fn update_impossible_boss(
     ephemeral_skills: ResMut<EphemeralSkill>,
     time: Res<Time>,
     bullet_time: Res<BulletTime>,
+    physics_state: Res<State<PhysicsState>>,
 ) {
     let mut data = data.single_mut();
     let mut bird = bird.single_mut();
@@ -135,19 +138,21 @@ fn update_impossible_boss(
             return;
         }
 
-        let time_factor = time.delta_seconds() * bullet_time.factor();
-        data.time_until_spawn
-            .tick(Duration::from_secs_f32(time_factor));
-        if data.time_until_spawn.finished() || simp_guides.iter().count() == 0 {
-            let range = IDEAL_VEC_f32 - IDEAL_VEC_f32 * 0.5;
-            let mut rng = thread_rng();
-            let mut pos = Vec2::ZERO;
-            pos.x = rng.gen::<f32>() * range.x * 0.8;
-            pos.y = rng.gen::<f32>() * range.y * 0.8;
-            SimpBundle::spawn(pos, &mut commands, tutorial_root.eid());
-            data.time_until_spawn =
-                Timer::from_seconds(15.0 / data.num_simps_killed as f32, TimerMode::Once);
-            data.num_simps_spawned += 1;
+        if physics_state.get() == &PhysicsState::Active {
+            let time_factor = time.delta_seconds() * bullet_time.factor();
+            data.time_until_spawn
+                .tick(Duration::from_secs_f32(time_factor));
+            if data.time_until_spawn.finished() || simp_guides.iter().count() == 0 {
+                let range = IDEAL_VEC_f32 - IDEAL_VEC_f32 * 0.5;
+                let mut rng = thread_rng();
+                let mut pos = Vec2::ZERO;
+                pos.x = rng.gen::<f32>() * range.x * 0.7;
+                pos.y = rng.gen::<f32>() * range.y * 0.7;
+                SimpBundle::spawn(pos, &mut commands, tutorial_root.eid());
+                data.time_until_spawn =
+                    Timer::from_seconds(15.0 / data.num_simps_killed as f32, TimerMode::Once);
+                data.num_simps_spawned += 1;
+            }
         }
     }
 }

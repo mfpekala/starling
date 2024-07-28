@@ -16,6 +16,7 @@ pub mod menu;
 pub mod physics;
 pub mod roots;
 pub mod settings;
+pub mod sound;
 pub mod state;
 pub mod tutorial;
 
@@ -39,6 +40,7 @@ pub mod prelude {
     pub use super::physics::*;
     pub use super::roots::*;
     pub use super::settings::*;
+    pub use super::sound::*;
     pub use super::state::*;
     pub use super::tutorial;
     pub use bevy::color::palettes::tailwind;
@@ -82,6 +84,7 @@ fn main() {
         .add_plugins(physics::PhysicsPlugin)
         .add_plugins(roots::RootPlugin)
         .add_plugins(settings::SettingsPlugin)
+        .add_plugins(sound::SoundPlugin)
         .add_plugins(state::StatePlugin)
         .add_plugins(tutorial::TutorialPlugin);
     app.run();

@@ -60,12 +60,21 @@ pub(super) enum BoxSpeaker {
     Ghost,
 }
 impl BoxSpeaker {
-    fn get_path(&self) -> String {
+    fn get_portrait_path(&self) -> String {
         match self {
             Self::None => "sprites/default.png".into(),
             Self::Lennox => "convo/speakers/lenny.png".into(),
             Self::GhostGreen => "convo/speakers/ghost_green.png".into(),
             Self::Ghost => "convo/speakers/ghost.png".into(),
+        }
+    }
+
+    fn get_voice_path_n_mult(&self) -> Option<(String, f32)> {
+        match self {
+            Self::None => None,
+            Self::Lennox => Some(("sound_effects/voices/lenny1.ogg".to_string(), 0.6)),
+            Self::GhostGreen => Some(("sound_effects/voices/ghost_voice.ogg".to_string(), 1.3)),
+            Self::Ghost => Some(("sound_effects/voices/ghost_voice.ogg".to_string(), 1.3)),
         }
     }
 }
@@ -157,7 +166,7 @@ impl Portrait {
             name: Name::new(format!("portrait_{:?}", speaker)),
             spatial: spat_tran(offset.x, offset.y, offset.z),
             multi: multi!(anim_man!({
-                path: speaker.get_path().as_str(),
+                path: speaker.get_portrait_path().as_str(),
                 size: (22, 22),
             })
             .with_render_layers(MenuCamera::render_layers())),
@@ -262,6 +271,9 @@ impl ConvoBox {
             commands
                 .spawn(Portrait::new(self.pos, self.speaker))
                 .set_parent(new_dad);
+        }
+        if let Some((voice_path, mult)) = self.speaker.get_voice_path_n_mult() {
+            commands.spawn((SoundEffect::universal(&voice_path, 0.3 * mult), NoDupSound));
         }
         commands
             .spawn(Content::new(self.pos, self.speaker, self.content.clone()))

@@ -9,6 +9,7 @@ fn take_simp_damage(
     mut birds: Query<(&mut Bird, &TriggerReceiver)>,
     collisions: Query<&TriggerCollisionRecord>,
     irrelevant_simps: Query<Entity, Or<(With<Birthing>, With<Dying>, With<Dead>)>>,
+    mut commands: Commands,
 ) {
     for (mut bird, rx) in &mut birds {
         if bird.taking_damage.is_some() {
@@ -25,7 +26,12 @@ fn take_simp_damage(
             }
             bird.taking_damage = Some(Timer::from_seconds(1.0, TimerMode::Once));
             bird.health = bird.health.saturating_sub(1);
+            commands.spawn(SoundEffect::universal(
+                "sound_effects/lenny_take_damage.ogg",
+                0.8,
+            ));
             // Fuck it only take damage from simps at most once per frame
+            // Wait this actually makes sense
             break;
         }
     }

@@ -81,6 +81,10 @@ fn do_launch(
     commands.entity(eid).remove::<Stuck>();
     dyno_tran.vel = launch.0 * 6.0;
     tran.set_angle(0.0);
+    commands.spawn(SoundEffect::universal(
+        "sound_effects/lenny_launch.ogg",
+        0.3,
+    ));
 }
 
 fn do_fire(
@@ -111,12 +115,14 @@ fn do_fire(
     commands
         .spawn(BulletBundle::new(pos, vel))
         .set_parent(parent_eid);
+    commands.spawn(SoundEffect::universal("sound_effects/lenny_fire.ogg", 0.06));
 }
 
 fn refresh_launches_n_bullets(
     mut bird_q: Query<(&mut Bird, &StaticReceiver)>,
     static_collisions: Query<&StaticCollisionRecord>,
     skills: Res<EphemeralSkill>,
+    mut commands: Commands,
 ) {
     for (mut bird, receiver) in bird_q.iter_mut() {
         if receiver
@@ -128,8 +134,16 @@ fn refresh_launches_n_bullets(
                 Err(_) => false,
             })
         {
-            bird.launches_left = skills.get_num_launches();
-            bird.bullets_left = skills.get_num_bullets();
+            if bird.launches_left < skills.get_num_launches()
+                || bird.bullets_left < skills.get_num_bullets()
+            {
+                commands.spawn(SoundEffect::universal(
+                    "sound_effects/lenny_recharge.ogg",
+                    0.08,
+                ));
+                bird.launches_left = skills.get_num_launches();
+                bird.bullets_left = skills.get_num_bullets();
+            }
         }
     }
 }

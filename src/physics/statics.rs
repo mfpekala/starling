@@ -68,6 +68,12 @@ pub struct Stuck {
 #[derive(Component, Debug, Clone, Reflect)]
 pub struct StaticCollisionRecord {
     pub pos: Vec2,
+    /// Before collision, component of receivers velocity in collision normal direction
+    /// NOTE: I don't think is always pointing in the "right" direction. Be warned.
+    pub rx_perp: Vec2,
+    /// Before collision, component of receivers velocity perpendicular to normal direction
+    /// Name is weird because it's "parallel" to original vel of rx
+    pub rx_par: Vec2,
     pub provider_eid: Entity,
     pub provider_kind: StaticProviderKind,
     pub receiver_eid: Entity,

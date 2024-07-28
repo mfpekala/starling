@@ -103,6 +103,7 @@ fn start_dying(
         (Without<Dying>, Without<Dead>),
     >,
     mut commands: Commands,
+    mut music_manager: ResMut<MusicManager>,
 ) {
     let Ok((eid, mut bird, mut _multi)) = bird.get_single_mut() else {
         return;
@@ -114,6 +115,8 @@ fn start_dying(
             timer: Timer::from_seconds(3.0, TimerMode::Once),
             dont_despawn: true,
         });
+        commands.spawn(SoundEffect::universal("sound_effects/lenny_death.ogg", 0.4));
+        music_manager.fade_to_song(MusicKind::Elegy);
     }
 }
 

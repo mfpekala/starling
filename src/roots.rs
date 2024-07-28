@@ -107,6 +107,7 @@ impl_root_init!(
         offset: Vec3::new(0.0, 0.0, ZIX_PAUSE),
     },
     RoomRoot,
+    SoundRoot,
     TransitionRoot {
         offset: Vec3::new(0.0, 0.0, ZIX_TRANSITION),
     },

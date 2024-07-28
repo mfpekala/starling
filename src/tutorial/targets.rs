@@ -123,6 +123,7 @@ fn update_practice_targets(
                     .reset_key_with_points("explode", &mut commands);
                 multi.manager_mut("light").set_hidden(true, &mut commands);
                 practice_target.time_dead = Some(0.0);
+                commands.spawn(SoundEffect::universal("sound_effects/fly_spot.ogg", 0.2));
             }
         }
     }

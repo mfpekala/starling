@@ -197,8 +197,12 @@ fn resolve_static_collisions(
         };
 
         // Create a collision record
+        let old_perp = dyno_tran.vel.dot(mvmt.normalize_or_zero()) * mvmt.normalize_or_zero();
+        let old_par = dyno_tran.vel - old_perp;
         let collision_record = StaticCollisionRecord {
             pos: cp,
+            rx_perp: old_perp,
+            rx_par: old_par,
             provider_eid,
             provider_kind: provider_data.kind,
             receiver_eid: eid,

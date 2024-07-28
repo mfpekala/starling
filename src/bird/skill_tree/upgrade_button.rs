@@ -158,6 +158,10 @@ pub(super) fn update_upgrade_buttons(
             if already_applied.is_empty() && mouse_input.buttons.just_released(MouseButton::Left) {
                 commands.entity(eid).insert(UpgradeButtonApplied);
                 data.kind.apply(&mut permanent_skills);
+                commands.spawn(SoundEffect::universal(
+                    "sound_effects/choose_upgrade.ogg",
+                    0.2,
+                ));
             }
         } else {
             commands.entity(eid).remove::<Hovered>();

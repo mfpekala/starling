@@ -464,6 +464,7 @@ fn update_animation_bodies(
     mut mats: ResMut<Assets<AnimationMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
+    let mut killed_mids = HashSet::new();
     for (
         eid,
         parent,
@@ -480,11 +481,15 @@ fn update_animation_bodies(
             let Ok((mid, multi)) = multis.get(parent.get()) else {
                 continue;
             };
+            if killed_mids.contains(&mid) {
+                continue;
+            }
             let Some(manager) = multi.map.get(&body.key) else {
                 continue;
             };
             if manager.key.as_str() == "despawn" {
                 commands.entity(mid).despawn_recursive();
+                killed_mids.insert(mid);
                 continue;
             }
             let current_node = manager.current_node();

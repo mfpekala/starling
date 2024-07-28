@@ -19,12 +19,17 @@ struct LearnToFlyData {
     help_text: String,
 }
 
-fn setup_learn_to_fly(mut commands: Commands, tutorial_root: Res<TutorialRoot>) {
+fn setup_learn_to_fly(
+    mut commands: Commands,
+    tutorial_root: Res<TutorialRoot>,
+    mut music_manager: ResMut<MusicManager>,
+) {
     let mut data = LearnToFlyData::default();
     data.help_text = String::from("Press WASD, Space, or either mouse\nbutton to advance dialogue");
     commands
         .spawn((Name::new("learn_to_fly_data"), data))
         .set_parent(tutorial_root.eid());
+    music_manager.fade_to_song(MusicKind::ChildhoodFriends);
 }
 
 fn destroy_learn_to_fly(
@@ -157,6 +162,9 @@ fn update_fly_spots(
     }
     let mut data = data.single_mut();
     let num_left = fly_spots.iter().count();
+    let do_sound = |commands: &mut Commands| {
+        commands.spawn(SoundEffect::universal("sound_effects/fly_spot.ogg", 0.2));
+    };
     for (eid, fly_spot, trigger) in &fly_spots {
         if trigger.collisions.iter().all(|tid| {
             collisions
@@ -170,6 +178,7 @@ fn update_fly_spots(
         match fly_spot.key.as_str() {
             "first" => {
                 commands.entity(eid).despawn_recursive();
+                do_sound(&mut commands);
                 next_convo_state.set(ConvoState::TutorialLaunchChallengeStart);
                 data.has_passed_first_spot = true;
                 data.help_text = String::new();
@@ -188,6 +197,7 @@ fn update_fly_spots(
                         data.help_text = String::new();
                     }
                     commands.entity(eid).despawn_recursive();
+                    do_sound(&mut commands);
                     if num_left <= 1 {
                         next_convo_state.set(ConvoState::TutorialLaunchChallengeCompleted);
                     }
@@ -195,6 +205,7 @@ fn update_fly_spots(
             }
             "complete" => {
                 commands.entity(eid).despawn_recursive();
+                do_sound(&mut commands);
                 next_meta_state.set(TutorialState::LearnToShoot.to_meta_state());
             }
             _ => panic!("bad flyspot"),

@@ -36,6 +36,7 @@ impl SimpBundle {
         let speed = rng.gen_range(Self::SPEED_RANGE.0..Self::SPEED_RANGE.1);
         let mult = rng.gen_range(Self::MULT_RANGE.0..Self::MULT_RANGE.1);
         let fut = rng.gen_range(Self::FUTURE_RANGE.0..Self::FUTURE_RANGE.1);
+        commands.spawn(SoundEffect::universal("sound_effects/simp_spawn.ogg", 0.4));
         commands
             .spawn(Self {
                 name: Name::new("simp_guide (body)"),
@@ -193,6 +194,10 @@ fn hurt_simps(
                     hurtbox.health = hurtbox.health.saturating_sub(1);
                     let other_vel = bullet_dyno_trans.get(collision.other_eid).unwrap();
                     parent_dyno_tran.vel += other_vel.vel / 6.0;
+                    commands.spawn(SoundEffect::universal(
+                        "sound_effects/simp_take_damage.ogg",
+                        0.2,
+                    ));
                 }
             }
         }
@@ -212,6 +217,7 @@ fn hurt_simps(
                 timer: Timer::from_seconds(2.0, TimerMode::Once),
                 dont_despawn: false,
             });
+            commands.spawn(SoundEffect::universal("sound_effects/simp_death2.ogg", 0.6));
         }
     }
 }
