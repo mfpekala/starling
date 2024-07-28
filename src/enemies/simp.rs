@@ -30,8 +30,11 @@ impl SimpBundle {
     const SPEED_RANGE: (f32, f32) = (30.0, 50.0);
     const MULT_RANGE: (i32, i32) = (-40, 40);
     const FUTURE_RANGE: (f32, f32) = (-0.5, 2.0);
+}
+impl EnemyBundle for SimpBundle {
+    type CountComponent = SimpGuide;
 
-    pub fn spawn(pos: Vec2, commands: &mut Commands, parent: Entity) {
+    fn spawn(pos: Vec2, commands: &mut Commands, parent: Entity) {
         let mut rng = thread_rng();
         let speed = rng.gen_range(Self::SPEED_RANGE.0..Self::SPEED_RANGE.1);
         let mult = rng.gen_range(Self::MULT_RANGE.0..Self::MULT_RANGE.1);

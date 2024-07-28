@@ -8,8 +8,9 @@ struct MusicMarker;
 #[derive(Component)]
 struct MusicMarkerChild;
 
-#[derive(Clone, Copy, Debug, Reflect, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Reflect, Serialize, Deserialize, PartialEq, Default)]
 pub enum MusicKind {
+    #[default]
     NoSong,
     ChildhoodFriends,
     BossBattle,
@@ -33,7 +34,7 @@ impl MusicKind {
             Self::NoSong => 0.0, // hack (this one is clean tho)
             Self::ChildhoodFriends => 0.3,
             Self::BossBattle => 0.12,
-            Self::NormalBattle => 0.3,
+            Self::NormalBattle => 0.12,
             Self::Elegy => 0.36,
         }
     }
@@ -41,29 +42,29 @@ impl MusicKind {
 
 #[derive(Clone, Debug, Reflect)]
 struct MusicTransition {
-    to: Option<MusicKind>,
+    to: MusicKind,
     fade_out: Option<Timer>,
     fade_in: Option<Timer>,
 }
 
 #[derive(Resource, Debug, Default, Clone, Reflect)]
 pub struct MusicManager {
-    current: Option<MusicKind>,
+    current: MusicKind,
     transition: Option<MusicTransition>,
 }
 impl MusicManager {
     const FADE_TIME: f32 = 0.3;
 
     pub fn fade_to_song(&mut self, song: MusicKind) {
-        if Some(song) == self.current && self.transition.is_none() {
+        if song == self.current && self.transition.is_none() {
             // Don't need to do anything
             return;
         }
         self.transition = Some(MusicTransition {
-            to: Some(song),
+            to: song,
             fade_out: Some(Timer::from_seconds(Self::FADE_TIME, TimerMode::Once)),
             fade_in: None,
-        })
+        });
     }
 }
 
@@ -98,11 +99,7 @@ fn update_music(
 ) {
     let parent_eid = music_parent.single();
     let child = music_child.get_single_mut();
-    let kind_factor = manager
-        .current
-        .as_ref()
-        .map(|kind| kind.to_volume_adjustment())
-        .unwrap_or(0.0);
+    let kind_factor = manager.current.to_volume_adjustment();
     let settings_factor = sound_settings.main_volume * sound_settings.music_volume;
     let set_volume = |x: f32| {
         if let Ok((audio_sink, mut playback_settings)) = child {
@@ -110,7 +107,8 @@ fn update_music(
             playback_settings.volume = Volume::new(kind_factor * settings_factor * x);
         }
     };
-    let mut go_to = None;
+    let mut go_to = MusicKind::default();
+    let mut respawn = false;
     let mut stop_transition = false;
     match manager.transition.as_mut() {
         Some(transition) => {
@@ -134,6 +132,7 @@ fn update_music(
                         TimerMode::Once,
                     ));
                     go_to = transition.to;
+                    respawn = true;
                 } else if transition.fade_in.is_some() {
                     transition.fade_out = None;
                     transition.fade_in = None;
@@ -145,12 +144,12 @@ fn update_music(
             set_volume(1.0);
         }
     }
-    if let Some(kind) = go_to {
+    if respawn {
         commands.entity(parent_eid).despawn_descendants();
         commands.entity(parent_eid).with_children(|parent| {
             parent.spawn((
                 AudioBundle {
-                    source: asset_server.load(kind.to_asset_path()),
+                    source: asset_server.load(go_to.to_asset_path()),
                     settings: PlaybackSettings {
                         mode: PlaybackMode::Loop,
                         volume: Volume::new(0.0),
@@ -162,7 +161,7 @@ fn update_music(
                 Name::new("music_child"),
             ));
         });
-        manager.current = Some(kind);
+        manager.current = go_to;
     }
     if stop_transition {
         manager.transition = None;

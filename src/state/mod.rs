@@ -1,6 +1,9 @@
 use crate::prelude::*;
 
+pub mod room;
 pub mod transition;
+
+pub use room::*;
 pub use transition::*;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
@@ -20,19 +23,6 @@ pub enum TutorialState {
     LearnToShoot,
     ImpossibleBoss,
     Dead,
-}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
-pub enum EncounterState {
-    Entering,
-    Fighting,
-    Meandering,
-}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
-pub enum RoomState {
-    Encounter(EncounterState),
-    SkillUp,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
@@ -60,33 +50,50 @@ pub trait MetaUnfucker {
     fn get_tutorial_state(&self) -> Option<TutorialState>;
     fn get_room_state(&self) -> Option<RoomState>;
 }
-impl MetaUnfucker for State<MetaState> {
+impl MetaUnfucker for MetaState {
     fn get_menu_state(&self) -> Option<MenuState> {
-        match self.get() {
+        match self {
             MetaState::Menu(menu_state) => Some(menu_state.clone()),
             _ => None,
         }
     }
 
     fn get_cutscene_state(&self) -> Option<CutsceneState> {
-        match self.get() {
+        match self {
             MetaState::Cutscene(cutscene_state) => Some(cutscene_state.clone()),
             _ => None,
         }
     }
 
     fn get_tutorial_state(&self) -> Option<TutorialState> {
-        match self.get() {
+        match self {
             MetaState::Tutorial(tutorial_state) => Some(tutorial_state.clone()),
             _ => None,
         }
     }
 
     fn get_room_state(&self) -> Option<RoomState> {
-        match self.get() {
+        match self {
             MetaState::Room(room_state) => Some(room_state.clone()),
             _ => None,
         }
+    }
+}
+impl MetaUnfucker for State<MetaState> {
+    fn get_menu_state(&self) -> Option<MenuState> {
+        MetaState::get_menu_state(self.get())
+    }
+
+    fn get_cutscene_state(&self) -> Option<CutsceneState> {
+        MetaState::get_cutscene_state(self.get())
+    }
+
+    fn get_tutorial_state(&self) -> Option<TutorialState> {
+        MetaState::get_tutorial_state(self.get())
+    }
+
+    fn get_room_state(&self) -> Option<RoomState> {
+        MetaState::get_room_state(self.get())
     }
 }
 
@@ -144,7 +151,8 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         // Ground truth states
         // app.insert_state(MetaState::Menu(MenuState::Studio)); // INITIAL STATE (control f this silly)
-        app.insert_state(MetaState::Tutorial(TutorialState::LearnToFly)); // INITIAL STATE (control f this silly)
+        // app.insert_state(MetaState::Tutorial(TutorialState::LearnToFly)); // INITIAL_STATE (control f this silly)
+        app.insert_state(RoomState::xth_encounter(EncounterKind::SteelbeakOnly, 1).to_meta_state()); // initial
         app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);
         app.insert_state(AppMode::Dev);
@@ -152,5 +160,7 @@ impl Plugin for StatePlugin {
         app.add_computed_state::<PhysicsState>();
         // Transitions
         transition::register_transition(app);
+        // Rooms
+        room::register_room_states(app);
     }
 }

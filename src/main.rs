@@ -14,6 +14,7 @@ pub mod macros;
 pub mod math;
 pub mod menu;
 pub mod physics;
+pub mod room;
 pub mod roots;
 pub mod settings;
 pub mod sound;
@@ -49,8 +50,10 @@ pub mod prelude {
     pub use bevy::render::view::RenderLayers;
     pub use bevy::utils::HashMap;
     pub use bevy::utils::HashSet;
+    pub use rand::{thread_rng, Rng};
     pub use serde::{Deserialize, Serialize};
     pub use std::collections::VecDeque;
+    pub use std::ops::Range;
 }
 
 fn main() {
@@ -82,6 +85,7 @@ fn main() {
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
         .add_plugins(physics::PhysicsPlugin)
+        .add_plugins(room::RoomPlugin)
         .add_plugins(roots::RootPlugin)
         .add_plugins(settings::SettingsPlugin)
         .add_plugins(sound::SoundPlugin)

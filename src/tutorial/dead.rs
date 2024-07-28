@@ -99,7 +99,7 @@ fn update(
                 multi.manager_mut(&multi_key).set_key("bird", &mut commands);
                 next_transition_state.set(TransitionKind::FadeToBlack.to_meta_transition_state(
                     1.0,
-                    RoomState::Encounter(EncounterState::Entering).to_meta_state(),
+                    RoomState::xth_encounter(EncounterKind::SteelbeakOnly, 1).to_meta_state(),
                 ));
             }
         }

@@ -256,9 +256,8 @@ pub(super) fn register_health_bar(app: &mut App) {
             .run_if(in_state(BirdExists::Yes))
             .run_if(in_state(BirdAlive::No))
             .run_if(
-                in_state(TutorialState::ImpossibleBoss.to_meta_state()).or_else(in_state(
-                    RoomState::Encounter(EncounterState::Fighting).to_meta_state(),
-                )),
+                in_state(TutorialState::ImpossibleBoss.to_meta_state())
+                    .or_else(in_state(EncounterProgress::Fighting)),
             )
             .after(AnimationSet)
             .after(PhysicsSet),
