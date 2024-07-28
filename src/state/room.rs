@@ -14,14 +14,15 @@ pub enum EncounterProgress {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub struct EncounterState {
-    kind: EncounterKind,
-    difficulty: u32,
-    progress: EncounterProgress,
+    pub kind: EncounterKind,
+    pub difficulty: u32,
+    pub progress: EncounterProgress,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum RoomState {
     Encounter(EncounterState),
+    Dead,
 }
 impl RoomState {
     pub fn xth_encounter(kind: EncounterKind, difficulty: u32) -> Self {
@@ -40,6 +41,7 @@ impl ComputedStates for EncounterKind {
         match sources.get_room_state() {
             Some(room_state) => match room_state {
                 RoomState::Encounter(encounter_state) => Some(encounter_state.kind),
+                _ => None,
             },
             None => None,
         }
@@ -53,6 +55,21 @@ impl ComputedStates for EncounterProgress {
         match sources.get_room_state() {
             Some(room_state) => match room_state {
                 RoomState::Encounter(encounter_state) => Some(encounter_state.progress),
+                _ => None,
+            },
+            None => None,
+        }
+    }
+}
+
+impl ComputedStates for EncounterState {
+    type SourceStates = MetaState;
+
+    fn compute(sources: MetaState) -> Option<Self> {
+        match sources.get_room_state() {
+            Some(room_state) => match room_state {
+                RoomState::Encounter(encounter_state) => Some(encounter_state),
+                _ => None,
             },
             None => None,
         }
@@ -62,4 +79,5 @@ impl ComputedStates for EncounterProgress {
 pub(super) fn register_room_states(app: &mut App) {
     app.add_computed_state::<EncounterKind>();
     app.add_computed_state::<EncounterProgress>();
+    app.add_computed_state::<EncounterState>();
 }

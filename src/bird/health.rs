@@ -236,7 +236,7 @@ fn ghost_up(
         if meta_state.get_tutorial_state().is_some() {
             next_meta_state.set(TutorialState::Dead.to_meta_state());
         } else {
-            panic!("Have to come up with RoomDead state");
+            next_meta_state.set(RoomState::Dead.to_meta_state());
         }
     }
 }

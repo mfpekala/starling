@@ -44,7 +44,7 @@ struct EnemySpawner<B: EnemyBundle> {
     batch_rate_range: Range<f32>,
     /// Range of time to wait between batches
     between_range: Range<f32>,
-    pos: Vec2,
+    poses: Vec<Vec2>,
 }
 impl<B: EnemyBundle> Default for EnemySpawner<B> {
     fn default() -> Self {
@@ -53,7 +53,7 @@ impl<B: EnemyBundle> Default for EnemySpawner<B> {
             batch_sizes: vec![],
             batch_rate_range: 0.2..1.0,
             between_range: 3.0..10.0,
-            pos: default(),
+            poses: default(),
         }
     }
 }
@@ -65,11 +65,11 @@ pub struct EnemySpawnerBundle<B: EnemyBundle> {
     state: SpawnerState,
 }
 impl<B: EnemyBundle> EnemySpawnerBundle<B> {
-    pub fn new(pos: Vec2, batch_sizes: Vec<usize>) -> Self {
+    pub fn new(poses: Vec<Vec2>, batch_sizes: Vec<usize>) -> Self {
         Self {
             name: Name::new("spawner"),
             spawner: EnemySpawner {
-                pos,
+                poses,
                 batch_sizes,
                 ..default()
             },
@@ -109,7 +109,8 @@ fn update_spawners<B: EnemyBundle>(
                     timer.tick(Duration::from_secs_f32(time_factor));
                     if timer.finished() {
                         // Spawn a new bad boi, but no state transition
-                        B::spawn(spawner.pos, &mut commands, relevant_root);
+                        let pos = spawner.poses[rng.gen_range(0..spawner.poses.len())];
+                        B::spawn(pos, &mut commands, relevant_root);
                         *num_left -= 1;
                         *timer = Timer::from_seconds(
                             rng.gen_range(spawner.batch_rate_range.clone()),

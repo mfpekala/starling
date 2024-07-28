@@ -134,11 +134,8 @@ fn update_drag_markers(
 pub(super) struct DragMarkerPlugin;
 impl Plugin for DragMarkerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(PhysicsState::Active), setup_drag_markers);
-        app.add_systems(OnExit(PhysicsState::Active), destroy_drag_markers);
-        app.add_systems(
-            Update,
-            update_drag_markers.run_if(in_state(PhysicsState::Active)),
-        );
+        app.add_systems(OnEnter(BirdAlive::Yes), setup_drag_markers);
+        app.add_systems(OnExit(BirdAlive::Yes), destroy_drag_markers);
+        app.add_systems(Update, update_drag_markers.run_if(in_state(BirdAlive::Yes)));
     }
 }
