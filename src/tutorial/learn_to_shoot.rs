@@ -85,7 +85,7 @@ fn spawn_speed_challenge(
 ) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
-    let respawn_time = 2.0;
+    let respawn_time = 3.0;
     spawn_target!(c, r, 35, 23, "speed_1", Some(respawn_time));
     spawn_target!(c, r, -54, -13, "speed_2", Some(respawn_time));
     spawn_target!(c, r, -114, 51, "speed_3", Some(respawn_time));

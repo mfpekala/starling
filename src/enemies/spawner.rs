@@ -53,7 +53,7 @@ impl<B: EnemyBundle> Default for EnemySpawner<B> {
             pd: default(),
             batch_sizes: vec![],
             batch_rate_range: 0.2..1.0,
-            between_range: 3.0..10.0,
+            between_range: 5.0..25.0,
             poses: default(),
         }
     }
@@ -80,6 +80,7 @@ impl<B: EnemyBundle> EnemySpawnerBundle<B> {
 }
 
 fn update_spawners<B: EnemyBundle>(
+    count: Query<&B::CountComponent>,
     mut spawners: Query<(Entity, &mut EnemySpawner<B>, &mut SpawnerState)>,
     mut commands: Commands,
     meta_state: Res<State<MetaState>>,
@@ -126,7 +127,7 @@ fn update_spawners<B: EnemyBundle>(
             }
             SpawnerState::BetweenBatches(timer) => {
                 timer.tick(Duration::from_secs_f32(time_factor));
-                if timer.finished() {
+                if timer.finished() || count.is_empty() {
                     Some(SpawnerState::new_mid(&mut spawner))
                 } else {
                     None

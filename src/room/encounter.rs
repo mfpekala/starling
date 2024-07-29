@@ -125,7 +125,7 @@ fn create_room(
             let bot_left = -(IDEAL_VEC_f32 / 2.0 - Vec2::ONE * 6.0);
             let top_right = -bot_left;
             let num_spawners = encounter_state.difficulty + 2;
-            let num_enemies = 6 * encounter_state.difficulty.pow(2) as usize;
+            let num_enemies = 3 + 3 * encounter_state.difficulty.pow(2) as usize;
             let bird_placements = vec![(Shape::Circle { radius: 7.0 }, Vec2::ZERO, 0.0)];
             let spawner_placements = generate_circles(
                 num_spawners,

@@ -28,7 +28,7 @@ impl FlySpotBundle {
                         path: "tutorial/shiny_spot_core.png",
                         size: (6, 6),
                         length: 5,
-                        fps: 12.0,
+                        fps: 6.0,
                     })
                     .with_points(anim_points.clone()),
                 ),

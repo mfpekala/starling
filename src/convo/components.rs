@@ -72,7 +72,7 @@ impl BoxSpeaker {
     fn get_voice_path_n_mult(&self) -> Option<(String, f32)> {
         match self {
             Self::None => None,
-            Self::Lennox => Some(("sound_effects/voices/lenny1.ogg".to_string(), 0.6)),
+            Self::Lennox => Some(("sound_effects/voices/lenny1.ogg".to_string(), 0.4)),
             Self::GhostGreen => Some(("sound_effects/voices/ghost_voice.ogg".to_string(), 1.3)),
             Self::Ghost => Some(("sound_effects/voices/ghost_voice.ogg".to_string(), 1.3)),
         }
