@@ -16,16 +16,18 @@ struct LearnToFlyData {
     has_shown_slow_mo_remark: bool,
     is_at_least_three_fourths_done_with_challenge: bool,
     has_shown_exhaustion_warning: bool,
-    help_text: String,
 }
 
 fn setup_learn_to_fly(
     mut commands: Commands,
     tutorial_root: Res<TutorialRoot>,
     mut music_manager: ResMut<MusicManager>,
+    mut help_text: ResMut<HelpText>,
 ) {
-    let mut data = LearnToFlyData::default();
-    data.help_text = String::from("Press WASD, Space, or either mouse\nbutton to advance dialogue");
+    let data = LearnToFlyData::default();
+    help_text.content = Some(String::from(
+        "Press WASD, Space, or either mouse\nbutton to advance dialogue",
+    ));
     commands
         .spawn((Name::new("learn_to_fly_data"), data))
         .set_parent(tutorial_root.eid());
@@ -56,10 +58,11 @@ fn spawn_first_fly_spot(
     mut c: Commands,
     tutorial_root: Res<TutorialRoot>,
     mut data: Query<&mut LearnToFlyData>,
+    mut help_text: ResMut<HelpText>,
 ) {
-    if let Ok(mut data) = data.get_single_mut() {
+    if let Ok(_data) = data.get_single_mut() {
         // Wrap in an if because we might use our dev shortcut to skip LearnToFly
-        data.help_text = "Use WASD or Arrow Keys to Fly".into();
+        help_text.set("Use WASD or Arrow Keys to Fly.\nFly into the yellow zone(s).");
         let r = tutorial_root.eid();
         // Commands, root_eid, x, y, radius, key
         spawn_fly_spot!(c, r, 127, 66, 12, "first");
@@ -69,9 +72,9 @@ fn spawn_first_fly_spot(
 fn spawn_challenge_fly_spots(
     mut c: Commands,
     tutorial_root: Res<TutorialRoot>,
-    mut data: Query<&mut LearnToFlyData>,
     mut permanent_skills: ResMut<PermanentSkill>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
+    mut help_text: ResMut<HelpText>,
 ) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
@@ -79,10 +82,7 @@ fn spawn_challenge_fly_spots(
     spawn_fly_spot!(c, r, -54, -13, 8, "challenge_2");
     spawn_fly_spot!(c, r, -114, 51, 6, "challenge_3");
     spawn_fly_spot!(c, r, 100, -60, 6, "challenge_4");
-    let mut data = data.single_mut();
-    data.help_text =
-        "Drag and release left mouse to launch!\nTo recharge, fly into a sticky (pink) object."
-            .into();
+    help_text.set("Drag and release left mouse to launch!\nTo recharge, fly into a sticky log.");
     permanent_skills.increase_num_launches(2);
     ephemeral_skills.start_attempt(&permanent_skills);
 }
@@ -102,14 +102,10 @@ fn update_data(
     time: Res<Time>,
     convo_state: Res<State<ConvoState>>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
-    mut text: Query<&mut Text, With<HelpText>>,
 ) {
     let mut data = data.single_mut();
     let bird = bird.single();
     data.ever_could_launch = bird.get_launches_left() > 0;
-    // Update the text
-    let mut text = text.single_mut();
-    text.sections[0].value = data.help_text.clone();
     // Update the launch data
     if launches.read().next().is_some() {
         data.time_since_last_launch = 0.0;
@@ -154,6 +150,7 @@ fn update_fly_spots(
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    mut help_text: ResMut<HelpText>,
 ) {
     if keyboard.just_pressed(KeyCode::Numpad6) {
         next_convo_state.set(ConvoState::None);
@@ -181,7 +178,7 @@ fn update_fly_spots(
                 do_sound(&mut commands);
                 next_convo_state.set(ConvoState::TutorialLaunchChallengeStart);
                 data.has_passed_first_spot = true;
-                data.help_text = String::new();
+                help_text.clear();
             }
             "challenge_1" | "challenge_2" | "challenge_3" | "challenge_4" => {
                 if !data.no_fly_since_launch {
@@ -194,7 +191,7 @@ fn update_fly_spots(
                 } else {
                     data.is_at_least_three_fourths_done_with_challenge = num_left <= 2;
                     if num_left <= 3 {
-                        data.help_text = String::new();
+                        help_text.clear();
                     }
                     commands.entity(eid).despawn_recursive();
                     do_sound(&mut commands);

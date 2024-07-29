@@ -328,6 +328,7 @@ fn enter_meandering(
     mut music_manager: ResMut<MusicManager>,
     steelbeak_spawners: Query<(Entity, &EnemySpawner<SimpBundle>)>,
     room_root: Res<RoomRoot>,
+    mut help_text: ResMut<HelpText>,
 ) {
     commands.spawn(SoundEffect::universal("sound_effects/room_clear.ogg", 0.3));
     music_manager.fade_to_song(MusicKind::SandCastles);
@@ -349,6 +350,12 @@ fn enter_meandering(
     commands
         .spawn(GoNextBundle::new(Vec2::ZERO))
         .set_parent(room_root.eid());
+
+    help_text.set("Shoot a bullet at the arrow to go\nto the next room.")
+}
+
+fn exit_meandering(mut help_text: ResMut<HelpText>) {
+    help_text.clear();
 }
 
 pub(super) fn register_encounters(app: &mut App) {
@@ -362,4 +369,5 @@ pub(super) fn register_encounters(app: &mut App) {
         update_encounter_fighting.run_if(in_state(EncounterProgress::Fighting)),
     );
     app.add_systems(OnEnter(EncounterProgress::Meandering), enter_meandering);
+    app.add_systems(OnExit(EncounterProgress::Meandering), exit_meandering);
 }

@@ -7,9 +7,6 @@ mod learn_to_fly;
 mod learn_to_shoot;
 pub(self) mod targets;
 
-#[derive(Component)]
-struct HelpText;
-
 /// Sets up the tutorial.
 /// NOTE: For simplicity, you can't save game mid tutorial, i.e. we are assuming that
 /// the state transitions will always go:
@@ -75,25 +72,6 @@ fn setup_tutorial(
         .set_parent(tutorial_root.eid());
     commands
         .spawn(GhostBundle::new(Vec2::new(140.0, 70.0), true, true))
-        .set_parent(tutorial_root.eid());
-    commands
-        .spawn((
-            Name::new("help_text"),
-            HelpText,
-            Text2dBundle {
-                text: Text::from_section(
-                    "",
-                    TextStyle {
-                        font_size: 12.0,
-                        ..default()
-                    },
-                )
-                .with_justify(JustifyText::Center),
-                transform: Transform::from_translation(Vec3::new(0.0, 60.0, ZIX_BIRD - 0.5)),
-                ..default()
-            },
-            SpriteCamera::render_layers(),
-        ))
         .set_parent(tutorial_root.eid());
     BackgroundKind::Zenith.spawn(Vec2::ZERO, tutorial_root.eid(), &mut commands);
 }

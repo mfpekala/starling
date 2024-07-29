@@ -15,7 +15,6 @@ struct LearnToShootData {
     // Maps target key to bullet that most recently killed it eid to show the joke
     killed_by: HashMap<String, u32>,
     has_shown_two_birds_joke: bool,
-    help_text: String,
 }
 
 fn setup_learn_to_shoot(
@@ -56,6 +55,7 @@ fn spawn_intro_challenge(
     mut data: Query<&mut LearnToShootData>,
     mut permanent_skills: ResMut<PermanentSkill>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
+    mut help_text: ResMut<HelpText>,
 ) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, key, respawn_after
@@ -71,9 +71,7 @@ fn spawn_intro_challenge(
         "intro_3".to_string(),
         "intro_4".to_string(),
     ]);
-    data.help_text =
-        "Drag and release right mouse to shoot.\nYou recharge 3 bullets every time you land."
-            .into();
+    help_text.set("Drag and release right mouse to shoot.\nYou reload after hitting sticky logs.");
     permanent_skills.increase_num_bullets(3);
     ephemeral_skills.start_attempt(&permanent_skills);
 }
@@ -82,6 +80,7 @@ fn spawn_speed_challenge(
     mut c: Commands,
     tutorial_root: Res<TutorialRoot>,
     mut data: Query<&mut LearnToShootData>,
+    mut help_text: ResMut<HelpText>,
 ) {
     let r = tutorial_root.eid();
     // Commands, root_eid, x, y, radius, key
@@ -97,7 +96,7 @@ fn spawn_speed_challenge(
         "speed_3".to_string(),
         "speed_4".to_string(),
     ]);
-    data.help_text = format!("Targets respawn after {respawn_time}s.\nGet them all!");
+    help_text.set(format!("Targets respawn after {respawn_time}s.\nGet them all!").as_str());
 }
 
 // fn spawn_challenge_end_fly_spot(mut c: Commands, tutorial_root: Res<TutorialRoot>) {
@@ -109,7 +108,6 @@ fn spawn_speed_challenge(
 
 fn update(
     mut data: Query<&mut LearnToShootData>,
-    mut text: Query<&mut Text, With<HelpText>>,
     mut status_reader: EventReader<PracticeTargetStatus>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
@@ -117,6 +115,7 @@ fn update(
     birds: Query<Entity, With<Bird>>,
     keyboard: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
+    mut help_text: ResMut<HelpText>,
 ) {
     // Dev skip
     if keyboard.just_pressed(KeyCode::Numpad6) {
@@ -135,9 +134,6 @@ fn update(
         return;
     };
 
-    // Update the text
-    let mut text = text.single_mut();
-    text.sections[0].value = data.help_text.clone();
     // Update alive targets
     for update in status_reader.read() {
         if update.alive {
@@ -185,6 +181,7 @@ fn update(
             for eid in &target_eids {
                 commands.entity(eid).despawn_recursive();
             }
+            help_text.clear();
             next_convo_state.set(ConvoState::TutorialBulletSpeedComplete);
         }
     }

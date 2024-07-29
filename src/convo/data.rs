@@ -119,22 +119,22 @@ pub(super) fn get_full_convo(state: ConvoState) -> Vec<ConvoBox> {
                 speaker: Lennox,
                 content: "*chirp!*"
             },
-            {
-                speaker: GhostGreen,
-                content: "Instincts don't last forever, though."
-            },
-            {
-                speaker: GhostGreen,
-                content: "Your body will give out after a couple seconds."
-            },
-            {
-                speaker: GhostGreen,
-                content: "Then you'll be forced to launch."
-            },
-            {
-                speaker: Lennox,
-                content: "*chirp.*"
-            },
+            // {
+            //     speaker: GhostGreen,
+            //     content: "Instincts don't last forever, though."
+            // },
+            // {
+            //     speaker: GhostGreen,
+            //     content: "Your body will give out after a couple seconds."
+            // },
+            // {
+            //     speaker: GhostGreen,
+            //     content: "Then you'll be forced to launch."
+            // },
+            // {
+            //     speaker: Lennox,
+            //     content: "*chirp.*"
+            // },
             {
                 speaker: GhostGreen,
                 content: "Another tip: If you need to stop on a dime..."

@@ -22,13 +22,13 @@ impl StickyPlatformBundle {
                         path: "environment/log_horizontal.png",
                         size: (64, 32),
                     })
-                    .with_scale(Vec2::ONE * 0.62)
+                    .with_points(multi_points)
                 } else {
                     anim_man!({
                         path: "environment/log_vertical.png",
                         size: (25, 64),
                     })
-                    .with_scale(Vec2::ONE * 0.62)
+                    .with_points(multi_points)
                 }
             }
         };

@@ -17,7 +17,9 @@ fn setup_impossible_boss(
     mut ephemeral_skills: ResMut<EphemeralSkill>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut music_manager: ResMut<MusicManager>,
+    mut help_text: ResMut<HelpText>,
 ) {
+    help_text.clear();
     music_manager.fade_to_song(MusicKind::BossBattle);
     permanent_skills.force_set_num_launches(2);
     permanent_skills.force_set_num_bullets(3);
