@@ -12,7 +12,7 @@ fn setup_title(
             Name::new("title_text"),
             spat_tran(0.0, 0.0, 100.0),
             multi!(anim_man!({
-                path: "menu/title_text.png",
+                path: "menu/title_text3D.png",
                 size: (160, 60),
             })
             .with_render_layers(MenuCamera::render_layers())),

@@ -33,7 +33,9 @@ impl SpewWaiting {
 }
 
 #[derive(Component, Reflect)]
-pub struct SpewCharging;
+pub struct SpewCharging {
+    sound_played: bool,
+}
 
 #[derive(Bundle)]
 pub struct SpewBundle {
@@ -261,7 +263,9 @@ fn update_waiting_spews(
         waiting.time_until_charge.tick(time_factor);
         if waiting.time_until_charge.finished() {
             commands.entity(eid).remove::<SpewWaiting>();
-            commands.entity(eid).insert(SpewCharging);
+            commands.entity(eid).insert(SpewCharging {
+                sound_played: false,
+            });
             multi
                 .manager_mut("core")
                 .reset_key_with_points("charging", &mut commands);
@@ -285,14 +289,23 @@ fn update_waiting_spews(
 fn update_charging_spews(
     mut bird: Query<(&mut Bird, &Bounds, &GlobalTransform)>,
     mut commands: Commands,
-    mut spews_q: Query<(Entity, &mut MultiAnimationManager, &GlobalTransform), With<SpewCharging>>,
+    mut spews_q: Query<(
+        Entity,
+        &mut MultiAnimationManager,
+        &GlobalTransform,
+        &mut SpewCharging,
+    )>,
     mut skills: ResMut<EphemeralSkill>,
 ) {
     let Ok((mut bird, bird_bounds, bird_gtran)) = bird.get_single_mut() else {
         return;
     };
-    for (eid, mut multi, spew_gtran) in &mut spews_q {
+    for (eid, mut multi, spew_gtran, mut spew_charging) in &mut spews_q {
         if multi.manager("material").get_key().as_str() == "harmful" {
+            if !spew_charging.sound_played {
+                spew_charging.sound_played = true;
+                commands.spawn(SoundEffect::universal("sound_effects/laser.ogg", 0.1));
+            }
             if bird.taking_damage.is_some() {
                 continue;
             }

@@ -189,10 +189,12 @@ fn create_room(
             }
         }
         EncounterKind::PukebeakOnly => {
-            // TODO: REMOVE THIS ONLY FOR TESTING
-            ephemeral_skills.start_attempt(&permanent_skills);
+            music_manager.fade_to_song(MusicKind::NormalBattle);
 
-            music_manager.fade_to_song(MusicKind::NormalBattle); // remember this does nothing if it's already this song
+            if encounter_state.difficulty == 1 {
+                // YO we found it, the place where attempts start
+                ephemeral_skills.start_attempt(&permanent_skills);
+            }
 
             // Background and room border
             BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
@@ -200,33 +202,86 @@ fn create_room(
                 .spawn(HardPlatformBundle::around_room())
                 .set_parent(room_root.eid());
 
-            commands
-                .spawn(StickyPlatformBundle::new(
-                    "shape",
-                    Vec2::new(0.0, -40.0),
-                    Shape::Circle { radius: 20.0 },
-                ))
-                .insert(DynoRot { rot: 0.0 })
-                .set_parent(room_root.eid());
+            // Get all the placements
+            let bot_left = -(IDEAL_VEC_f32 / 2.0 - Vec2::ONE * 6.0);
+            let top_right = -bot_left;
+            let num_spawners = 2;
+            let num_enemies = 8;
+            let bird_placements = vec![(Shape::Circle { radius: 7.0 }, Vec2::ZERO, 0.0)];
+            let spawner_placements = generate_circles(
+                num_spawners,
+                bot_left,
+                top_right,
+                (10.0, 10.1),
+                (0.0, 0.1),
+                0.0,
+                &bird_placements,
+            );
+            let mut combined_avoid = bird_placements.clone();
+            combined_avoid.extend(spawner_placements.clone().into_iter());
+            let mut circle_placements = generate_circles(
+                12,
+                bot_left,
+                top_right,
+                (12.0, 32.0),
+                (-5.0, 5.0),
+                23.0,
+                &combined_avoid,
+            );
+            while circle_placements.len() == 0 {
+                circle_placements = generate_circles(
+                    12,
+                    bot_left,
+                    top_right,
+                    (12.0, 32.0),
+                    (-5.0, 5.0),
+                    23.0,
+                    &combined_avoid,
+                );
+            }
 
             // Spawn the bird!
             commands
                 .spawn(BirdBundle::new(
-                    Vec2::new(-100.0, 0.0),
+                    bird_placements[0].1,
                     default(),
                     ephemeral_skills.get_num_launches(),
                     ephemeral_skills.get_num_bullets(),
-                    1000,
+                    num_enemies as u32,
                 ))
                 .set_parent(room_root.eid());
 
-            // Spawn the spawner
+            // Calculate the batches and spawn the spawner
+            let batch_size_range = 1..=2;
+            let mut batch_sizes = vec![];
+            let mut unaccounted_for = num_enemies;
+            while unaccounted_for > 0 {
+                let batch_size = rand::thread_rng().gen_range(batch_size_range.clone());
+                let batch_size = batch_size.min(unaccounted_for);
+                batch_sizes.push(batch_size);
+                unaccounted_for -= batch_size;
+            }
             commands
                 .spawn(EnemySpawnerBundle::<SpewBundle>::new(
-                    vec![Vec2::new(100.0, 0.0)],
-                    vec![1, 1, 1, 1, 1],
+                    spawner_placements.into_iter().map(|(_, b, _)| b).collect(),
+                    batch_sizes,
                 ))
                 .set_parent(room_root.eid());
+
+            // Spawn the circles
+            for (ix, (shape, pos, rot)) in circle_placements.into_iter().enumerate() {
+                commands
+                    .spawn(StickyPlatformBundle::new(
+                        format!("shape_{ix}").as_str(),
+                        pos,
+                        shape,
+                    ))
+                    .insert(DynoRot { rot })
+                    .set_parent(room_root.eid());
+            }
+        }
+        EncounterKind::Both => {
+            panic!("both not handled yet");
         }
     }
 }
