@@ -13,6 +13,7 @@ pub mod input;
 pub mod macros;
 pub mod math;
 pub mod menu;
+pub mod particles;
 pub mod physics;
 pub mod room;
 pub mod roots;
@@ -38,6 +39,7 @@ pub mod prelude {
     pub use super::math::*;
     #[allow(unused_imports)]
     pub use super::menu::*;
+    pub use super::particles::*;
     pub use super::physics::*;
     pub use super::roots::*;
     pub use super::settings::*;
@@ -86,6 +88,7 @@ fn main() {
         .add_plugins(environment::EnvironmentPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(menu::MenuPlugin)
+        .add_plugins(particles::ParticlesPlugin)
         .add_plugins(physics::PhysicsPlugin)
         .add_plugins(room::RoomPlugin)
         .add_plugins(roots::RootPlugin)

@@ -112,12 +112,29 @@ fn update(
     mut text: Query<&mut Text, With<HelpText>>,
     mut status_reader: EventReader<PracticeTargetStatus>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
+    mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
     target_eids: Query<Entity, With<PracticeTarget>>,
+    birds: Query<Entity, With<Bird>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
 ) {
+    // Dev skip
+    if keyboard.just_pressed(KeyCode::Numpad6) {
+        next_convo_state.set(ConvoState::None);
+        next_transition_state.set(
+            TransitionKind::FadeToBlack
+                .to_meta_transition_state(1.0, TutorialState::ImpossibleBoss.to_meta_state()),
+        );
+        for eid in &birds {
+            commands.entity(eid).despawn_recursive();
+        }
+        return;
+    }
+
     let Ok(mut data) = data.get_single_mut() else {
         return;
     };
+
     // Update the text
     let mut text = text.single_mut();
     text.sections[0].value = data.help_text.clone();

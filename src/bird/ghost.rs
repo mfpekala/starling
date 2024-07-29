@@ -9,6 +9,7 @@ pub struct GhostBundle {
     ghost: Ghost,
     multi: MultiAnimationManager,
     spatial: SpatialBundle,
+    particles: SimpleParticleSpawner,
 }
 impl GhostBundle {
     pub fn new(pos: Vec2, flip_x: bool, green: bool) -> Self {
@@ -36,6 +37,14 @@ impl GhostBundle {
                 ),
             ]),
             spatial: spat_tran(pos.x, pos.y, ZIX_BIRD - 0.1),
+            particles: SimpleParticleSpawner::new(
+                Particle::new(default())
+                    .with_colors(
+                        Color::srgba_u8(255, 255, 255, 10),
+                        Color::srgba_u8(255, 255, 255, 0),
+                    )
+                    .with_sizes(6.0, 4.0),
+            ),
         }
     }
 }

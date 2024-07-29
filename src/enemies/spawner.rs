@@ -40,7 +40,7 @@ impl SpawnerState {
 #[derive(Component, Clone, Debug)]
 pub struct EnemySpawner<B: EnemyBundle> {
     pd: PhantomData<B>,
-    batch_sizes: Vec<usize>,
+    pub batch_sizes: Vec<usize>,
     /// Range of time to wait between spawning enemies while actively in a batch
     batch_rate_range: Range<f32>,
     /// Range of time to wait between batches
@@ -144,6 +144,7 @@ fn update_spawners<B: EnemyBundle>(
 pub(super) fn register_spawners(app: &mut App) {
     app.add_systems(
         Update,
-        update_spawners::<SimpBundle>.run_if(in_state(PhysicsState::Active)),
+        (update_spawners::<SimpBundle>, update_spawners::<SpewBundle>)
+            .run_if(in_state(PhysicsState::Active)),
     );
 }

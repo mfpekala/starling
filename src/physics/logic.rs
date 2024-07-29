@@ -374,6 +374,7 @@ fn move_unstuck_static_or_trigger_receivers(
             Option<&mut DynoTran>,
             Option<&mut DynoRot>,
             &mut Transform,
+            Option<&DynoAwareParticleSpawner>,
         ),
         Or<(With<DynoTran>, With<DynoRot>)>,
     >,
@@ -382,6 +383,7 @@ fn move_unstuck_static_or_trigger_receivers(
     mut static_providers: Query<(Entity, &Bounds, &mut StaticProvider, &GlobalTransform)>,
     mut commands: Commands,
     collision_root: Res<CollisionRoot>,
+    proot: Res<ParticlesRoot>,
 ) {
     let time_factor = time.delta_seconds() * bullet_time.factor();
     for eid in &relevant_eids {
@@ -391,7 +393,7 @@ fn move_unstuck_static_or_trigger_receivers(
         let my_gtran = my_gtran.clone();
 
         // Mutable dyno data (need to mutate and then assign at end)
-        let (_, my_dyno_tran, my_dyno_rot, my_tran) = dyno_data.get(eid).unwrap();
+        let (_, my_dyno_tran, my_dyno_rot, my_tran, particle_spawner) = dyno_data.get(eid).unwrap();
         let mut my_dyno_tran = my_dyno_tran.map(|inner| inner.clone());
         let mut my_dyno_rot = my_dyno_rot.map(|inner| inner.clone());
         let mut my_tran = my_tran.clone();
@@ -435,10 +437,10 @@ fn move_unstuck_static_or_trigger_receivers(
                         &collision_root,
                     );
                 }
+                // Basically because GlobalTransform doesn't update mid-system we need to do this shenanigans
+                let mut mid_step_gtran = my_tran.clone();
+                mid_step_gtran.translation += my_gtran_offset.extend(0.0);
                 if let Some(my_trigger_rx) = my_trigger.as_mut() {
-                    // Basically because GlobalTransform doesn't update mid-system we need to do this shenanigans
-                    let mut mid_step_gtran = my_tran.clone();
-                    mid_step_gtran.translation += my_gtran_offset.extend(0.0);
                     resolve_trigger_collisions(
                         eid,
                         &my_bounds,
@@ -449,6 +451,14 @@ fn move_unstuck_static_or_trigger_receivers(
                         &mut commands,
                         &collision_root,
                         &mut dup_set,
+                    );
+                }
+                // If we have a physics-based particle spawner, do something!
+                if let Some(particle_spawner) = particle_spawner {
+                    particle_spawner.do_spawn(
+                        mid_step_gtran.translation.truncate(),
+                        &mut commands,
+                        &proot,
                     );
                 }
                 // Update the loop stuff
@@ -475,7 +485,8 @@ fn move_unstuck_static_or_trigger_receivers(
             }
         }
 
-        let (_, reset_dyno_tran, reset_dyno_rot, mut reset_tran) = dyno_data.get_mut(eid).unwrap();
+        let (_, reset_dyno_tran, reset_dyno_rot, mut reset_tran, _) =
+            dyno_data.get_mut(eid).unwrap();
         if let Some(mut reset_dyno_tran) = reset_dyno_tran {
             *reset_dyno_tran = my_dyno_tran.unwrap();
         }
@@ -501,7 +512,13 @@ fn move_unstuck_static_or_trigger_receivers(
 /// Should be more than fine for this game but is not a perfect physics engine.
 fn move_stuck_static_receiver_dynos(
     mut stuck_dynos: Query<
-        (Entity, &Stuck, &mut DynoTran, &mut Transform),
+        (
+            Entity,
+            &Stuck,
+            &mut DynoTran,
+            &mut Transform,
+            Option<&DynoAwareParticleSpawner>,
+        ),
         (
             With<Bounds>,
             With<StaticReceiver>,
@@ -512,9 +529,11 @@ fn move_stuck_static_receiver_dynos(
         ),
     >,
     static_providers: Query<&GlobalTransform, (With<Bounds>, With<StaticProvider>)>,
+    mut commands: Commands,
+    proot: Res<ParticlesRoot>,
 ) {
     // First move the things
-    for (_eid, stuck, mut dyno_tran, mut tran) in &mut stuck_dynos {
+    for (_eid, stuck, mut dyno_tran, mut tran, particle_spawner) in &mut stuck_dynos {
         let Ok(provider_gtran) = static_providers.get(stuck.parent) else {
             continue;
         };
@@ -525,6 +544,10 @@ fn move_stuck_static_receiver_dynos(
         let rotated_pos = stuck.initial_offset.my_rotate(angle_diff);
         tran.translation.x = provider_tran.x + rotated_pos.x;
         tran.translation.y = provider_tran.y + rotated_pos.y;
+        // If we have a physics-based particle spawner, do something!
+        if let Some(particle_spawner) = particle_spawner {
+            particle_spawner.do_spawn(tran.translation.truncate(), &mut commands, &proot);
+        }
     }
 }
 

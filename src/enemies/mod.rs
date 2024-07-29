@@ -2,9 +2,11 @@ use crate::prelude::*;
 
 pub mod simp;
 pub mod spawner;
+pub mod spew;
 
 pub use simp::*;
 pub use spawner::*;
+pub use spew::*;
 
 pub trait EnemyBundle: Bundle {
     /// A queryable component to tell us how many of these enemies are alive
@@ -19,5 +21,6 @@ impl Plugin for EnemiesPlugin {
     fn build(&self, app: &mut App) {
         simp::register_simps(app);
         spawner::register_spawners(app);
+        spew::register_spews(app);
     }
 }

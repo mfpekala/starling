@@ -177,6 +177,7 @@ impl Spleen {
         }
     }
 
+    /// Given progress x, interps between min and max using this spleen
     pub fn bound_interp(&self, x: f32, min: f32, max: f32) -> f32 {
         min + self.interp(x) * (max - min)
     }

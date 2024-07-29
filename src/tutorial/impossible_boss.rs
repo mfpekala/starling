@@ -1,17 +1,13 @@
-use std::time::Duration;
-
-use rand::thread_rng;
 use rand::Rng;
 
 use crate::prelude::*;
 
 #[derive(Component, Default)]
 struct ImpossibleBossData {
-    num_simps_spawned: u32,
-    num_simps_killed: u32,
+    has_spawned_first_simp: bool,
+    has_killed_first_simp: bool,
     has_shown_take_damage: bool,
     has_shown_unleash: bool,
-    time_until_spawn: Timer,
 }
 
 fn setup_impossible_boss(
@@ -88,19 +84,18 @@ fn update_impossible_boss(
     mut data: Query<&mut ImpossibleBossData>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
-    time: Res<Time>,
-    bullet_time: Res<BulletTime>,
-    physics_state: Res<State<PhysicsState>>,
+    mut simp_spawner: Query<&mut EnemySpawner<SimpBundle>>,
 ) {
     let mut data = data.single_mut();
     let bird = bird.single();
 
-    // Sketch
-    data.num_simps_killed = data.num_simps_spawned - simp_guides.iter().count() as u32;
+    if !data.has_killed_first_simp {
+        data.has_killed_first_simp = data.has_spawned_first_simp && simp_guides.is_empty();
+    }
 
-    if data.num_simps_spawned == 0 {
+    if !data.has_spawned_first_simp {
         SimpBundle::spawn(Vec2::new(0.0, -20.0), &mut commands, tutorial_root.eid());
-        data.num_simps_spawned += 1;
+        data.has_spawned_first_simp = true;
         commands
             .spawn(StickyPlatformBundle::new(
                 "perch_floor",
@@ -121,13 +116,29 @@ fn update_impossible_boss(
             .set_parent(tutorial_root.eid());
     }
 
-    if data.num_simps_killed == 0 {
+    if !data.has_killed_first_simp {
         // Never take damage!!!
         ephemeral_skills.inc_current_health(3);
     } else {
         if !data.has_shown_unleash {
             next_convo_state.set(ConvoState::TutorialUnleashSimp);
             data.has_shown_unleash = true;
+            let batch_size_range = 3..10;
+            let mut batch_sizes = vec![];
+            let mut unaccounted_for = 30;
+            while unaccounted_for > 0 {
+                let batch_size = rand::thread_rng().gen_range(batch_size_range.clone());
+                let batch_size = batch_size.min(unaccounted_for);
+                batch_sizes.push(batch_size);
+                unaccounted_for -= batch_size;
+            }
+            let spawner_placements = vec![Vec2::new(-62.0, 62.0), Vec2::new(0.0, -50.0)];
+            commands
+                .spawn(EnemySpawnerBundle::<SimpBundle>::new(
+                    spawner_placements,
+                    batch_sizes,
+                ))
+                .set_parent(tutorial_root.eid());
             return;
         }
 
@@ -136,22 +147,12 @@ fn update_impossible_boss(
             data.has_shown_take_damage = true;
             return;
         }
+    }
 
-        if physics_state.get() == &PhysicsState::Active {
-            let time_factor = time.delta_seconds() * bullet_time.factor();
-            data.time_until_spawn
-                .tick(Duration::from_secs_f32(time_factor));
-            if data.time_until_spawn.finished() || simp_guides.iter().count() == 0 {
-                let range = IDEAL_VEC_f32 - IDEAL_VEC_f32 * 0.5;
-                let mut rng = thread_rng();
-                let mut pos = Vec2::ZERO;
-                pos.x = rng.gen::<f32>() * range.x * 0.7;
-                pos.y = rng.gen::<f32>() * range.y * 0.7;
-                SimpBundle::spawn(pos, &mut commands, tutorial_root.eid());
-                data.time_until_spawn =
-                    Timer::from_seconds(15.0 / data.num_simps_killed as f32, TimerMode::Once);
-                data.num_simps_spawned += 1;
-            }
+    // These spawners should be infinit
+    for mut spawner in &mut simp_spawner {
+        if spawner.batch_sizes.len() < 5 {
+            spawner.batch_sizes.push(100);
         }
     }
 }

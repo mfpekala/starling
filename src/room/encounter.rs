@@ -125,7 +125,7 @@ fn create_room(
             let bot_left = -(IDEAL_VEC_f32 / 2.0 - Vec2::ONE * 6.0);
             let top_right = -bot_left;
             let num_spawners = encounter_state.difficulty + 2;
-            let num_enemies = 10 * encounter_state.difficulty.pow(2) as usize;
+            let num_enemies = 6 * encounter_state.difficulty.pow(2) as usize;
             let bird_placements = vec![(Shape::Circle { radius: 7.0 }, Vec2::ZERO, 0.0)];
             let spawner_placements = generate_circles(
                 num_spawners,
@@ -187,6 +187,37 @@ fn create_room(
                     .insert(DynoRot { rot })
                     .set_parent(room_root.eid());
             }
+        }
+        EncounterKind::PukebeakOnly => {
+            // TODO: REMOVE THIS ONLY FOR TESTING
+            ephemeral_skills.start_attempt(&permanent_skills);
+
+            music_manager.fade_to_song(MusicKind::NormalBattle); // remember this does nothing if it's already this song
+
+            // Background and room border
+            BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
+            commands
+                .spawn(HardPlatformBundle::around_room())
+                .set_parent(room_root.eid());
+
+            // Spawn the bird!
+            commands
+                .spawn(BirdBundle::new(
+                    Vec2::new(-100.0, 0.0),
+                    default(),
+                    ephemeral_skills.get_num_launches(),
+                    ephemeral_skills.get_num_bullets(),
+                    1000,
+                ))
+                .set_parent(room_root.eid());
+
+            // Spawn the spawner
+            commands
+                .spawn(EnemySpawnerBundle::<SpewBundle>::new(
+                    vec![Vec2::new(100.0, 0.0)],
+                    vec![1, 1, 1, 1, 1],
+                ))
+                .set_parent(room_root.eid());
         }
     }
 }

@@ -8,6 +8,7 @@ struct BulletBundle {
     any_bullet: AnyBullet,
     physics: BulletPhysicsBundle,
     multi: MultiAnimationManager,
+    particles: DynoAwareParticleSpawner,
 }
 impl BulletBundle {
     pub fn new(pos: Vec2, vel: Vec2) -> Self {
@@ -40,6 +41,11 @@ impl BulletBundle {
                     .with_render_layers(LightCamera::render_layers()),
                 )
             ]),
+            particles: DynoAwareParticleSpawner::new(
+                Particle::new(default())
+                    .with_colors(Color::srgb_u8(255, 255, 255), Color::srgba_u8(0, 0, 0, 0))
+                    .with_sizes(3.0, 0.2),
+            ),
         }
     }
 }

@@ -169,6 +169,24 @@ impl SimpGuidePhysicsBundle {
 }
 
 #[derive(Bundle)]
+pub struct SpewGuidePhysicsBundle {
+    dyno_tran: DynoTran,
+    bounds: Bounds,
+    spatial: SpatialBundle,
+}
+impl SpewGuidePhysicsBundle {
+    pub fn new(pos: Vec2, radius: f32) -> Self {
+        let mut rng = rand::thread_rng();
+        let z_nudge = rng.r#gen::<f32>();
+        Self {
+            dyno_tran: DynoTran { vel: Vec2::ZERO },
+            bounds: Bounds::from_shape(Shape::Circle { radius }),
+            spatial: spat_tran(pos.x, pos.y, ZIX_SIMP + z_nudge),
+        }
+    }
+}
+
+#[derive(Bundle)]
 pub struct SimpHurtboxPhysicsBundle {
     bounds: Bounds,
     trigger_rx: TriggerReceiver,
@@ -176,6 +194,24 @@ pub struct SimpHurtboxPhysicsBundle {
     dyno_rot: DynoRot,
 }
 impl SimpHurtboxPhysicsBundle {
+    pub fn new(radius: f32) -> Self {
+        Self {
+            bounds: Bounds::from_shape(Shape::Circle { radius }),
+            trigger_rx: TriggerReceiver::from_kind(TriggerKind::SimpBody),
+            spatial: default(),
+            dyno_rot: DynoRot { rot: 0.0 },
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct SpewHurtboxPhysicsBundle {
+    bounds: Bounds,
+    trigger_rx: TriggerReceiver,
+    spatial: SpatialBundle,
+    dyno_rot: DynoRot,
+}
+impl SpewHurtboxPhysicsBundle {
     pub fn new(radius: f32) -> Self {
         Self {
             bounds: Bounds::from_shape(Shape::Circle { radius }),

@@ -30,14 +30,16 @@ pub const WINDOW_VEC_f32: Vec2 = Vec2::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32);
 
 // Helpful to have all the z-indices here for rendor order shenanigans
 // Remember, each of these zix only effect interactions within the same layer, between layers, order is determined
-pub const ZIX_BACKGROUND: f32 = 0.0;
+pub const ZIX_BACKGROUND: f32 = -400.0;
 pub const ZIX_BIRD: f32 = 5.0;
 pub const ZIX_BULLET: f32 = 4.0;
 pub const ZIX_DEBUG: f32 = 350.0;
 pub const ZIX_DRAG_MARKERS: f32 = -400.0;
 pub const ZIX_MENU: f32 = 300.0;
+pub const ZIX_PARTICLES: f32 = -300.0;
 pub const ZIX_PAUSE: f32 = 200.0;
 pub const ZIX_SIMP: f32 = 1.0;
+pub const ZIX_SPEW: f32 = 2.0;
 pub const ZIX_STICKY: f32 = 3.0;
 pub const ZIX_TRANSITION: f32 = 500.0;
 pub const ZIX_TUTORIAL_TRIGGER: f32 = 4.0;

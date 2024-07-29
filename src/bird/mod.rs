@@ -57,6 +57,7 @@ pub struct BirdBundle {
     face_dyno: FaceDyno,
     physics: BirdPhysicsBundle,
     multi: MultiAnimationManager,
+    particles: DynoAwareParticleSpawner,
 }
 impl BirdBundle {
     pub fn new(
@@ -114,6 +115,14 @@ impl BirdBundle {
                     .with_scale(Vec2::new(2.5, 2.5))
                 ),
             ]),
+            particles: DynoAwareParticleSpawner::new(
+                Particle::new(default())
+                    .with_colors(
+                        Color::srgb_u8(245, 219, 203),
+                        Color::srgba_u8(110, 181, 196, 0),
+                    )
+                    .with_sizes(6.0, 4.0),
+            ),
         }
     }
 }

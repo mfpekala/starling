@@ -103,6 +103,9 @@ impl_root_init!(
     MenuRoot {
         offset: Vec3::new(0.0, 0.0, ZIX_MENU),
     },
+    ParticlesRoot {
+        offset: Vec3::new(0.0, 0.0, ZIX_PARTICLES),
+    },
     PauseRoot {
         offset: Vec3::new(0.0, 0.0, ZIX_PAUSE),
     },

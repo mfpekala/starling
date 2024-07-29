@@ -12,6 +12,7 @@ pub struct EggChoice {
     gravity: Gravity,
     dyno_tran: DynoTran,
     bounds: Bounds,
+    particles: SimpleParticleSpawner,
 }
 impl EggChoice {
     pub fn new(pos: Vec2) -> Self {
@@ -75,6 +76,15 @@ impl EggChoice {
             spatial: spat_tran(pos.x, pos.y, ZIX_BIRD - 0.1),
             gravity: Gravity::Normal,
             bounds: Bounds::from_shape(Shape::Circle { radius: 10.0 }),
+            particles: SimpleParticleSpawner::new(
+                Particle::new(default())
+                    .with_colors(
+                        Color::srgb_u8(245, 219, 203),
+                        Color::srgba_u8(110, 181, 196, 0),
+                    )
+                    .with_sizes(6.0, 4.0),
+            )
+            .with_poses(vec![Vec2::ZERO, Vec2::new(-pos.x * 2.0, 0.0)]),
         }
     }
 }

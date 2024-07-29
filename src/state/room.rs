@@ -3,6 +3,7 @@ use crate::prelude::*;
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum EncounterKind {
     SteelbeakOnly,
+    PukebeakOnly,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]

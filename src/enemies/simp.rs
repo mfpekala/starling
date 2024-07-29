@@ -10,7 +10,7 @@ pub struct SimpGuide {
 }
 
 #[derive(Component, Reflect)]
-pub struct SimpHurtbox {
+pub struct SpewHurtbox {
     health: u32,
     immune_to: HashSet<Entity>,
 }
@@ -105,7 +105,7 @@ impl EnemyBundle for SimpBundle {
             .with_children(|dad| {
                 dad.spawn((
                     Name::new("simp_hurtbox"),
-                    SimpHurtbox {
+                    SpewHurtbox {
                         health: 3,
                         immune_to: default(),
                     },
@@ -171,10 +171,10 @@ fn guide_simps(
 fn hurt_simps(
     mut simp_guides: Query<
         (&mut DynoTran, &mut MultiAnimationManager),
-        (Without<AnyBullet>, Without<Birthing>),
+        (Without<AnyBullet>, Without<Birthing>, With<SimpGuide>),
     >,
     mut simp_hurtboxes: Query<
-        (Entity, &mut SimpHurtbox, &TriggerReceiver, &Parent),
+        (Entity, &mut SpewHurtbox, &TriggerReceiver, &Parent),
         Without<Dying>,
     >,
     collisions: Query<&TriggerCollisionRecord>,
@@ -235,7 +235,7 @@ fn hurt_simps(
 
 pub(super) fn register_simps(app: &mut App) {
     app.register_type::<SimpGuide>();
-    app.register_type::<SimpHurtbox>();
+    app.register_type::<SpewHurtbox>();
 
     app.add_systems(
         Update,
