@@ -31,6 +31,7 @@ pub mod prelude {
     pub use super::camera::*;
     pub use super::consts::*;
     pub use super::convo::*;
+    pub use super::debug::*;
     #[allow(unused_imports)]
     pub use super::enemies::*;
     pub use super::environment::*;

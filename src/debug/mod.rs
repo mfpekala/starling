@@ -6,7 +6,10 @@ use crate::prelude::*;
 mod commands;
 mod dphysics;
 mod fps;
+pub mod help_text;
 mod mouse_pos;
+
+pub use help_text::*;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, States, Reflect)]
 struct DebugState {
@@ -55,6 +58,8 @@ impl Plugin for DebugPlugin {
         fps::register_fps_debug(app);
         dphysics::register_physics_debug(app);
         mouse_pos::register_mouse_pos_debug(app);
+        // Actually useful for the game
+        help_text::register_help_text(app);
 
         // Debug
         app.insert_resource(DebugInteractive(DebugState::default()));

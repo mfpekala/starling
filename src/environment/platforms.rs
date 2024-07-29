@@ -9,14 +9,33 @@ pub struct StickyPlatformBundle {
 impl StickyPlatformBundle {
     pub fn new(name: &str, pos: Vec2, shape: Shape) -> StickyPlatformBundle {
         let multi_points = shape.to_anim_points();
+        let anim_man = match &shape {
+            Shape::Circle { radius } => anim_man!({
+                path: "environment/log_circular.png",
+                size: (70, 70),
+            })
+            .with_scale(Vec2::ONE * *radius / 31.0),
+            Shape::Polygon { points } => {
+                let bound = uvec2_bound(&points);
+                if bound.x > bound.y {
+                    anim_man!({
+                        path: "environment/log_horizontal.png",
+                        size: (64, 32),
+                    })
+                    .with_scale(Vec2::ONE * 0.62)
+                } else {
+                    anim_man!({
+                        path: "environment/log_vertical.png",
+                        size: (25, 64),
+                    })
+                    .with_scale(Vec2::ONE * 0.62)
+                }
+            }
+        };
         Self {
             name: Name::new(format!("sticky_platform_{name}")),
             physics: StickyPhysicsBundle::new(pos, Bounds::from_shape(shape)),
-            multi: multi!(anim_man!({
-                path: "debug/texture.png",
-                size:  (36, 36),
-            })
-            .with_points(multi_points)),
+            multi: multi!(anim_man),
         }
     }
 
