@@ -1,4 +1,7 @@
-use bevy::{input::common_conditions::input_toggle_active, prelude::*, window::WindowResolution};
+use bevy::{
+    asset::AssetMetaCheck, input::common_conditions::input_toggle_active, prelude::*,
+    window::WindowResolution,
+};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod animation;
@@ -66,6 +69,10 @@ fn main() {
     // Bevy (or ecosystem) Plugins
     app.add_plugins(
         DefaultPlugins
+            .set(AssetPlugin {
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            })
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     resizable: false,

@@ -1,1 +1,4 @@
 /target
+**/*.zip
+**/*.DS_Store
+index.html

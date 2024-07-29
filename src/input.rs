@@ -95,7 +95,7 @@ fn update_mouse_input(
         Some(world_pos)
     } else {
         if let Some(drag_start) = state.left_drag_start {
-            if !buttons.pressed(MouseButton::Left) {
+            if !buttons.pressed(MouseButton::Left) || buttons.just_released(MouseButton::Left) {
                 launch_writer.send(Launch(drag_start - world_pos));
                 None
             } else {
@@ -109,7 +109,7 @@ fn update_mouse_input(
         Some(world_pos)
     } else {
         if let Some(drag_start) = state.right_drag_start {
-            if !buttons.pressed(MouseButton::Right) {
+            if !buttons.pressed(MouseButton::Right) || buttons.just_released(MouseButton::Right) {
                 fire_writer.send(Fire(drag_start - world_pos));
                 None
             } else {

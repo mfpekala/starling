@@ -1,21 +1,25 @@
 <html>
 
 <head>
-    
-<script type="module" nonce="H920KsuFtlQYhGVm7UkwDQ==">
-import init, * as bindings from '/starling-5fe7de4ed8106f12.js';
-const wasm = await init('/starling-5fe7de4ed8106f12_bg.wasm');
+
+    <script type="module" nonce="79+l4etqFfYdxl6v3zoeyQ==">
+        import init, * as bindings from './starling-9e2c6dd233ecf395.js';
+        const wasm = await init('./starling-9e2c6dd233ecf395_bg.wasm');
 
 
-window.wasmBindings = bindings;
+        window.wasmBindings = bindings;
 
 
-dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+        dispatchEvent(new CustomEvent("TrunkApplicationStarted", { detail: { wasm } }));
 
-</script>
-    
+    </script>
 
-<link rel="modulepreload" href="/starling-5fe7de4ed8106f12.js" crossorigin=anonymous integrity="sha384-XBx15WvGNVVkinUtbO45A+YSgA/7ZlUbVh1zzmvGcFqPOPmo0ZA5YnMoBi5/pmpp">
-<link rel="preload" href="/starling-5fe7de4ed8106f12_bg.wasm" crossorigin=anonymous integrity="sha384-jC53BsklDCMdWefcHETyYrQl0r7cmhPdY07O6bdJilYfCl8xgaxVYD3FX2f5DDmV" as="fetch" type="application/wasm"></head>
+
+    <link rel="modulepreload" href="./starling-9e2c6dd233ecf395.js" crossorigin=anonymous
+        integrity="sha384-2r++muR/8kwuN/o7agD8NbKwGxG7c9E//C2otDFLelseelDo8bkZEgHSORKfmYNy">
+    <link rel="preload" href="./starling-9e2c6dd233ecf395_bg.wasm" crossorigin=anonymous
+        integrity="sha384-saOoHNmUr9CSTEMNqkz/bvsoAYn9cNIgcvAhn3plH59TRKFmdTnurqSw58mBFB3I" as="fetch"
+        type="application/wasm">
+</head>
 
 </html>

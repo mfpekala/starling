@@ -76,7 +76,7 @@ fn setup_title(
 
     for _ in 0..10 {
         let mut bund = FakeBirdBundle::new(
-            Vec2::new(thread_rng().gen_range(-160.0..160.0), 0.0),
+            Vec2::new(thread_rng().gen_range(-160.0..160.0), -120.0),
             default(),
         );
         bund.physics.spatial.transform.translation.z = thread_rng().gen();
