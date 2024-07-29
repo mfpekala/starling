@@ -16,7 +16,7 @@ pub struct BirdPhysicsBundle {
     /// The bird is a trigger
     trigger_rx: TriggerReceiver,
     /// The bird has to exist spatially
-    spatial: SpatialBundle,
+    pub spatial: SpatialBundle,
 }
 impl BirdPhysicsBundle {
     pub fn new(pos: Vec2, vel: Vec2) -> Self {
@@ -26,6 +26,34 @@ impl BirdPhysicsBundle {
             bounds: Bounds::from_shape(Shape::Circle { radius: 7.0 }),
             static_rx: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             trigger_rx: TriggerReceiver::from_kind(TriggerKind::Bird),
+            spatial: SpatialBundle::from_transform(Transform::from_translation(
+                pos.extend(ZIX_BIRD),
+            )),
+        }
+    }
+}
+
+/// The physics objects that must be attached to the bird
+#[derive(Bundle)]
+pub struct FakeBirdPhysicsBundle {
+    /// The bird needs to move translationally
+    dyno_tran: DynoTran,
+    /// The bird is affected by gravity
+    gravity: Gravity,
+    /// The birds extent in the physical realm
+    bounds: Bounds,
+    /// The bird should respond normally to statics
+    static_rx: StaticReceiver,
+    /// The bird has to exist spatially
+    pub spatial: SpatialBundle,
+}
+impl FakeBirdPhysicsBundle {
+    pub fn new(pos: Vec2, vel: Vec2) -> Self {
+        Self {
+            dyno_tran: DynoTran { vel },
+            gravity: Gravity::Normal,
+            bounds: Bounds::from_shape(Shape::Circle { radius: 7.0 }),
+            static_rx: StaticReceiver::from_kind(StaticReceiverKind::Normal),
             spatial: SpatialBundle::from_transform(Transform::from_translation(
                 pos.extend(ZIX_BIRD),
             )),

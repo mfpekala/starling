@@ -17,6 +17,10 @@ pub use egg::*;
 pub use ghost::*;
 pub use skill_tree::*;
 
+/// For use on the menu
+#[derive(Component)]
+pub struct FakeBird;
+
 /// The component that marks the bird entity (protagonist)
 /// There should only ever be one of these
 #[derive(Component, Debug, Clone, Reflect)]

@@ -93,6 +93,64 @@ impl StickyPlatformBundle {
         };
         Self::new(name, Vec2::ZERO, shape)
     }
+
+    // Common configuration
+    pub fn mega_around_room(factor: f32) -> Self {
+        let buffer_out = 5.0;
+        let buffer_in = 5.0;
+        let name = "around_room";
+        let shape = Shape::Polygon {
+            points: vec![
+                // GO FORWARD
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 - buffer_out,
+                    -IDEAL_HEIGHT_f32 / 2.0 - buffer_out,
+                ),
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 - buffer_out,
+                    IDEAL_HEIGHT_f32 / 2.0 + buffer_out,
+                ),
+                Vec2::new(
+                    IDEAL_WIDTH_f32 / 2.0 + buffer_out,
+                    IDEAL_HEIGHT_f32 / 2.0 + buffer_out,
+                ),
+                Vec2::new(
+                    IDEAL_WIDTH_f32 / 2.0 + buffer_out,
+                    -IDEAL_HEIGHT_f32 / 2.0 - buffer_out,
+                ),
+                // PAUSE
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 - buffer_out,
+                    -IDEAL_HEIGHT_f32 / 2.0 - buffer_out,
+                ),
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 + buffer_in,
+                    -IDEAL_HEIGHT_f32 / 2.0 + buffer_in,
+                ),
+                // GO BACK
+                Vec2::new(
+                    IDEAL_WIDTH_f32 / 2.0 - buffer_in,
+                    -IDEAL_HEIGHT_f32 / 2.0 + buffer_in,
+                ),
+                Vec2::new(
+                    IDEAL_WIDTH_f32 / 2.0 - buffer_in,
+                    IDEAL_HEIGHT_f32 / 2.0 - buffer_in,
+                ),
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 + buffer_in,
+                    IDEAL_HEIGHT_f32 / 2.0 - buffer_in,
+                ),
+                Vec2::new(
+                    -IDEAL_WIDTH_f32 / 2.0 + buffer_in,
+                    -IDEAL_HEIGHT_f32 / 2.0 + buffer_in,
+                ),
+            ]
+            .into_iter()
+            .map(|p| p * factor)
+            .collect(),
+        };
+        Self::new(name, Vec2::ZERO, shape)
+    }
 }
 
 #[derive(Bundle)]

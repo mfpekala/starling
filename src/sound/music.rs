@@ -57,7 +57,7 @@ pub struct MusicManager {
     transition: Option<MusicTransition>,
 }
 impl MusicManager {
-    const FADE_TIME: f32 = 0.3;
+    const FADE_TIME: f32 = 0.2;
 
     pub fn fade_to_song(&mut self, song: MusicKind) {
         if song == self.current && self.transition.is_none() {

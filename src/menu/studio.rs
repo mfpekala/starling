@@ -3,12 +3,17 @@ use crate::prelude::*;
 #[derive(Component)]
 struct FadeTimer(Timer);
 
-fn setup_studio(mut commands: Commands, menu_root: Res<MenuRoot>) {
+fn setup_studio(
+    mut commands: Commands,
+    menu_root: Res<MenuRoot>,
+    mut music_manager: ResMut<MusicManager>,
+) {
+    music_manager.fade_to_song(MusicKind::Elegy);
     commands
         .spawn((
             Name::new("studio_animation"),
             SpatialBundle::default(),
-            FadeTimer(Timer::from_seconds(3.6, TimerMode::Once)),
+            FadeTimer(Timer::from_seconds(3.8, TimerMode::Once)),
             multi!(anim_man!({
                 first_half: {
                     path: "studio/armadillo_games_first_half.png",
@@ -47,7 +52,7 @@ fn update_studio(
     if fade.0.just_finished() {
         next_transition_state.set(
             TransitionKind::FadeToBlack
-                .to_meta_transition_state(2.0, MenuState::Title.to_meta_state()),
+                .to_meta_transition_state(2.2, MenuState::Title.to_meta_state()),
         );
     }
 }

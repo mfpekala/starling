@@ -84,7 +84,6 @@ fn update_impossible_boss(
     tutorial_root: Res<TutorialRoot>,
     bird: Query<&Bird>,
     mut data: Query<&mut ImpossibleBossData>,
-    mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
     mut simp_spawner: Query<&mut EnemySpawner<SimpBundle>>,

@@ -135,6 +135,9 @@ impl ComputedStates for PhysicsState {
         match sources {
             (MetaState::Tutorial(_), PauseState::Unpaused, ConvoState::None) => Some(Self::Active),
             (MetaState::Room(_), PauseState::Unpaused, ConvoState::None) => Some(Self::Active),
+            (MetaState::Menu(MenuState::Title), PauseState::Unpaused, ConvoState::None) => {
+                Some(Self::Active)
+            }
             _ => Some(Self::Inactive),
         }
     }
@@ -152,8 +155,8 @@ impl Plugin for StatePlugin {
         // Ground truth states
 
         // app.insert_state(MetaState::Tutorial(TutorialState::LearnToFly)); // INITIAL_STATE (control f this silly)
-        // app.insert_state(MetaState::Menu(MenuState::Title)); // INITIAL STATE (control f this silly)
-        app.insert_state(RoomState::xth_encounter(EncounterKind::Both, 3).to_meta_state()); // initial
+        // app.insert_state(RoomState::xth_encounter(EncounterKind::Both, 3).to_meta_state()); // initial
+        app.insert_state(MetaState::Menu(MenuState::Studio)); // INITIAL STATE (control f this silly)
 
         app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);

@@ -33,7 +33,11 @@ pub(super) fn handle_bullet_collisions(
     }
 }
 
-fn spawn_static_sound_effects(collisions: Query<&StaticCollisionRecord>, mut commands: Commands) {
+fn spawn_static_sound_effects(
+    collisions: Query<&StaticCollisionRecord>,
+    mut commands: Commands,
+    fake_birds: Query<&FakeBird>,
+) {
     for collision in &collisions {
         match (collision.provider_kind, collision.receiver_kind) {
             (StaticProviderKind::Normal, StaticReceiverKind::Normal) => {
@@ -49,7 +53,7 @@ fn spawn_static_sound_effects(collisions: Query<&StaticCollisionRecord>, mut com
             (StaticProviderKind::Sticky, StaticReceiverKind::Normal) => {
                 let (min, max) = (20.0, 80.0);
                 let strength = (collision.rx_perp.length().clamp(min, max) - min) / (max - min);
-                if strength > 0.001 {
+                if strength > 0.001 && !fake_birds.contains(collision.receiver_eid.clone()) {
                     commands.spawn(SoundEffect::universal(
                         "sound_effects/rock_sticky.ogg",
                         strength * 0.36,
