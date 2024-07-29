@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use rand::{thread_rng, Rng};
 
 use crate::prelude::*;
@@ -15,6 +17,24 @@ pub struct SpewHurtbox {
     immune_to: HashSet<Entity>,
 }
 
+#[derive(Component, Reflect)]
+pub struct SpewWaiting {
+    time_until_charge: Timer,
+}
+impl SpewWaiting {
+    pub fn new() -> Self {
+        Self {
+            time_until_charge: Timer::from_seconds(
+                thread_rng().gen_range(1.0..3.0),
+                TimerMode::Once,
+            ),
+        }
+    }
+}
+
+#[derive(Component, Reflect)]
+pub struct SpewCharging;
+
 #[derive(Bundle)]
 pub struct SpewBundle {
     name: Name,
@@ -23,11 +43,11 @@ pub struct SpewBundle {
     birthing: Birthing,
 }
 impl SpewBundle {
-    const STATIC_RADIUS: f32 = 16.0;
-    const TRIGGER_RADIUS: f32 = 13.0;
+    const STATIC_RADIUS: f32 = 18.0;
+    const TRIGGER_RADIUS: f32 = 15.0;
     const SPEED_RANGE: (f32, f32) = (5.0, 15.0);
     const MULT_RANGE: (i32, i32) = (-10, 10);
-    const FUTURE_RANGE: (f32, f32) = (-0.5, 2.0);
+    const FUTURE_RANGE: (f32, f32) = (-0.05, 0.1);
 }
 impl EnemyBundle for SpewBundle {
     type CountComponent = SpewGuide;
@@ -58,6 +78,7 @@ impl EnemyBundle for SpewBundle {
                     },
                     SpewHurtboxPhysicsBundle::new(Self::TRIGGER_RADIUS),
                     Birthing,
+                    SpewWaiting::new(),
                     multi!([
                         (
                             "core",
@@ -82,7 +103,11 @@ impl EnemyBundle for SpewBundle {
                                     size: (30, 30),
                                     length: 4,
                                     fps: 6.0,
-                                    next: "despawn",
+                                    next: "post_death_somehow",
+                                },
+                                post_death_somehow: {
+                                    path: "sprites/none.png",
+                                    size: (1, 1),
                                 }
                             })
                         ),
@@ -126,13 +151,29 @@ impl EnemyBundle for SpewBundle {
                                     path: "sprites/none.png",
                                     size: (1, 1),
                                 },
-                                active: {
-                                    path: "enemies/spew/spew_material.png",
+                                prelude: {
+                                    path: "enemies/spew/spew_material_prelude.png",
                                     size: (6, 6),
-                                    length: 18,
+                                    length: 14,
+                                    fps: 12.0,
+                                    next: "harmful",
+                                },
+                                harmful: {
+                                    path: "enemies/spew/spew_material_harmful.png",
+                                    size: (6, 6),
+                                    length: 2,
+                                    fps: 12.0,
+                                    next: "fading",
+                                },
+                                fading: {
+                                    path: "enemies/spew/spew_material_fading.png",
+                                    size: (6, 6),
+                                    length: 2,
+                                    fps: 12.0,
                                     next: "inactive",
                                 },
                             })
+                            .with_offset(Vec3::Z * -0.5),
                         )
                     ]),
                 ));
@@ -186,13 +227,115 @@ fn guide_spews(
     }
 }
 
+fn rotate_spews(
+    bird: Query<(&GlobalTransform, &DynoTran), With<Bird>>,
+    guides_q: Query<&SpewGuide>,
+    mut spews_q: Query<(&mut Transform, &GlobalTransform, &Parent), With<SpewWaiting>>,
+    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
+) {
+    let Ok((bird_gtran, bird_dyno_tran)) = bird.get_single() else {
+        return;
+    };
+    let max_rot_this_frame = PI / 2.0 * time.delta_seconds() * bullet_time.factor();
+    for (mut tran, gtran, parent) in &mut spews_q {
+        let guide = guides_q.get(parent.get()).unwrap();
+        let (my_gtran, my_angle) = gtran.tran_n_angle();
+        let goal_bird_pos =
+            bird_gtran.translation().truncate() + bird_dyno_tran.vel * guide.prefer_future;
+        let diff = goal_bird_pos - my_gtran;
+        let short_rot = shortest_rotation(my_angle - PI / 2.0, diff.to_angle());
+        let rot = short_rot.signum() * short_rot.abs().clamp(0.0, max_rot_this_frame);
+        tran.set_angle(my_angle + rot);
+    }
+}
+
+fn update_waiting_spews(
+    mut commands: Commands,
+    mut spews_q: Query<(Entity, &mut MultiAnimationManager, &mut SpewWaiting)>,
+    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
+) {
+    let time_factor = time.delta().mul_f32(bullet_time.factor());
+    for (eid, mut multi, mut waiting) in &mut spews_q {
+        waiting.time_until_charge.tick(time_factor);
+        if waiting.time_until_charge.finished() {
+            commands.entity(eid).remove::<SpewWaiting>();
+            commands.entity(eid).insert(SpewCharging);
+            multi
+                .manager_mut("core")
+                .reset_key_with_points("charging", &mut commands);
+            multi
+                .manager_mut("light")
+                .reset_key_with_points("charging", &mut commands);
+            let material_points = simple_rect(8.0, IDEAL_WIDTH_f32 * 2.0)
+                .into_iter()
+                .map(|p| p - Vec2::new(0.0, IDEAL_WIDTH_f32))
+                .collect::<Vec<_>>();
+            multi
+                .manager_mut("material")
+                .reset_key_with_points("prelude", &mut commands);
+            multi
+                .manager_mut("material")
+                .reset_points(material_points, &mut commands);
+        }
+    }
+}
+
+fn update_charging_spews(
+    mut bird: Query<(&mut Bird, &Bounds, &GlobalTransform)>,
+    mut commands: Commands,
+    mut spews_q: Query<(Entity, &mut MultiAnimationManager, &GlobalTransform), With<SpewCharging>>,
+    mut skills: ResMut<EphemeralSkill>,
+) {
+    let Ok((mut bird, bird_bounds, bird_gtran)) = bird.get_single_mut() else {
+        return;
+    };
+    for (eid, mut multi, spew_gtran) in &mut spews_q {
+        if multi.manager("material").get_key().as_str() == "harmful" {
+            if bird.taking_damage.is_some() {
+                continue;
+            }
+            let harmful_shape = Shape::Polygon {
+                points: multi.manager("material").get_points(),
+            };
+            let (hp1, hp2) = spew_gtran.tran_n_angle();
+            if bird_bounds
+                .get_shape()
+                .bounce_off(bird_gtran.tran_n_angle(), (&harmful_shape, hp1, hp2))
+                .is_some()
+            {
+                bird.taking_damage = Some(Timer::from_seconds(1.0, TimerMode::Once));
+                skills.dec_current_health(1);
+                commands.spawn(SoundEffect::universal(
+                    "sound_effects/lenny_take_damage.ogg",
+                    0.8,
+                ));
+            }
+        } else if multi.manager("material").get_key().as_str() == "inactive" {
+            // Done shooting, go back
+            commands.entity(eid).remove::<SpewCharging>();
+            commands.entity(eid).insert(SpewWaiting::new());
+            multi
+                .manager_mut("core")
+                .reset_key_with_points("stable", &mut commands);
+            multi
+                .manager_mut("light")
+                .reset_key_with_points("stable", &mut commands);
+        }
+    }
+}
+
 fn hurt_spews(
-    mut spew_guides: Query<
-        (&mut DynoTran, &mut MultiAnimationManager),
-        (Without<AnyBullet>, Without<Birthing>, With<SpewGuide>),
-    >,
+    mut spew_guides: Query<&mut DynoTran, (Without<AnyBullet>, Without<Birthing>, With<SpewGuide>)>,
     mut spew_hurtboxes: Query<
-        (Entity, &mut SpewHurtbox, &TriggerReceiver, &Parent),
+        (
+            Entity,
+            &mut SpewHurtbox,
+            &TriggerReceiver,
+            &Parent,
+            &mut MultiAnimationManager,
+        ),
         Without<Dying>,
     >,
     collisions: Query<&TriggerCollisionRecord>,
@@ -200,8 +343,8 @@ fn hurt_spews(
     mut commands: Commands,
     mut bird: Query<&mut Bird>,
 ) {
-    for (eid, mut hurtbox, rx, parent) in &mut spew_hurtboxes {
-        let Ok((mut parent_dyno_tran, mut parent_multi)) = spew_guides.get_mut(parent.get()) else {
+    for (eid, mut hurtbox, rx, parent, mut multi) in &mut spew_hurtboxes {
+        let Ok(mut parent_dyno_tran) = spew_guides.get_mut(parent.get()) else {
             // continue here so the filtre on guides is valid
             continue;
         };
@@ -225,23 +368,21 @@ fn hurt_spews(
         }
         hurtbox.immune_to = new_immune_to;
         if hurtbox.health > 0 {
-            parent_multi
+            multi
                 .manager_mut("damage")
-                .set_key(format!("health{}", hurtbox.health).as_str(), &mut commands);
+                .reset_key_with_points(format!("health{}", hurtbox.health).as_str(), &mut commands);
         } else {
-            parent_multi
+            multi
                 .manager_mut("core")
-                .set_key("death", &mut commands);
-            parent_multi
-                .manager_mut("light")
-                .set_hidden(true, &mut commands);
-            parent_multi
+                .reset_key_with_points("death", &mut commands);
+            multi.manager_mut("light").set_hidden(true, &mut commands);
+            multi.manager_mut("damage").set_hidden(true, &mut commands);
+            multi
                 .manager_mut("material")
                 .set_hidden(true, &mut commands);
-            commands.entity(eid).insert(Dying {
-                timer: Timer::from_seconds(2.0, TimerMode::Once),
-                dont_despawn: false,
-            });
+            commands.entity(eid).remove::<TriggerReceiver>();
+            commands.entity(eid).remove::<SpewWaiting>();
+            commands.entity(eid).remove::<SpewCharging>();
             commands.spawn(SoundEffect::universal("sound_effects/spew_death1.ogg", 0.1));
             // Ahh if this weren't a jam I'd do something nicer here maybe but idk, this just feels clunky
             bird.get_single_mut()
@@ -254,14 +395,41 @@ fn hurt_spews(
     }
 }
 
+fn cursed_cleanup(
+    mut commands: Commands,
+    cursed: Query<(Entity, Option<&Children>), With<SpewGuide>>,
+    more_cursed: Query<(Entity, &MultiAnimationManager, &Parent), With<SpewHurtbox>>,
+) {
+    for (eid, children) in &cursed {
+        if children.is_none() || children.unwrap().is_empty() {
+            commands.entity(eid).despawn_recursive();
+        }
+    }
+    for (_eid, multi, parent) in &more_cursed {
+        if multi.manager("core").get_key().as_str() == "post_death_somehow" {
+            commands.entity(parent.get()).despawn_recursive();
+        }
+    }
+}
+
 pub(super) fn register_spews(app: &mut App) {
     app.register_type::<SpewGuide>();
     app.register_type::<SpewHurtbox>();
 
     app.add_systems(
         Update,
-        (birth_spews, guide_spews, hurt_spews)
+        (
+            birth_spews,
+            guide_spews,
+            rotate_spews,
+            update_waiting_spews,
+            update_charging_spews,
+            hurt_spews,
+            cursed_cleanup,
+        )
+            .chain()
             .run_if(in_state(PhysicsState::Active))
-            .after(PhysicsSet),
+            .after(PhysicsSet)
+            .after(AnimationSet),
     );
 }

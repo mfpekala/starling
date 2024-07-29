@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::prelude::*;
 
 /// Given a point and a line segment, get the point on the line segment
@@ -245,4 +247,24 @@ fn ease_in_out_quintic(x: f32) -> f32 {
     } else {
         1.0 - ((-2.0 * x + 2.0).powi(5)) / 2.0
     }
+}
+
+/// Returns the shortest direction to rotate `angle1` to get closer to `angle2`.
+/// If the result is positive, rotate clockwise; if negative, rotate counterclockwise.
+pub fn shortest_rotation(angle1: f32, angle2: f32) -> f32 {
+    // Normalize the angles to be between 0 and 2π
+    let angle1 = angle1.rem_euclid(2.0 * PI);
+    let angle2 = angle2.rem_euclid(2.0 * PI);
+
+    // Calculate the difference
+    let mut difference = angle2 - angle1;
+
+    // Normalize the difference to be between -π and π
+    if difference > PI {
+        difference -= 2.0 * PI;
+    } else if difference < -PI {
+        difference += 2.0 * PI;
+    }
+
+    difference
 }

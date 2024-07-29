@@ -23,7 +23,7 @@ pub use skill_tree::*;
 pub struct Bird {
     launches_left: u32,
     bullets_left: u32,
-    taking_damage: Option<Timer>,
+    pub taking_damage: Option<Timer>,
     // How many more kills till this room is complete?
     kills_left: u32,
     total_kills_this_room: u32,

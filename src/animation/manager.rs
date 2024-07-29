@@ -657,7 +657,7 @@ pub(super) fn register_manager(app: &mut App) {
         )
             .in_set(AnimationSet),
     );
-    app.add_systems(Update, play_animations);
+    app.add_systems(Update, play_animations.in_set(AnimationSet));
 
     app.register_type::<AnimationBodyMarker>();
     app.register_type::<AnimationMap>();

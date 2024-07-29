@@ -200,6 +200,15 @@ fn create_room(
                 .spawn(HardPlatformBundle::around_room())
                 .set_parent(room_root.eid());
 
+            commands
+                .spawn(StickyPlatformBundle::new(
+                    "shape",
+                    Vec2::new(0.0, -40.0),
+                    Shape::Circle { radius: 20.0 },
+                ))
+                .insert(DynoRot { rot: 0.0 })
+                .set_parent(room_root.eid());
+
             // Spawn the bird!
             commands
                 .spawn(BirdBundle::new(
