@@ -116,7 +116,7 @@ fn create_room(
             music_manager.fade_to_song(MusicKind::NormalBattle); // remember this does nothing if it's already this song
 
             // Background and room border
-            BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
+            BackgroundKind::Forest.spawn(default(), room_root.eid(), &mut commands);
             commands
                 .spawn(HardPlatformBundle::around_room())
                 .set_parent(room_root.eid());
@@ -192,7 +192,7 @@ fn create_room(
             music_manager.fade_to_song(MusicKind::BossBattle);
 
             // Background and room border
-            BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
+            BackgroundKind::Forest.spawn(default(), room_root.eid(), &mut commands);
             commands
                 .spawn(HardPlatformBundle::around_room())
                 .set_parent(room_root.eid());
@@ -279,7 +279,7 @@ fn create_room(
             music_manager.fade_to_song(MusicKind::NormalBattle); // remember this does nothing if it's already this song
 
             // Background and room border
-            BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
+            BackgroundKind::Forest.spawn(default(), room_root.eid(), &mut commands);
             commands
                 .spawn(HardPlatformBundle::around_room())
                 .set_parent(room_root.eid());

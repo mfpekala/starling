@@ -36,9 +36,10 @@ fn spawn_sky(commands: &mut ChildBuilder) {
 pub enum BackgroundKind {
     SkyOnly,
     Zenith,
+    Forest,
 }
 impl BackgroundKind {
-    pub fn spawn(&self, pos: Vec2, parent: Entity, commands: &mut Commands) {
+    pub fn spawn(&self, pos: Vec2, parent: Entity, commands: &mut Commands) -> Entity {
         commands
             .spawn((
                 Name::new(format!("background_{:?}", self)),
@@ -61,6 +62,49 @@ impl BackgroundKind {
                         .with_render_layers(BgSpriteCamera::render_layers())),
                     ));
                 }
-            });
+                BackgroundKind::Forest => {
+                    commands.spawn((
+                        Name::new("sky"),
+                        spat_tran(0.0, 0.0, 0.0),
+                        multi!(anim_man!({
+                            path: "debug/forest/background_sky_trees.png",
+                            size: (320, 180),
+                        })),
+                    ));
+                    commands.spawn((
+                        Name::new("trees_far"),
+                        spat_tran(0.0, 0.0, 1.0),
+                        multi!(anim_man!({
+                            path: "debug/forest/background_trees_far.png",
+                            size: (320, 180),
+                        })),
+                    ));
+                    commands.spawn((
+                        Name::new("trees_far"),
+                        spat_tran(0.0, 0.0, 2.0),
+                        multi!(anim_man!({
+                            path: "debug/forest/background_trees_mid.png",
+                            size: (320, 180),
+                        })),
+                    ));
+                    commands.spawn((
+                        Name::new(""),
+                        spat_tran(0.0, 0.0, 3.0),
+                        multi!(anim_man!({
+                            path: "debug/forest/background_trees_lightray.png",
+                            size: (320, 180),
+                        })),
+                    ));
+                    commands.spawn((
+                        Name::new(""),
+                        spat_tran(0.0, 0.0, 4.0),
+                        multi!(anim_man!({
+                            path: "debug/forest/background_trees_close.png",
+                            size: (320, 180),
+                        })),
+                    ));
+                }
+            })
+            .id()
     }
 }

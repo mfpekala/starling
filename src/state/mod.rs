@@ -14,7 +14,7 @@ pub enum MenuState {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum CutsceneState {
-    StartAttempt,
+    Fall,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
@@ -155,8 +155,8 @@ impl Plugin for StatePlugin {
         // Ground truth states
 
         // app.insert_state(MetaState::Tutorial(TutorialState::LearnToFly)); // INITIAL_STATE (control f this silly)
-        // app.insert_state(RoomState::xth_encounter(EncounterKind::Both, 3).to_meta_state()); // initial
-        app.insert_state(MetaState::Menu(MenuState::Studio)); // INITIAL STATE (control f this silly)
+        // app.insert_state(RoomState::xth_encounter(EncounterKind::Both, 2).to_meta_state()); // initial
+        app.insert_state(MetaState::Menu(MenuState::Title)); // INITIAL STATE (control f this silly)
 
         app.insert_state(MetaTransitionState::Stable);
         app.insert_state(PauseState::Unpaused);

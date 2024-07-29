@@ -9,6 +9,7 @@ pub mod bird;
 pub mod camera;
 pub mod consts;
 pub mod convo;
+pub mod cutscene;
 pub mod debug;
 pub mod enemies;
 pub mod environment;
@@ -34,6 +35,8 @@ pub mod prelude {
     pub use super::camera::*;
     pub use super::consts::*;
     pub use super::convo::*;
+    #[allow(unused_imports)]
+    pub use super::cutscene::*;
     pub use super::debug::*;
     #[allow(unused_imports)]
     pub use super::enemies::*;
@@ -52,6 +55,7 @@ pub mod prelude {
     pub use super::tutorial;
     pub use bevy::color::palettes::tailwind;
     pub use bevy::input::common_conditions::input_toggle_active;
+    pub use bevy::time::Stopwatch;
     // Grr bevy... stop importing this when I try to use Vec2::ZERO... (autocomplete thing)
     pub use bevy::math::VectorSpace;
     pub use bevy::prelude::*;
@@ -91,6 +95,7 @@ fn main() {
         .add_plugins(bird::BirdPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(convo::ConvoPlugin)
+        .add_plugins(cutscene::CutscenePlugin)
         .add_plugins(debug::DebugPlugin)
         .add_plugins(enemies::EnemiesPlugin)
         .add_plugins(environment::EnvironmentPlugin)

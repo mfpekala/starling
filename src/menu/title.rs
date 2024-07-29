@@ -58,13 +58,14 @@ fn setup_title(
     mut music_manager: ResMut<MusicManager>,
 ) {
     BackgroundKind::SkyOnly.spawn(default(), menu_root.eid(), &mut commands);
+    // BackgroundKind::Forest.spawn(default(), menu_root.eid(), &mut commands);
     music_manager.fade_to_song(MusicKind::Elegy);
     commands
         .spawn((
             Name::new("title_text"),
             spat_tran(0.0, 0.0, 100.0),
             multi!(anim_man!({
-                path: "menu/title_text3D.png",
+                path: "menu/title_text.png",
                 size: (160, 60),
             })
             .with_render_layers(MenuCamera::render_layers())),
@@ -84,8 +85,13 @@ fn setup_title(
     }
 }
 
-fn destroy_title(mut commands: Commands, menu_root: Res<MenuRoot>) {
+fn destroy_title(
+    mut commands: Commands,
+    menu_root: Res<MenuRoot>,
+    particles_root: Res<ParticlesRoot>,
+) {
     commands.entity(menu_root.eid()).despawn_descendants();
+    commands.entity(particles_root.eid()).despawn_descendants();
 }
 
 fn update_title(
@@ -104,10 +110,8 @@ fn update_title(
             NonGameInput::Continue => {
                 if matches!(current_transition.get(), MetaTransitionState::Stable) {
                     next_transition.set(
-                        TransitionKind::FadeToBlack.to_meta_transition_state(
-                            1.0,
-                            TutorialState::LearnToFly.to_meta_state(),
-                        ),
+                        TransitionKind::FadeToBlack
+                            .to_meta_transition_state(1.0, CutsceneState::Fall.to_meta_state()),
                     );
                 }
             }
