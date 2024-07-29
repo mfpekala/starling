@@ -65,7 +65,7 @@ impl BackgroundKind {
                 BackgroundKind::Forest => {
                     commands.spawn((
                         Name::new("sky"),
-                        spat_tran(0.0, 0.0, 0.0),
+                        spat_tran(0.0, 0.0, -10.0),
                         multi!(anim_man!({
                             path: "debug/forest/background_sky_trees.png",
                             size: (320, 180),
@@ -73,7 +73,7 @@ impl BackgroundKind {
                     ));
                     commands.spawn((
                         Name::new("trees_far"),
-                        spat_tran(0.0, 0.0, 1.0),
+                        spat_tran(0.0, 0.0, -9.0),
                         multi!(anim_man!({
                             path: "debug/forest/background_trees_far.png",
                             size: (320, 180),
@@ -81,7 +81,7 @@ impl BackgroundKind {
                     ));
                     commands.spawn((
                         Name::new("trees_far"),
-                        spat_tran(0.0, 0.0, 2.0),
+                        spat_tran(0.0, 0.0, -8.0),
                         multi!(anim_man!({
                             path: "debug/forest/background_trees_mid.png",
                             size: (320, 180),
@@ -89,7 +89,7 @@ impl BackgroundKind {
                     ));
                     commands.spawn((
                         Name::new(""),
-                        spat_tran(0.0, 0.0, 3.0),
+                        spat_tran(0.0, 0.0, -7.0),
                         multi!(anim_man!({
                             path: "debug/forest/background_trees_lightray.png",
                             size: (320, 180),
@@ -97,7 +97,7 @@ impl BackgroundKind {
                     ));
                     commands.spawn((
                         Name::new(""),
-                        spat_tran(0.0, 0.0, 4.0),
+                        spat_tran(0.0, 0.0, -6.0),
                         multi!(anim_man!({
                             path: "debug/forest/background_trees_close.png",
                             size: (320, 180),

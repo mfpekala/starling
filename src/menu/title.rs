@@ -110,8 +110,10 @@ fn update_title(
             NonGameInput::Continue => {
                 if matches!(current_transition.get(), MetaTransitionState::Stable) {
                     next_transition.set(
-                        TransitionKind::FadeToBlack
-                            .to_meta_transition_state(1.0, CutsceneState::Fall.to_meta_state()),
+                        TransitionKind::FadeToBlack.to_meta_transition_state(
+                            1.0,
+                            TutorialState::LearnToFly.to_meta_state(),
+                        ),
                     );
                 }
             }
