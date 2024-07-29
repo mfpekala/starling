@@ -152,7 +152,7 @@ fn update_fly_spots(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut help_text: ResMut<HelpText>,
 ) {
-    if keyboard.just_pressed(KeyCode::Numpad6) {
+    if keyboard.just_pressed(KeyCode::Backspace) {
         next_convo_state.set(ConvoState::None);
         next_meta_state.set(TutorialState::LearnToShoot.to_meta_state());
         return;

@@ -156,7 +156,7 @@ fn update_convo_input(
         KeyCode::KeyW,
         KeyCode::KeyS,
         KeyCode::KeyD,
-    ]) || mouse.any_just_pressed([MouseButton::Right]);
+    ]) || mouse.any_just_pressed([MouseButton::Left, MouseButton::Right]);
 }
 
 /// Send any and all non-game input. Note the early returns, we only handle at most one

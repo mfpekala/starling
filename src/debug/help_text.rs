@@ -1,5 +1,3 @@
-use bevy::text::Text2dBounds;
-
 use crate::prelude::*;
 
 #[derive(Resource, Debug, Clone)]

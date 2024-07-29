@@ -16,8 +16,8 @@ pub struct PermanentSkill {
 impl Default for PermanentSkill {
     fn default() -> Self {
         Self {
-            num_launches: 0,
-            num_bullets: 0,
+            num_launches: 5,
+            num_bullets: 6,
             max_health: 3,
         }
     }
@@ -73,8 +73,8 @@ pub struct EphemeralSkill {
 impl Default for EphemeralSkill {
     fn default() -> Self {
         Self {
-            num_launches: 0,
-            num_bullets: 0,
+            num_launches: 2,
+            num_bullets: 3,
             max_health: 3,
             current_health: 3,
         }

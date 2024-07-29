@@ -118,7 +118,7 @@ fn update(
     mut help_text: ResMut<HelpText>,
 ) {
     // Dev skip
-    if keyboard.just_pressed(KeyCode::Numpad6) {
+    if keyboard.just_pressed(KeyCode::Backspace) {
         next_convo_state.set(ConvoState::None);
         next_transition_state.set(
             TransitionKind::FadeToBlack

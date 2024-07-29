@@ -189,12 +189,7 @@ fn create_room(
             }
         }
         EncounterKind::PukebeakOnly => {
-            music_manager.fade_to_song(MusicKind::NormalBattle);
-
-            if encounter_state.difficulty == 1 {
-                // YO we found it, the place where attempts start
-                ephemeral_skills.start_attempt(&permanent_skills);
-            }
+            music_manager.fade_to_song(MusicKind::BossBattle);
 
             // Background and room border
             BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
@@ -281,7 +276,108 @@ fn create_room(
             }
         }
         EncounterKind::Both => {
-            panic!("both not handled yet");
+            music_manager.fade_to_song(MusicKind::NormalBattle); // remember this does nothing if it's already this song
+
+            // Background and room border
+            BackgroundKind::Zenith.spawn(default(), room_root.eid(), &mut commands);
+            commands
+                .spawn(HardPlatformBundle::around_room())
+                .set_parent(room_root.eid());
+
+            // Get all the placements
+            let bot_left = -(IDEAL_VEC_f32 / 2.0 - Vec2::ONE * 6.0);
+            let top_right = -bot_left;
+            let num_spawners = (encounter_state.difficulty + 2).min(4);
+            let bird_placements = vec![(Shape::Circle { radius: 7.0 }, Vec2::ZERO, 0.0)];
+            let spawner_placements = generate_circles(
+                num_spawners,
+                bot_left,
+                top_right,
+                (18.0, 18.1),
+                (0.0, 0.1),
+                0.0,
+                &bird_placements,
+            );
+            let mut combined_avoid = bird_placements.clone();
+            combined_avoid.extend(spawner_placements.clone().into_iter());
+            let circle_placements = generate_circles(
+                20,
+                bot_left,
+                top_right,
+                (8.0, 32.0),
+                (-5.0, 5.0),
+                23.0,
+                &combined_avoid,
+            )
+            .into_iter()
+            .take(12)
+            .collect::<Vec<_>>();
+
+            // Calculate simp batches
+            let num_simps = 4 + 3 * (encounter_state.difficulty as f32).powf(1.7) as usize;
+            let simp_batch_size_range =
+                6..(6 + (encounter_state.difficulty as f32).powf(1.4) as usize);
+            let mut simp_batch_sizes = vec![];
+            let mut unaccounted_for = num_simps;
+            while unaccounted_for > 0 {
+                let batch_size = rand::thread_rng().gen_range(simp_batch_size_range.clone());
+                let batch_size = batch_size.min(unaccounted_for);
+                simp_batch_sizes.push(batch_size);
+                unaccounted_for -= batch_size;
+            }
+
+            // Calculate the spew batches
+            let num_spews = 4 + 2 * (encounter_state.difficulty as f32).powf(1.3) as usize;
+            let spew_batch_size_range = 1..(encounter_state.difficulty as usize + 1);
+            let mut spew_batch_sizes = vec![];
+            let mut unaccounted_for = num_spews;
+            while unaccounted_for > 0 {
+                let batch_size = rand::thread_rng().gen_range(spew_batch_size_range.clone());
+                let batch_size = batch_size.min(unaccounted_for);
+                spew_batch_sizes.push(batch_size);
+                unaccounted_for -= batch_size;
+            }
+
+            // Spawn da spawners
+            commands
+                .spawn(EnemySpawnerBundle::<SimpBundle>::new(
+                    spawner_placements
+                        .clone()
+                        .into_iter()
+                        .map(|(_, b, _)| b)
+                        .collect(),
+                    simp_batch_sizes,
+                ))
+                .set_parent(room_root.eid());
+            commands
+                .spawn(EnemySpawnerBundle::<SpewBundle>::new(
+                    spawner_placements.into_iter().map(|(_, b, _)| b).collect(),
+                    spew_batch_sizes,
+                ))
+                .set_parent(room_root.eid());
+
+            // Spawn the circles
+            for (ix, (shape, pos, rot)) in circle_placements.into_iter().enumerate() {
+                commands
+                    .spawn(StickyPlatformBundle::new(
+                        format!("shape_{ix}").as_str(),
+                        pos,
+                        shape,
+                    ))
+                    .insert(DynoRot { rot })
+                    .set_parent(room_root.eid());
+            }
+
+            // Spawn the bird!
+            commands
+                .spawn(BirdBundle::new(
+                    bird_placements[0].1,
+                    default(),
+                    ephemeral_skills.get_num_launches(),
+                    ephemeral_skills.get_num_bullets(),
+                    (num_simps + num_spews) as u32,
+                ))
+                .set_parent(room_root.eid());
         }
     }
 }

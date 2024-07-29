@@ -63,8 +63,14 @@ fn update(
     time: Res<Time>,
     upgrade_applied: Query<&UpgradeButton, With<UpgradeButtonApplied>>,
     mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     let mut data = data.single_mut();
+
+    if keyboard.just_pressed(KeyCode::Backspace) {
+        next_convo_state.set(ConvoState::None);
+        return;
+    }
 
     if let Ok((egg_id, mut egg_tran, mut multi, stuck)) = falling_egg.get_single_mut() {
         if egg_tran.translation.y.abs() < 50.0 && data.time_since_egg_hit_ground == 0.0 {

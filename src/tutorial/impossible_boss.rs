@@ -84,10 +84,22 @@ fn update_impossible_boss(
     tutorial_root: Res<TutorialRoot>,
     bird: Query<&Bird>,
     mut data: Query<&mut ImpossibleBossData>,
+    mut next_transition_state: ResMut<NextState<MetaTransitionState>>,
     mut next_convo_state: ResMut<NextState<ConvoState>>,
     mut ephemeral_skills: ResMut<EphemeralSkill>,
     mut simp_spawner: Query<&mut EnemySpawner<SimpBundle>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
+    if keyboard.just_pressed(KeyCode::Backspace) {
+        next_convo_state.set(ConvoState::None);
+        // next_transition_state.set(
+        //     TransitionKind::FadeToBlack
+        //         .to_meta_transition_state(1.0, TutorialState::ImpossibleBoss.to_meta_state()),
+        // );
+        ephemeral_skills.dec_current_health(100);
+        return;
+    }
+
     let mut data = data.single_mut();
     let bird = bird.single();
 
